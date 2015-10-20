@@ -1,6 +1,6 @@
 Copyright 2015 Hurricane Labs
 
-Default configuration for broken sources sanity check
+Default configuration for broken sources sanity check  
 Use the expectedTime lookup table for tuning
 
 Additional information for Hurricane Labs Splunk Admins:  
