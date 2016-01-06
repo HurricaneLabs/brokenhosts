@@ -7,9 +7,9 @@ Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely he
 
 Installation steps:
 1. copy expectedTime.csv.sample to expectedTime.csv
-2. Make sure to create a "local/savedsearches.conf" with this information:
-[Broken Log Sources Sanity Check]
-action.email.subject = <shorname> Splunk Alert: $name$
+2. Make sure to create a "local/savedsearches.conf" with this information:  
+[Broken Log Sources Sanity Check]  
+action.email.subject = <shorname> Splunk Alert: $name$  
 action.email.to = <you>@hurricanelabs.com
 
 
