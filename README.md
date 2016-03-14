@@ -16,14 +16,18 @@ Additional information for Hurricane Labs Splunk Admins:
 <https://zombiefood.hurricanelabs.rsoc/ops/Splunk_Troubleshooting_Alerting#Splunk_Alert:_Broken_Log_Sources_Sanity_Check>
 
 RELEASE NOTES:
-v2.0: complete re-write of the app from scratch
-- uses dbinspect and metadata commands to make this search much faster
-- uses a lookup table to make tuning a breeze
+v2.2:
+- fixed issue with the index exclusions in the search
+- reversed the order of the release notes, putting new version at the top
 
 v2.1:
 - wildcard in lookup table instead of empty quoted string
 - app is visible (to allow the "run" button on the saved search to work)
 - initial lookup table is now named with .sample extention to not over-write any previous tuning
+
+v2.0: complete re-write of the app from scratch
+- uses dbinspect and metadata commands to make this search much faster
+- uses a lookup table to make tuning a breeze
 
 Ideas for future release:
 (Not guaranteed to actually make it to any release):
