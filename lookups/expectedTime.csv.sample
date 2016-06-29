@@ -2,4 +2,3 @@ index,host,lateSecs,suppressUntil,contact,comments
 *,kickseed,0,0,,default entry
 *,hdf-template,0,0,,default entry
 opsec,*,600,0,,default entry
-*,*,14400,0,,set default contact here

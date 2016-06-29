@@ -1,0 +1,16 @@
+<setup>
+  <block title="Broken Sources - Setup" endpoint="configs/conf-macros"
+    entity="default_contact">
+    <input field="definition">
+      <label>Default contact (email address)</label>
+      <type>text</type>
+    </input>
+  </block>
+  <block title=" " endpoint="configs/conf-macros"
+    entity="default_expected_time">
+    <input field="definition">
+      <label>Default expected time</label>
+      <type>text</type>
+    </input>
+  </block>
+</setup>
