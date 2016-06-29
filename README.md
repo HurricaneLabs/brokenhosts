@@ -10,6 +10,10 @@ Installation steps:
 2. add the appropriate email address to the last line of expectedTime.csv
 
 RELEASE NOTES:
+v3.1:
+
+- Added setup page with default contact and default allowable lateness
+
 v3.0:
 - Another major rewrite
 - Added the ability to suppress an item
