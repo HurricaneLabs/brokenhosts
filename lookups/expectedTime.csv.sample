@@ -1,4 +1,10 @@
 index,host,lateSecs,suppressUntil,contact,comments
 *,kickseed,0,0,,default entry
 *,hdf-template,0,0,,default entry
+*,*.splunkcloud.com,0,0,,default entry
+_*,*,0,0,,default entry
+*summary*,*,0,0,,default entry
+*notable*,*,0,0,,default entry
+firedalerts,*,0,0,,default entry
+itsi_tracked_alerts,*,0,0,,default entry
 opsec,*,600,0,,default entry
