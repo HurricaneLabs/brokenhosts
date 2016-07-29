@@ -1,10 +1,10 @@
 index,host,lateSecs,suppressUntil,contact,comments
-*,kickseed,0,0,,default entry
+_*,*,0,0,,default entry - don't alert on internal indexes
+*,*.splunkcloud.com,0,0,,default entry - don't alert on splunkcloud instances
+*,kickseed,0,0,,default entry - don't alert on initial images
 *,hdf-template,0,0,,default entry
-*,*.splunkcloud.com,0,0,,default entry
-_*,*,0,0,,default entry
-*summary*,*,0,0,,default entry
-*notable*,*,0,0,,default entry
-firedalerts,*,0,0,,default entry
-itsi_tracked_alerts,*,0,0,,default entry
-opsec,*,600,0,,default entry
+*summary*,*,0,0,,default entry - don't alert on summary indexes
+*notable*,*,0,0,,default entry - don't alert on ES notable event indexes
+firedalerts,*,0,0,,default entry - don't alert on fired alerts index
+itsi_tracked_alerts,*,0,0,,default entry - don't alert on itsi alert index
+opsec,*,600,0,,default entry - checkpoint firewall logs should come in AT LEAST every 10 minutes
