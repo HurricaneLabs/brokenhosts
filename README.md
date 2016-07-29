@@ -8,7 +8,6 @@ Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely he
 Installation steps:
 1. install app on your splunk search head
 2. run app setup
-3. copy expectedTime.csv.sample to expectedTime.csv in the "lookups" directory
 
 RELEASE NOTES:
 v3.1:

@@ -1,5 +1,5 @@
 <setup>
-  <block title="Broken Sources - Setup" endpoint="configs/conf-macros"
+  <block title="Broken Hosts - Setup" endpoint="configs/conf-macros"
     entity="default_contact">
     <input field="definition">
       <label>Default contact (email address)</label>
