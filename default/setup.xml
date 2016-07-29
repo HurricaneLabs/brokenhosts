@@ -16,7 +16,7 @@
   <block title=" " endpoint="configs/conf-macros"
     entity="ignore_after">
     <input field="definition">
-      <label>Ignore host after so many seconds</label>
+      <label>Ignore host after time (seconds)</label>
       <type>text</type>
     </input>
   </block>
