@@ -9,7 +9,7 @@
   <block title=" " endpoint="configs/conf-macros"
     entity="default_expected_time">
     <input field="definition">
-      <label>Default expected time</label>
+      <label>Default expected time (in seconds)</label>
       <type>text</type>
     </input>
   </block>
