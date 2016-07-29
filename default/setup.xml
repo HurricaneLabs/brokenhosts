@@ -13,4 +13,11 @@
       <type>text</type>
     </input>
   </block>
+  <block title=" " endpoint="configs/conf-macros"
+    entity="ignore_after">
+    <input field="definition">
+      <label>Ignore host after so many seconds</label>
+      <type>text</type>
+    </input>
+  </block>
 </setup>
