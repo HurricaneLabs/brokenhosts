@@ -31,7 +31,7 @@
       <type>text</type>
     </input>
     <input field="action.email.message.alert">
-      <label>Message subject</label>
+      <label>Message body</label>
       <type>text</type>
     </input>
   </block>
