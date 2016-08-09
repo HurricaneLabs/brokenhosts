@@ -8,13 +8,20 @@ Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely he
 Installation steps:
 1. install app on your splunk search head
 2. run app setup
-3. if you did not install this app using splunk web, manually copy expectedTime.csv.default to expectedTime.csv
+
+For support:
+- Send email to splunk@hurricanelabs.com
+- Support will be provided on a best effort basis.
+
 
 RELEASE NOTES:
-v3.1:
+v3.1.1:
+- added script to automatically create the lookup if it doens't already exist
+
+v3.1.0:
 - Added setup page with default contact and default allowable lateness
 
-v3.0:
+v3.0.0:
 - Another major rewrite
 - Added the ability to suppress an item
 - Added the ability to send different items to different contacts
