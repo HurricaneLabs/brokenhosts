@@ -13,6 +13,7 @@ Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely he
 
 # How does the app work? #
 ==========================
+
 This works using splunk metadata. This metadata contains information about when the last time a log was received, and we alert if that is later than "expected". 
 There is a default number of seconds that a host is allowed to be late (late seconds) that is configured in the set up page [default is 4 hours], and you can configure a different amount of late seconds in the lookup table (the Lookup Editor app is really helpful, since it allows you to edit the lookup table from within Splunk). 
 
