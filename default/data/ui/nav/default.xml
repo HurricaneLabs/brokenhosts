@@ -1,4 +1,5 @@
 <nav search_view="search" color="#65A637">
-  <view name="search" default="true" />
+  <view name="broken_hosts" default="true" />
+  <view name="search" />
   <view name="lookup_list" />
 </nav>

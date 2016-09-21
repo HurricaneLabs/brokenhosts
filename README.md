@@ -36,6 +36,8 @@ firewall,fw01,600,,,alert if firewall logs are more than 10 minutes late
 The fw01 host will not alert because the wildcard line is further up.
 For this reason, I recommend putting all entries that have a specific index and a specific host (no wildcards) at the top of the lookup table, followed by entries with a wildcard in the index and a specific host, and put entries with a specific index and wildcard in the host field at the bottom of the lookup table.
 
+Broken Hosts dashboard can be used to easily and quickly update the tuning lookup table. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+
 # For support: #
 ================
 * Send email to splunk@hurricanelabs.com
@@ -44,6 +46,11 @@ For this reason, I recommend putting all entries that have a specific index and 
 
 # RELEASE NOTES: #
 ==================
+
+v3.2.0:
+* added Broken Hosts dashboard
+* updated documentation to include Broken Hosts dashboard
+
 v3.1.1:
 * added script to automatically create the lookup if it doens't already exist
 * expanded readme information
