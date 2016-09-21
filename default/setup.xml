@@ -20,19 +20,4 @@
       <type>text</type>
     </input>
   </block>
-  <block title=" " endpoint="configs/conf-savedsearches"
-    entity="Broken Hosts Sanity Check">
-    <input field="action.email">
-      <label>Send e-mail</label>
-      <type>bool</type>
-    </input>
-    <input field="action.email.to">
-      <label>Recipient</label>
-      <type>text</type>
-    </input>
-    <input field="action.email.message.alert">
-      <label>Message body</label>
-      <type>text</type>
-    </input>
-  </block>
 </setup>
