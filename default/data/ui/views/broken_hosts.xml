@@ -1,0 +1,48 @@
+<dashboard script="log_host_monitoring.js" stylesheet="tableAlert.css">
+  <label>Broken Hosts</label>
+  <search id="populateLookup" depends="$host_tok$,$index_tok$">
+    <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count | append [| inputlookup expectedTime] | table index,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
+  </search>
+  <row>
+    <panel>
+      <table id="infosecCritical">
+        <title>Critical Indexes/Hosts</title>
+        <search id="infosecCriticalSearch">
+          <query>| dbinspect index=* | dedup index | map search="metadata type=hosts index=$$index$$ | eval index=\"$$index$$\"" maxsearches=1000 | lookup expectedTime index,host OUTPUT lateSecs | eval lateSecs=mvindex(lateSecs,0) | eval critical=if(lateSecs&gt;0 AND lateSecs&lt;14399,1,0) | eval now=now()  | eval seconds_since_last_event = now - recentTime | eval minutes_since_last_event = round(seconds_since_last_event/60,2) | where critical=1 AND seconds_since_last_event &lt; `ignore_after` | table minutes_since_last_event host index | sort - minutes_since_last_event | rename minutes_since_last_event AS "Minutes Since Last Event" host AS "Event Host" index AS "Event Index"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">20</option>
+        <option name="fields">"Event Index","Event Host","Minutes Since Last Event"</option>
+        <fields>["Event Index","Event Host","Minutes Since Last Event"]</fields>
+      </table>
+    </panel>
+    <panel>
+      <table id="eventHosts">
+        <title>All Hosts</title>
+        <search id="eventHostsSearch">
+          <query>| dbinspect index=* | dedup index | map search="metadata type=hosts index=$$index$$ | eval index=\"$$index$$\"" maxsearches=1000 | lookup expectedTime index,host OUTPUT lateSecs | eval lateSecs=mvindex(lateSecs,0) | eval hidden=if(lateSecs=0,1,0) | search hidden=0 | eval now=now() | eval Suppress="Suppress" | eval seconds_since_last_event = now - recentTime| eval minutes_since_last_event = round(seconds_since_last_event/60,2) | where seconds_since_last_event &lt; `ignore_after` | eval h=host | eval i=index| table minutes_since_last_event Suppress h i host index | sort - minutes_since_last_event | rename minutes_since_last_event AS "Minutes Since Last Event" h AS "Event Host" i AS "Event Index"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="drilldown">row</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="count">100</option>
+        <option name="fields">"Event Index","Event Host","Minutes Since Last Event",Suppress</option>
+        <drilldown>
+          <condition field="Suppress">
+            <set token="host_tok">$row.host$</set>
+            <set token="index_tok">$row.index$</set>
+          </condition>
+        </drilldown>
+        <fields>["Event Index","Event Host","Minutes Since Last Event","Suppress"]</fields>
+      </table>
+    </panel>
+  </row>
+</dashboard>

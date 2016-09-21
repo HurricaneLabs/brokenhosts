@@ -1,0 +1,29 @@
+.table>tbody>tr>td.range-low {
+    background-color: #b7ec6c !important;
+    color: #3b641f !important;
+    border-bottom: #3b641f 1px solid !important;
+    border-top: none;
+}
+.table>tbody>tr>td.range-med {
+    background-color: #ffce58 !important;
+    color: #d96600 !important;
+    border-bottom: #d96600 1px solid !important;
+    border-top: none;
+}
+.table>tbody>tr>td.range-high {
+    background-color: #ff9191 !important;
+    color: #781303 !important;
+    border-bottom: #781303 1px solid !important;
+    border-top: none;
+}
+.table>tbody>tr>td.range-unknown {
+    background-color: #e7e7e7 !important;
+    color: #747474 !important;
+    border-bottom: #747474 1px solid !important;
+    border-top: none;
+}
+.table>tbody>tr>td.range-informational {
+    background-color: #aaf9f6 !important;
+    color: #36a6a2 !important;
+    border-bottom: #36a6a2 1px solid !important;
+    border-top: none;
