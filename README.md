@@ -48,12 +48,10 @@ Broken Hosts dashboard can be used to easily and quickly update the tuning looku
 # RELEASE NOTES: #
 ==================
 
-v3.3.0:
+v3.2.0:
 * modified the savedsearch to use 'tstats' instead of 'metadata' to allow use of sourcetype
 * updated expectedTime lookup table to add a 'sourcetype' column
 * updated first_time script to add 'sourcetype' column to lookup table 
-
-v3.2.0:
 * added Broken Hosts dashboard
 * updated documentation to include Broken Hosts dashboard
 
