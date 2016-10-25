@@ -1,47 +1,66 @@
 <dashboard script="log_host_monitoring.js" stylesheet="tableAlert.css">
   <label>Broken Hosts</label>
-  <search id="populateLookup" depends="$host_tok$,$index_tok$">
-    <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count | append [| inputlookup expectedTime] | table index,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
+  <search id="populateLookup" depends="$host_tok$,$index_tok$,$sourcetype_tok$">
+    <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval sourcetype="$sourcetype_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count | append [| inputlookup expectedTime] | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
   </search>
   <row>
     <panel>
+      <title>Critical Sourcetypes</title>
       <table id="infosecCritical">
-        <title>Critical Indexes/Hosts</title>
+        <title>"Critical" means alerts faster than default_expected_time</title>
         <search id="infosecCriticalSearch">
-          <query>| dbinspect index=* | dedup index | map search="metadata type=hosts index=$$index$$ | eval index=\"$$index$$\"" maxsearches=1000 | lookup expectedTime index,host OUTPUT lateSecs | eval lateSecs=mvindex(lateSecs,0) | eval critical=if(lateSecs&gt;0 AND lateSecs&lt;14399,1,0) | eval now=now()  | eval seconds_since_last_event = now - recentTime | eval minutes_since_last_event = round(seconds_since_last_event/60,2) | where critical=1 AND seconds_since_last_event &lt; `ignore_after` | table minutes_since_last_event host index | sort - minutes_since_last_event | rename minutes_since_last_event AS "Minutes Since Last Event" host AS "Event Host" index AS "Event Index"</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <query>| tstats max(_time) as lastTime where index=* by index, sourcetype, host | eval Last=strftime(lastTime, "%D %H:%M:%S")
+| eval host=lower(host) | eval index=lower(index) | eval sourcetype=lower(sourcetype) | eval sourcetype=trim(sourcetype, "\"")
+| stats max(lastTime) as lastTime max(Last) as Last by index, sourcetype, host
+| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
+| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0)
+| eval critical=if(lateSecs&gt;0 AND lateSecs&lt;`default_expected_time`,1,0) | eval suppressUntil=mvindex(suppressUntil,0) | where critical=1 AND (now() - lastTime &lt; `ignore_after`)
+| eval howLateSecs=now() - lastTime | eval howLate=tostring(howLateSecs,"duration")
+| rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S")
+| sort lastTime | table howLate host sourcetype index | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
         </search>
-        <option name="wrap">true</option>
-        <option name="rowNumbers">false</option>
+        <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">cell</option>
-        <option name="count">20</option>
-        <option name="fields">"Event Index","Event Host","Minutes Since Last Event"</option>
-        <fields>["Event Index","Event Host","Minutes Since Last Event"]</fields>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event"]</fields>
       </table>
     </panel>
     <panel>
+      <title>All other Hosts</title>
       <table id="eventHosts">
-        <title>All Hosts</title>
+        <title>All Hosts except Critical hosts</title>
         <search id="eventHostsSearch">
-          <query>| dbinspect index=* | dedup index | map search="metadata type=hosts index=$$index$$ | eval index=\"$$index$$\"" maxsearches=1000 | lookup expectedTime index,host OUTPUT lateSecs | eval lateSecs=mvindex(lateSecs,0) | eval hidden=if(lateSecs=0,1,0) | search hidden=0 | eval now=now() | eval Suppress="Suppress" | eval seconds_since_last_event = now - recentTime| eval minutes_since_last_event = round(seconds_since_last_event/60,2) | where seconds_since_last_event &lt; `ignore_after` | eval h=host | eval i=index| table minutes_since_last_event Suppress h i host index | sort - minutes_since_last_event | rename minutes_since_last_event AS "Minutes Since Last Event" h AS "Event Host" i AS "Event Index"</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <query>| tstats max(_time) as lastTime where index=* by index, sourcetype, host | eval Last=strftime(lastTime, "%D %H:%M:%S")
+| eval host=lower(host) | eval index=lower(index) | eval sourcetype=lower(sourcetype) | eval sourcetype=trim(sourcetype, "\"")
+| stats max(lastTime) as lastTime max(Last) as Last by index, sourcetype, host
+| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
+| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0)
+| eval critical=if(lateSecs&gt;0 AND lateSecs&lt;`default_expected_time`,1,0) | eval suppressUntil=mvindex(suppressUntil,0) | where critical=0 AND lateSecs>0 AND (now() - lastTime &lt; `ignore_after`)
+| eval howLateSecs=now() - lastTime | eval howLate=tostring(howLateSecs,"duration") | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
+| rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S")
+| sort lastTime | table howLate host sourcetype index Suppress h i s | rename howLate AS "Time Since Last Event" h AS "Event Host" i AS "Event Index" s AS "Event Sourcetype"</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
         </search>
-        <option name="wrap">true</option>
-        <option name="rowNumbers">false</option>
-        <option name="drilldown">row</option>
-        <option name="dataOverlayMode">none</option>
         <option name="count">100</option>
-        <option name="fields">"Event Index","Event Host","Minutes Since Last Event",Suppress</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","Suppress"]</fields>
         <drilldown>
           <condition field="Suppress">
             <set token="host_tok">$row.host$</set>
             <set token="index_tok">$row.index$</set>
+            <set token="sourcetype_tok">$row.sourcetype$</set>
           </condition>
         </drilldown>
-        <fields>["Event Index","Event Host","Minutes Since Last Event","Suppress"]</fields>
       </table>
     </panel>
   </row>
