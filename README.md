@@ -42,7 +42,7 @@ Broken Hosts dashboard can be used to easily and quickly update the tuning looku
 # For support: #
 ================
 * Send email to splunk@hurricanelabs.com
-* Support will be provided on a best effort basis.
+* Support is not guaranteed and will be provided on a best effort basis.
 
 
 # RELEASE NOTES: #
