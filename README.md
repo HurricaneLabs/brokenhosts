@@ -80,7 +80,7 @@ v3.2.0:
 * updated the savedsearch suppression to suppress for 2 hours instead of 1
 * updated the savedsearch suppression to include sourcetype
 * updated expectedTime lookup table to add a 'sourcetype' column
-* updated first_time script to add 'sourcetype' column to lookup table 
+* updated first_time script to add 'sourcetype' column to lookup table
 * added Broken Hosts dashboard
 * updated documentation to include Broken Hosts dashboard information
 * added app nav color
