@@ -27,7 +27,7 @@ The search runs every 30 minutes, and will wait 1 hour before alerting again aft
 
 Each line of the lookup table has several columns. The first three (index, sourcetype, host) are used to select which data you are adjusting settings for. These are case-insensitive and wildcard enabled fields. 
 - These fields are all required
-- For example, if you want to specify late seconds for all hosts in an index, then you would put an asterisk (*) in the "sourcetype" and "host" columns.
+- For example, if you want to specify late seconds for all hosts in an index, then you would specify the index and put an asterisk (*) in the "sourcetype" and "host" columns.
 
 The next column is "lateSecs", this is the number of "late seconds" for this host (amount of time that a host can be late before alerting). 
 - This field is requred
