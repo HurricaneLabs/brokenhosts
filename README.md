@@ -49,7 +49,7 @@ The final column is "comments". This is a non-functional column that is intended
 - For example, if a suppression was set until a change window, then maybe the change ticket number can be referenced in this column.
 
 Because the lookup table is searched from the top down and splunk takes the first match, it is recommended to put the lookup table entries in the following order:
-- All entries that have a specific index, specific sourcetype, AND specific host (no wildcards- or partial wildcard matching) at the top 
+- All entries that have a specific index, specific sourcetype, AND specific host (no wildcards- or partial wildcard matching) at the top
 - All entries with a wildcard ONLY in the index field
 - All entries with a wildcard ONLY in the sourcetype field
 - All entries with a wildcard ONLY in the host field
