@@ -37,23 +37,33 @@ firewall,cisco:asa,fw01,600,,,alert if firewall logs are more than 10 minutes la
 The fw01 host will not alert because the wildcard line is further up.
 For this reason, I recommend putting all entries that have a specific index , specific sourcetype, and specific host (no wildcards) at the top of the lookup table, followed by entries with a wildcard only in the index , then entries with a wildcard only in the sourcetype, then entries with a wildcard only in the host, followed by entried with only a specific host, then entreis with a specific sourcetype, and put entries with only a specific index at the bottom of the lookup table.
 
-Broken Hosts dashboard can be used to easily and quickly update the tuning lookup table. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+# Dashboard #
+-------------
+
+Broken Hosts dashboard can be used to get a visual picture of the current status of hosts.
+The "Critical Sourcetypes" panel shows items that are in the expectedTime Lookup Table with a "lateSecs" value that is less than the value of the "default_expected_time" macro.
+
+The "All other Hosts" panel shows a preview of all hosts that have a "lateSecs" value equal to, or greater than the "default_expected_time" macro. This panel will allwo you to quickly update expectedTime lookup table to remove a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
 
 # For support: #
 ================
 * Send email to splunk@hurricanelabs.com
-* Support will be provided on a best effort basis.
+* Support is not guaranteed and will be provided on a best effort basis.
 
 
 # RELEASE NOTES: #
 ==================
 
 v3.2.0:
-* modified the savedsearch to use 'tstats' instead of 'metadata' to allow use of sourcetype
+* modified the savedsearch to use 'tstats' instead of 'metadata' to allow use of sourcetype for tuning
+* updated the savedsearch schedule to run every 30 minutes (because tstats takes longer than metadata)
+* updated the savedsearch suppression to suppress for 2 hours instead of 1
+* updated the savedsearch suppression to include sourcetype
 * updated expectedTime lookup table to add a 'sourcetype' column
 * updated first_time script to add 'sourcetype' column to lookup table 
 * added Broken Hosts dashboard
-* updated documentation to include Broken Hosts dashboard
+* updated documentation to include Broken Hosts dashboard information
+* added app nav color
 
 v3.1.1:
 * added script to automatically create the lookup if it doens't already exist
