@@ -14,28 +14,48 @@ Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely he
 # How does the app work? #
 ==========================
 
-This works using splunk metadata. This metadata contains information about when the last time a log was received, and we alert if that is later than "expected". 
-There is a default number of seconds that a host is allowed to be late (late seconds) that is configured in the set up page [default is 4 hours], and you can configure a different amount of late seconds in the lookup table (the Lookup Editor app is really helpful, since it allows you to edit the lookup table from within Splunk). 
+The main part of this app is a saved search that looks at the last time that a log was received for each index/sourcetype/host and alerts if that is later than "expected". 
+
+There are macros to define a few defaults: (App setup will configure these macros)
+- "default_contact" - Default contact (email address) - Default contact to send alert emails to [default is a dummy email]
+- "default_expected_time" - Default expected time (in seconds) - Default number of "late seconds" (amount of time that a host can be late before alerting) [default is 4 hours]
+- "ignore_after" - Ignore host after time (seconds) - Maximum number of seconds that the app will look at (anything that has not sent logs longer than this setting will NOT trigger alerts) [default is 30 days]
+
+The contact and "late seconds" can be configured for different indexes/sourcetypes/hosts in the "expectedTime" lookup table (the Lookup Editor app is really helpful, since it allows you to edit the lookup table from within Splunk). 
 
 The search runs every 30 minutes, and will wait 1 hour before alerting again after it triggers.
 
-Each line of the lookup table has several columns. The first three are index, sourcetype, and host. These are used to select which data you want to adjust the late seconds for. If you want to specify late seconds for all hosts in an index, then you would put an asterisk (*) in the "sourcetype" and "host" columns. Likewise, if you want to specify late seconds for an entire sourcetype no matter which index or host the data is in, then you would put an asterisk (*) in the "index" and "host" columns. 
+Each line of the lookup table has several columns. The first three (index, sourcetype, host) are used to select which data you are adjusting settings for. These are case-insensitive and wildcard enabled fields. 
+- These fields are all required
+- For example, if you want to specify late seconds for all hosts in an index, then you would put an asterisk (*) in the "sourcetype" and "host" columns.
 
-The next column is "lateSecs", this is the number of seconds that a host is late before it alerts. You can set this to zero (0) if you don't want any alerts for that host/index. 
-The column after that is "suppressUntil". This allows you to temporarily suppress the alerts. If you set this to a datetime stamp, then it will not alert until that date (Note: if a host has not sent data in a month, then you will no longer receive alerts for that host.) - For example, if you want to suppress a host because it won't be fixed until a specific change window, then you set this column to be the datetime of that change window so that you don't get alerted every hour for that host.
+The next column is "lateSecs", this is the number of "late seconds" for this host (amount of time that a host can be late before alerting). 
+- This field is requred
+- You can set this to zero (0) if you don't want any alerts for that host/index. 
 
-The next column is "contact". You can specify different contacts for different hosts. The email address listed in the "set up" page is the default contact, if one isn't set for that host in the lookup table.  
+The fifth column is "suppressUntil". This allows you to temporarily suppress the alerts. 
+- This field is optional
+- Format is MM/DD/YYYY HH:MM:SS
+- A host will not alert until the given date
+- For example, if you want to suppress a host because it won't be fixed until a specific change window, then you set this column to be the datetime of that change window so that you don't get alerted every hour for that host.
+- NOTE: If this date is more than the "Ignore host after time" (see above), then this host might not alert after the "suppressUntil" time is up.
 
-The final column is "comments", which is helpful when editing the lookup table to remember why a line was set the way it was. (For example, if a suppression was set until a change window, then maybe the change ticket number can be referenced in this column).
+The next column is "contact". This allows you to send the alerts for different items to different email addresses
+- This field is optional
+- This will allow you to route alerts to the most appropriate group for remediation
 
-One final thing to note is that the lookup table is searched from the top down, and splunk takes the first match. 
-For example, if this is what your lookup table looks like:
-index,sourcetype,host,latesecs,suppressUntil,contact,comments
-*,*,*,0,,,suppress everything
-firewall,cisco:asa,fw01,600,,,alert if firewall logs are more than 10 minutes late
+The final column is "comments". This is a non-functional column that is intended to help remember why a line was set a certain way. 
+- This field is optional
+- For example, if a suppression was set until a change window, then maybe the change ticket number can be referenced in this column.
 
-The fw01 host will not alert because the wildcard line is further up.
-For this reason, I recommend putting all entries that have a specific index , specific sourcetype, and specific host (no wildcards) at the top of the lookup table, followed by entries with a wildcard only in the index , then entries with a wildcard only in the sourcetype, then entries with a wildcard only in the host, followed by entried with only a specific host, then entreis with a specific sourcetype, and put entries with only a specific index at the bottom of the lookup table.
+Because the lookup table is searched from the top down and splunk takes the first match, it is recommended to put the lookup table entries in the following order:
+- All entries that have a specific index, specific sourcetype, AND specific host (no wildcards- or partial wildcard matching) at the top 
+- All entries with a wildcard ONLY in the index field
+- All entries with a wildcard ONLY in the sourcetype field
+- All entries with a wildcard ONLY in the host field
+- All with only a specific host
+- All with only a specific sourcetype
+- All with only a specific index
 
 # Dashboard #
 -------------
