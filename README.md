@@ -82,6 +82,11 @@ The "All other Hosts" panel shows a preview of all hosts that have a "lateSecs" 
 # RELEASE NOTES: #
 ==================
 
+v3.2.1:
+
+- updated suppression so that alerts are triggered properly
+- added a link to 'setup' in the nav menu
+
 v3.2.0:
 
 - modified the savedsearch to use 'tstats' instead of 'metadata' to allow use of sourcetype for tuning
