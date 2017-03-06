@@ -31,9 +31,9 @@
       </table>
     </panel>
     <panel>
-      <title>All other Hosts</title>
+      <title>All other Sourcetypes</title>
       <table id="eventHosts">
-        <title>All Hosts except Critical hosts</title>
+        <title>All Sourcetypes except Critical Sourcetypes</title>
         <search id="eventHostsSearch">
           <query>| tstats max(_time) as lastTime where index=* by index, sourcetype, host | eval Last=strftime(lastTime, "%D %H:%M:%S")
 | eval host=lower(host) | eval index=lower(index) | eval sourcetype=lower(sourcetype) | eval sourcetype=trim(sourcetype, "\"")
