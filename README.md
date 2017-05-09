@@ -82,6 +82,10 @@ The "All other Hosts" panel shows a preview of all hosts that have a "lateSecs" 
 # RELEASE NOTES: #
 ==================
 
+v3.3.0:
+
+- updated savedsearch to include any hosts that are sending logs from the future
+
 v3.2.1:
 
 - updated suppression so that alerts are triggered properly
