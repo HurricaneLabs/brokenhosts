@@ -64,4 +64,19 @@
       </table>
     </panel>
   </row>
+  <row>
+    <panel>
+      <title>Suppressed Items</title>
+      <table id="suppressed">
+        <search id="infosecCriticalSearch">
+          <query>| inputlookup expectedTime | where lateSecs=0 OR suppressUntil>now()</query>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","Suppress"]</fields>
+      </table>
+    </panel>
+  </row>
 </dashboard>
