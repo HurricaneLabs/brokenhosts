@@ -21,6 +21,7 @@ There are macros to define a few defaults: (App setup will configure these macro
 - "default_contact" - Default contact (email address) - Default contact to send alert emails to [default is a dummy email]
 - "default_expected_time" - Default expected time (in seconds) - Default number of "late seconds" (amount of time that a host can be late before alerting) [default is 4 hours]
 - "ignore_after" - Ignore host after time (seconds) - Maximum number of seconds that the app will look at (anything that has not sent logs longer than this setting will NOT trigger alerts) [default is 30 days]
+- "search_additions" - added near the beginning of the search to allow for custom actions - One example for this is two hosts that are a failover-pair can be combined with: "eval host=if(searchmatch(host=hostA OR host=hostB),"hostPair",host)"
 
 The contact and "late seconds" can be configured for different indexes/sourcetypes/hosts in the "expectedTime" lookup table (the Lookup Editor app is really helpful, since it allows you to edit the lookup table from within Splunk).
 
@@ -85,6 +86,7 @@ The "All other Hosts" panel shows a preview of all hosts that have a "lateSecs" 
 v3.3.0:
 
 - updated savedsearch to include any hosts that are sending logs from the future
+- added the ability to add custom search additions to make the search more flexible
 
 v3.2.1:
 
