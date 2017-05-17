@@ -68,7 +68,7 @@
     <panel>
       <title>Suppressed Items</title>
       <table id="suppressed">
-        <search id="infosecCriticalSearch">
+        <search id="suppressedSearch">
           <query>| inputlookup expectedTime | where lateSecs=0 OR suppressUntil>now()</query>
         </search>
         <option name="count">100</option>
