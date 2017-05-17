@@ -16,8 +16,8 @@
 | fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0)
 | eval critical=if(lateSecs&gt;0 AND lateSecs&lt;`default_expected_time`,1,0) | eval suppressUntil=mvindex(suppressUntil,0)
-| where critical=1 AND (now() - lastTime &lt; `ignore_after`) | eval howLateSecs=now() - lastTime
-| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort lastTime
+| where critical=1 AND ((now() - lastTime &lt; `ignore_after`) OR (lastTime > now() + 3000))
+| eval howLateSecs=now() - lastTime | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort lastTime
 | stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs by index sourcetype host
 | eval howLate=tostring(howLateSecs,"duration") | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | fields index, sourcetype, host, howLate, sparkline
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
@@ -43,7 +43,7 @@
 | fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0)
 | eval critical=if(lateSecs&gt;0 AND lateSecs&lt;`default_expected_time`,1,0) | eval suppressUntil=mvindex(suppressUntil,0)
-| where critical=0 AND lateSecs&gt;0 AND (now() - lastTime &lt; `ignore_after`)
+| where critical=0 AND lateSecs&gt;0 AND ((now() - lastTime &lt; `ignore_after`) OR (lastTime > now() + 3000))
 | eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort lastTime
 | stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs by host sourcetype index Suppress h i s
