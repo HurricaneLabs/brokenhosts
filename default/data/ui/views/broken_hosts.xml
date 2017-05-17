@@ -69,13 +69,13 @@
       <title>Suppressed Items</title>
       <table id="suppressed">
         <search id="suppressedSearch">
-          <query>| inputlookup expectedTime | where lateSecs=0 OR suppressUntil>now()</query>
+          <query>| inputlookup expectedTime | where lateSecs=0 OR suppressUntil>now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil) | convert ctime(suppressUntil)| fields index, sourcetype, host, suppressUntil, comments | rename host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype" suppressUntil AS "Suppressed Until" comments as Comments</query>
         </search>
         <option name="count">100</option>
         <option name="dataOverlayMode">none</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","Suppress"]</fields>
+        <fields>["Event Index","Event Host","Event Sourcetype","Suppressed Until","Comments"]</fields>
       </table>
     </panel>
   </row>
