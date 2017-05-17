@@ -22,7 +22,7 @@
 | eval howLate=tostring(howLateSecs,"duration") | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | fields index, sourcetype, host, howLate, sparkline
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
           <earliest>-30d@d</earliest>
-          <latest>now</latest>
+          <latest>+7d@d</latest>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
@@ -50,7 +50,7 @@
 | eval howLate=tostring(howLateSecs,"duration") | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
           <earliest>-30d@d</earliest>
-          <latest>now</latest>
+          <latest>+7d@d</latest>
         </search>
         <option name="count">100</option>
         <option name="dataOverlayMode">none</option>
