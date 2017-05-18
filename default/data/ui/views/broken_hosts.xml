@@ -19,7 +19,7 @@
 | where critical=1 AND ((now() - lastTime &lt; `ignore_after`) OR (lastTime > now() + 3000))
 | eval howLateSecs=now() - lastTime | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort lastTime
 | stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs by index sourcetype host
-| eval howLate=tostring(howLateSecs,"duration") | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | fields index, sourcetype, host, howLate, sparkline
+| eval howLate=if(howLateSecs<0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | fields index, sourcetype, host, howLate, sparkline
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
           <earliest>-30d@d</earliest>
           <latest>+7d@d</latest>
@@ -47,7 +47,7 @@
 | eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort lastTime
 | stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs by host sourcetype index Suppress h i s
-| eval howLate=tostring(howLateSecs,"duration") | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
+| eval howLate=if(howLateSecs<0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
           <earliest>-30d@d</earliest>
           <latest>+7d@d</latest>
