@@ -1,5 +1,5 @@
 <dashboard script="log_host_monitoring.js" stylesheet="tableAlert.css">
-  <label>Broken Hosts Clone</label>
+  <label>Broken Hosts</label>
   <search id="populateLookup" depends="$host_tok$,$index_tok$,$sourcetype_tok$">
     <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval sourcetype="$sourcetype_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count, sparkline | append [| inputlookup expectedTime] | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
   </search>
