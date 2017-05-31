@@ -60,9 +60,9 @@
         <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","sparkline","Suppress"]</fields>
         <drilldown>
           <condition field="Suppress">
-            <set token="host_tok">$row.host$</set>
-            <set token="index_tok">$row.index$</set>
-            <set token="sourcetype_tok">$row.sourcetype$</set>
+            <set token="host_tok">$row.h$</set>
+            <set token="index_tok">$row.i$</set>
+            <set token="sourcetype_tok">$row.s$</set>
           </condition>
         </drilldown>
       </table>
