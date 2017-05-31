@@ -33,23 +33,19 @@ require([
         tableView.table.render();
     });
 
-    mvc.Components.get('infosecCritical').getVisualization(function(tableView) {
-        tableView.table.addCellRenderer(new CriticalEventRenderer());
-        tableView.table.render();
-    });
-
-
     //Hiding Sources Functionality
 
-    var eventSourcesSearch = mvc.Components.get("eventHostsSearch");
-    var infosecCriticalSearch = mvc.Components.get("infosecCriticalSearch");
+    var brokenHostsSearch = mvc.Components.get("brokenHostsSearch");
+    var futureHostsSearch = mvc.Components.get("futureHostsSearch");
+    var suppressedSearch = mvc.Components.get("suppressedSearch");
     var populateLookupSearch = mvc.Components.get("populateLookup");
 
     if(populateLookupSearch != null) {
         populateLookupSearch.on("search:done", function(props) {
 
-            eventSourcesSearch.startSearch();
-            infosecCriticalSearch.startSearch();
+            brokenHostsSearch.startSearch();
+            futureHostsSearch.startSearch();
+            suppressedSearch.startSearch();
 
         });
     }
