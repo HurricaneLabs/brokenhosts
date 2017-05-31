@@ -28,7 +28,12 @@ require([
         }
     });
 
-    mvc.Components.get('eventHosts').getVisualization(function(tableView) {
+    mvc.Components.get('brokenHosts').getVisualization(function(tableView) {
+        tableView.table.addCellRenderer(new CriticalEventRenderer());
+        tableView.table.render();
+    });
+
+    mvc.Components.get('futureHosts').getVisualization(function(tableView) {
         tableView.table.addCellRenderer(new CriticalEventRenderer());
         tableView.table.render();
     });
