@@ -25,7 +25,7 @@ There are macros to define a few defaults: (App setup will configure these macro
 
 The contact and "late seconds" can be configured for different indexes/sourcetypes/hosts in the "expectedTime" lookup table (the Lookup Editor app is really helpful, since it allows you to edit the lookup table from within Splunk).
 
-The search runs every 30 minutes, and will wait 1 hour before alerting again after it triggers.
+The search runs every 30 minutes, and will wait 1 hour before re-alerting for the same items.
 
 Each line of the lookup table has several columns. The first three (index, sourcetype, host) are used to select which data you are adjusting settings for. These are case-insensitive and wildcard enabled fields.
 
@@ -69,9 +69,13 @@ Because the lookup table is searched from the top down and splunk takes the firs
 -------------
 
 Broken Hosts dashboard can be used to get a visual picture of the current status of hosts.
-The "Critical Sourcetypes" panel shows items that are in the expectedTime Lookup Table with a "lateSecs" value that is less than the value of the "default_expected_time" macro.
 
-The "All other Hosts" panel shows a preview of all hosts that have a "lateSecs" value equal to, or greater than the "default_expected_time" macro. This panel will allwo you to quickly update expectedTime lookup table to remove a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+"Broken Hosts" panel will show all hosts that are not reporting in time.
+"Future Hosts" panel will show all hosts that are reporting timestamps from the future.
+
+These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+
+"Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
 
 # For support: #
 ================
@@ -88,6 +92,7 @@ v3.3.0:
 - updated savedsearch to include any hosts that are sending logs from the future
 - added the ability to add custom search additions to make the search more flexible
 - added dashboard panel to show suppressed items
+- updated dashbaord panels to show currently broken items, and all items from the future
 - added sparkline to the dashboard panels
 
 v3.2.1:
