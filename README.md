@@ -87,6 +87,11 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 # RELEASE NOTES: #
 ==================
 
+v3.3.1:
+
+- bug fixes for splunk certification
+-- scale icon sizes down to splunk approved sizes
+
 v3.3.0:
 
 - updated savedsearch to include any hosts that are sending logs from the future
