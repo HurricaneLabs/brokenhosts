@@ -1,4 +1,4 @@
-Copyright 2016 Hurricane Labs
+Copyright 2017 Hurricane Labs
 
 Default configuration for broken hosts sanity check  
 Use the expectedTime lookup table for tuning
