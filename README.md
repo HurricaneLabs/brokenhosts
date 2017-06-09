@@ -92,7 +92,7 @@ v3.3.0:
 - updated savedsearch to include any hosts that are sending logs from the future
 - added the ability to add custom search additions to make the search more flexible
 - added dashboard panel to show suppressed items
-- updated dashbaord panels to show currently broken items, and all items from the future
+- updated dashboard panels to show currently broken items, and all items from the future
 - added sparkline to the dashboard panels
 
 v3.2.1:
