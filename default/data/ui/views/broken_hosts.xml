@@ -1,66 +1,94 @@
 <dashboard script="log_host_monitoring.js" stylesheet="tableAlert.css">
   <label>Broken Hosts</label>
   <search id="populateLookup" depends="$host_tok$,$index_tok$,$sourcetype_tok$">
-    <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval sourcetype="$sourcetype_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count | append [| inputlookup expectedTime] | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
+    <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval sourcetype="$sourcetype_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count, sparkline | append [| inputlookup expectedTime] | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
   </search>
   <row>
     <panel>
-      <title>Critical Sourcetypes</title>
-      <table id="infosecCritical">
-        <title>"Critical" means alerts faster than default_expected_time</title>
-        <search id="infosecCriticalSearch">
-          <query>| tstats max(_time) as lastTime where index=* by index, sourcetype, host | eval Last=strftime(lastTime, "%D %H:%M:%S")
-| eval host=lower(host) | eval index=lower(index) | eval sourcetype=lower(sourcetype) | eval sourcetype=trim(sourcetype, "\"")
-| stats max(lastTime) as lastTime max(Last) as Last by index, sourcetype, host
+      <title>Broken Hosts</title>
+      <table id="brokenHosts">
+        <title>Hosts that have not sent data to splunk for too long</title>
+        <search id="brokenHostsSearch">
+          <query>| tstats count max(_time) as lastTime where index=* by _time, index, sourcetype, host span=1d
+| eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
+| stats sum(count) as count max(lastTime) as lastTime by _time index, sourcetype, host
 | lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
 | fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
-| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0)
-| eval critical=if(lateSecs&gt;0 AND lateSecs&lt;`default_expected_time`,1,0) | eval suppressUntil=mvindex(suppressUntil,0) | where critical=1 AND (now() - lastTime &lt; `ignore_after`)
-| eval howLateSecs=now() - lastTime | eval howLate=tostring(howLateSecs,"duration")
-| rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S")
-| sort lastTime | table howLate host sourcetype index | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
+| eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
+| where lateSecs&gt;0 AND (lastTime &lt; now() - lateSecs) AND (now() - lastTime &lt; `ignore_after`)
+| eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
+| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(lastTime, "%D %H:%M:%S")
+| stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs by host sourcetype index Suppress h i s | sort - howLateSecs
+| eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
+| rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
           <earliest>-30d@d</earliest>
-          <latest>now</latest>
+          <latest>+1d@d</latest>
         </search>
         <option name="count">20</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">cell</option>
-        <option name="rowNumbers">false</option>
-        <option name="wrap">true</option>
-        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event"]</fields>
-      </table>
-    </panel>
-    <panel>
-      <title>All other Hosts</title>
-      <table id="eventHosts">
-        <title>All Hosts except Critical hosts</title>
-        <search id="eventHostsSearch">
-          <query>| tstats max(_time) as lastTime where index=* by index, sourcetype, host | eval Last=strftime(lastTime, "%D %H:%M:%S")
-| eval host=lower(host) | eval index=lower(index) | eval sourcetype=lower(sourcetype) | eval sourcetype=trim(sourcetype, "\"")
-| stats max(lastTime) as lastTime max(Last) as Last by index, sourcetype, host
-| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
-| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
-| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0)
-| eval critical=if(lateSecs&gt;0 AND lateSecs&lt;`default_expected_time`,1,0) | eval suppressUntil=mvindex(suppressUntil,0) | where critical=0 AND lateSecs>0 AND (now() - lastTime &lt; `ignore_after`)
-| eval howLateSecs=now() - lastTime | eval howLate=tostring(howLateSecs,"duration") | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
-| rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S")
-| sort lastTime | table howLate host sourcetype index Suppress h i s | rename howLate AS "Time Since Last Event" h AS "Event Host" i AS "Event Index" s AS "Event Sourcetype"</query>
-          <earliest>-30d@d</earliest>
-          <latest>now</latest>
-        </search>
-        <option name="count">100</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">row</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","Suppress"]</fields>
+        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","sparkline","Suppress"]</fields>
         <drilldown>
           <condition field="Suppress">
-            <set token="host_tok">$row.host$</set>
-            <set token="index_tok">$row.index$</set>
-            <set token="sourcetype_tok">$row.sourcetype$</set>
+            <set token="host_tok">$row.h$</set>
+            <set token="index_tok">$row.i$</set>
+            <set token="sourcetype_tok">$row.s$</set>
           </condition>
         </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Future Hosts</title>
+      <table id="futureHosts">
+        <title>Hosts that have data from the future</title>
+        <search id="futureHostsSearch">
+          <query>| tstats count max(_time) as lastTime where index=* by _time, index, sourcetype, host span=1d
+| eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
+| stats sum(count) as count max(lastTime) as lastTime by _time index, sourcetype, host
+| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
+| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
+| eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
+| where lateSecs&gt;0 AND (lastTime &gt; now() + 100) AND (now() - lastTime &lt; `ignore_after`)
+| eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
+| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(lastTime, "%D %H:%M:%S")
+| stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs by host sourcetype index Suppress h i s | sort howLateSecs
+| eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
+| rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
+          <earliest>-30d@d</earliest>
+          <latest>+7d@d</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","sparkline","Suppress"]</fields>
+        <drilldown>
+          <condition field="Suppress">
+            <set token="host_tok">$row.h$</set>
+            <set token="index_tok">$row.i$</set>
+            <set token="sourcetype_tok">$row.s$</set>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Suppressed Items</title>
+      <table id="suppressed">
+        <search id="suppressedSearch">
+          <query>| inputlookup expectedTime | where lateSecs=0 OR suppressUntil&gt;now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil) | convert ctime(suppressUntil) | fields index, sourcetype, host, suppressUntil, comments | rename host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype" suppressUntil AS "Suppressed Until" comments as Comments</query>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <fields>["Event Index","Event Host","Event Sourcetype","Suppressed Until","Comments"]</fields>
       </table>
     </panel>
   </row>

@@ -20,4 +20,11 @@
       <type>text</type>
     </input>
   </block>
+  <block title=" " endpoint="configs/conf-macros"
+    entity="search_additions">
+    <input field="definition">
+      <label>Custom Search Additions</label>
+      <type>text</type>
+    </input>
+  </block>
 </setup>
