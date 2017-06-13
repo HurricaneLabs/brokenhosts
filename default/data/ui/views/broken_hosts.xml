@@ -30,7 +30,7 @@
         <option name="drilldown">row</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","sparkline","Suppress"]</fields>
+        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline","Suppress"]</fields>
         <drilldown>
           <condition field="Suppress">
             <set token="host_tok">$row.h$</set>
@@ -66,7 +66,7 @@
         <option name="drilldown">row</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Host","Event Sourcetype","Time Since Last Event","sparkline","Suppress"]</fields>
+        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline","Suppress"]</fields>
         <drilldown>
           <condition field="Suppress">
             <set token="host_tok">$row.h$</set>
@@ -88,7 +88,7 @@
         <option name="dataOverlayMode">none</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Host","Event Sourcetype","Suppressed Until","Comments"]</fields>
+        <fields>["Event Index","Event Sourcetype","Event Host","Suppressed Until","Comments"]</fields>
       </table>
     </panel>
   </row>
