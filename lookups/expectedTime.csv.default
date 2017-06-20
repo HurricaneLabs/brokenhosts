@@ -8,6 +8,7 @@ _*,*,*,0,0,,default entry - don't alert on internal indexes
 *,cisco:asa,*,1800,0,,default entry - cisco firewall logs should come in very often
 *summary*,*,*,0,0,,default entry - don't alert on summary indexes
 *notable*,*,*,0,0,,default entry - don't alert on ES notable event indexes
+cim_modactions,*,*,0,0,,default entry - don't alert on cim modulate alert actions index
 firedalerts,*,*,0,0,,default entry - don't alert on fired alerts index
 itsi_tracked_alerts,*,*,0,0,,default entry - don't alert on itsi alert index
 test,*,*,0,0,,default entry - don't alert on test index

@@ -87,6 +87,9 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 # RELEASE NOTES: #
 ==================
 
+v3.3.2:
+- add cim_modactions to the default lookup table
+
 v3.3.1:
 
 - bug fixes for splunk certification
