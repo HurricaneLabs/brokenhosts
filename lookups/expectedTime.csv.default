@@ -1,16 +1,16 @@
 index,sourcetype,host,lateSecs,suppressUntil,contact,comments
 _*,*,*,0,0,,default entry - don't alert on internal indexes
 *,*,*.splunkcloud.com,0,0,,default entry - don't alert on splunkcloud instances
-*,*,kickseed,0,0,,default entry - don't alert on initial images
 *,*,hdf-template,0,0,,default entry - don't alert on initial images
+*,*,kickseed,0,0,,default entry - don't alert on initial images
 *,*too_small,*,0,0,,default entry - don't alert on too_small sourcetypes
-*,stash,*,0,0,,default entry - don't alert on summary sourcetypes
 *,cisco:asa,*,1800,0,,default entry - cisco firewall logs should come in very often
+*,stash,*,0,0,,default entry - don't alert on summary sourcetypes
 *summary*,*,*,0,0,,default entry - don't alert on summary indexes
 *notable*,*,*,0,0,,default entry - don't alert on ES notable event indexes
 cim_modactions,*,*,0,0,,default entry - don't alert on cim modulate alert actions index
 firedalerts,*,*,0,0,,default entry - don't alert on fired alerts index
 itsi_tracked_alerts,*,*,0,0,,default entry - don't alert on itsi alert index
-test,*,*,0,0,,default entry - don't alert on test index
 opsec,*,*,1800,0,,default entry - checkpoint firewall logs should come in often
 pan_logs,*,*,1800,0,,default entry - Palo Alto firewall logs should come in often
+test,*,*,0,0,,default entry - don't alert on test index

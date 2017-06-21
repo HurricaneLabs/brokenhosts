@@ -90,6 +90,7 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 v3.3.2:
 - added "cim_modactions" index to the default suppressions
 - updated the order of fields in the broken hosts dashboard
+- reordered expectedTime lookup table to be in alphabetical order
 
 v3.3.1:
 
