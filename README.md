@@ -88,6 +88,7 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 ==================
 
 v3.3.2:
+
 - added "cim_modactions" index to the default suppressions
 - updated the order of fields in the broken hosts dashboard
 - reordered expectedTime lookup table to be in alphabetical order
@@ -95,7 +96,7 @@ v3.3.2:
 v3.3.1:
 
 - bug fixes for splunk certification
--- scale icon sizes down to splunk approved sizes
+ - scale icon sizes down to splunk approved sizes
 
 v3.3.0:
 
@@ -152,4 +153,3 @@ v2.0: complete re-write of the app from scratch
 
 - uses dbinspect and metadata commands to make this search much faster
 - uses a lookup table to make tuning a breeze
-
