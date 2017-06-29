@@ -9,16 +9,16 @@
       <table id="brokenHosts">
         <title>Hosts that have not sent data to splunk for too long</title>
         <search id="brokenHostsSearch">
-          <query>| tstats max(_time) as lastTime where index=* by _time, index, sourcetype, host span=1d
+          <query>| tstats count max(_time) as lastTime where index=* by _time, index, sourcetype, host span=1d
 | eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
-| stats max(lastTime) as lastTime by _time index, sourcetype, host
+| stats sum(count) as count max(lastTime) as lastTime by _time index, sourcetype, host
 | lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
-| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs'
+| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
 | eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(lastTime, "%D %H:%M:%S")
-| stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
+| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
 | where lateSecs&gt;0 AND (lastTime &lt; now() - lateSecs) AND (now() - lastTime &lt; `ignore_after`) | sort - howLateSecs
 | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
@@ -45,16 +45,16 @@
       <table id="futureHosts">
         <title>Hosts that have data from the future</title>
         <search id="futureHostsSearch">
-          <query>| tstats max(_time) as lastTime where index=* by _time, index, sourcetype, host span=1d
+          <query>| tstats count max(_time) as lastTime where index=* by _time, index, sourcetype, host span=1d
 | eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
-| stats max(lastTime) as lastTime by _time index, sourcetype, host
+| stats sum(count) as count max(lastTime) as lastTime by _time index, sourcetype, host
 | lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
-| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs'
+| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
 | eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(lastTime, "%D %H:%M:%S")
-| stats sparkline(sum(count)) as sparkline min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
+| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
 | where lateSecs&gt;0 AND (lastTime &gt; now() + 100) AND (now() - lastTime &lt; `ignore_after`) | sort - howLateSecs
 | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
 | rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
