@@ -91,6 +91,7 @@ v3.3.2:
 
 - added "cim_modactions" index to the default suppressions
 - updated the order of fields in the broken hosts dashboard
+- update the broken hosts dashboard searches to filter correctly
 - reordered expectedTime lookup table to be in alphabetical order
 
 v3.3.1:
