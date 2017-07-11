@@ -5,6 +5,7 @@ _*,*,*,0,0,,default entry - don't alert on internal indexes
 *,*,kickseed,0,0,,default entry - don't alert on initial images
 *,*too_small,*,0,0,,default entry - don't alert on too_small sourcetypes
 *,cisco:asa,*,1800,0,,default entry - cisco firewall logs should come in very often
+*,cisco:ios,*,0,0,,default entry - cisco router/switch logs only come in when something changes
 *,stash,*,0,0,,default entry - don't alert on summary sourcetypes
 *summary*,*,*,0,0,,default entry - don't alert on summary indexes
 *notable*,*,*,0,0,,default entry - don't alert on ES notable event indexes

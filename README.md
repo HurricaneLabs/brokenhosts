@@ -93,6 +93,7 @@ v3.3.2:
 - updated the order of fields in the broken hosts dashboard
 - update the broken hosts dashboard searches to filter correctly
 - reordered expectedTime lookup table to be in alphabetical order
+- added cisco:ios default suppression
 
 v3.3.1:
 
