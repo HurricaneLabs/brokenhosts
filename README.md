@@ -94,6 +94,7 @@ v3.3.2:
 - update the broken hosts dashboard searches to filter correctly
 - reordered expectedTime lookup table to be in alphabetical order
 - added cisco:ios default suppression
+- added pan_config and pan:config default suppressions
 
 v3.3.1:
 
