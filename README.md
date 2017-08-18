@@ -89,10 +89,10 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 
 v3.3.2:
 
-- added "cim_modactions" index to the default suppressions
+- fixed a bug where the the broken hosts dashboard would show the wrong value for "Time Since Last Event"
 - updated the order of fields in the broken hosts dashboard
-- update the broken hosts dashboard searches to filter correctly
-- reordered expectedTime lookup table to be in alphabetical order
+- reordered default expectedTime lookup table to be alphabetical
+- added "cim_modactions" index to the default suppressions
 - added cisco:ios default suppression
 - added pan_config and pan:config default suppressions
 
