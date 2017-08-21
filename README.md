@@ -90,6 +90,7 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 v3.3.2:
 
 - fixed a bug where the the broken hosts dashboard would show the wrong value for "Time Since Last Event"
+- updated the app to work if the app directory is renamed
 - updated the order of fields in the broken hosts dashboard
 - reordered default expectedTime lookup table to be alphabetical
 - added "cim_modactions" index to the default suppressions
