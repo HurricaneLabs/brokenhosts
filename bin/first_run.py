@@ -2,15 +2,18 @@ import os
 import shutil
 import csv
 splunk_home = os.environ.get("SPLUNK_HOME")
+
+app_name = __file__.split(os.sep)[-3]
+
 if splunk_home:
-    lookupfile = os.path.join(splunk_home, "etc", "apps", "broken_hosts", "lookups", "expectedTime.csv")
-    defaultfile = os.path.join(splunk_home, "etc", "apps", "broken_hosts", "lookups", "expectedTime.csv.default")
+    lookupfile = os.path.join(splunk_home, "etc", "apps", app_name, "lookups", "expectedTime.csv")
+    defaultfile = os.path.join(splunk_home, "etc", "apps", app_name, "lookups", "expectedTime.csv.default")
     if not os.path.isfile(lookupfile):
         if os.path.isfile(defaultfile):
             shutil.copyfile(defaultfile, lookupfile)
     else:
         expected_fields = ["index","sourcetype","host","lateSecs","suppressUntil","contact","comments"]
-        tempfile = os.path.join(splunk_home, "etc", "apps", "broken_hosts", "lookups", "expectedTime.csv.tmp")
+        tempfile = os.path.join(splunk_home, "etc", "apps", app_name, "lookups", "expectedTime.csv.tmp")
         f=open(lookupfile, "r")
         reader = csv.DictReader(f)
         with open(tempfile, "w") as f_temp:
