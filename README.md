@@ -5,6 +5,8 @@ Use the expectedTime lookup table for tuning
 
 Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely helpful for tuning
 
+Additional information can be found here: https://www.hurricanelabs.com/blog/broken-hosts-app-for-splunk-part-1
+
 # Installation steps: #
 =======================
 
