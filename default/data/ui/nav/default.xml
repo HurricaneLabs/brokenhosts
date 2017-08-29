@@ -2,5 +2,5 @@
   <view name="broken_hosts" default="true" />
   <view name="search" />
   <view name="lookup_list" />
-  <a href="/manager/broken_hosts/apps/local/broken_hosts/setup?action=edit">Setup</a>
+  <a href="setup">Setup</a>
 </nav>
