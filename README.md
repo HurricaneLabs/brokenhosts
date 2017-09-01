@@ -89,6 +89,10 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 # RELEASE NOTES: #
 ==================
 
+v3.3.3:
+
+- added windowseventlog default suppression
+
 v3.3.2:
 
 - fixed a bug where the the broken hosts dashboard would show the wrong value for "Time Since Last Event"
