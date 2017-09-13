@@ -92,6 +92,7 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 v3.3.3:
 
 - added windowseventlog default suppression
+- minor formatting of inputs.conf
 
 v3.3.2:
 
