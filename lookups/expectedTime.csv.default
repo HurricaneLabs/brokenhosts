@@ -9,7 +9,8 @@ _*,*,*,0,0,,default entry - don't alert on internal indexes
 *,pan_config,*,0,0,,default entry - palo alto config logs only come in when something changes
 *,pan:config,*,0,0,,default entry - palo alto config logs only come in when something changes
 *,stash,*,0,0,,default entry - don't alert on summary sourcetypes
-*,windowsupdatelog,*,0,0,,default entry - windows updated dont run often enough
+*,windowsupdatelog,*,0,0,,default entry - windows update logs only come in during updates
+*,yum,*,0,0,,default entry - redhat update logs only come in during updates
 *summary*,*,*,0,0,,default entry - don't alert on summary indexes
 *notable*,*,*,0,0,,default entry - don't alert on ES notable event indexes
 cim_modactions,*,*,0,0,,default entry - don't alert on cim modulate alert actions index
