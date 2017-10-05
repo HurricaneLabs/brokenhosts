@@ -117,6 +117,7 @@ v3.3.0:
 - added dashboard panel to show suppressed items
 - updated dashboard panels to show currently broken items, and all items from the future
 - added sparkline to the dashboard panels
+- added extra new lines to the email to fix an issue with way Splunk 6.6.0 outputs multivalue fields
 
 v3.2.1:
 
