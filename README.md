@@ -5,6 +5,8 @@ Use the expectedTime lookup table for tuning
 
 Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely helpful for tuning
 
+Additional information can be found here: https://www.hurricanelabs.com/blog/broken-hosts-app-for-splunk-part-1
+
 # Installation steps: #
 =======================
 
@@ -87,6 +89,12 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 # RELEASE NOTES: #
 ==================
 
+v3.3.3:
+
+- added windowseventlog default suppression
+- added yum default suppression
+- minor formatting of inputs.conf
+
 v3.3.2:
 
 - fixed a bug where the the broken hosts dashboard would show the wrong value for "Time Since Last Event"
@@ -109,6 +117,7 @@ v3.3.0:
 - added dashboard panel to show suppressed items
 - updated dashboard panels to show currently broken items, and all items from the future
 - added sparkline to the dashboard panels
+- added extra new lines to the email to fix an issue with way Splunk 6.6.0 outputs multivalue fields
 
 v3.2.1:
 
