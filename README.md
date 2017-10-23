@@ -87,10 +87,20 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 # RELEASE NOTES: #
 ==================
 
+v3.3.2:
+
+- fixed a bug where the the broken hosts dashboard would show the wrong value for "Time Since Last Event"
+- updated the app to work if the app directory is renamed
+- updated the order of fields in the broken hosts dashboard
+- reordered default expectedTime lookup table to be alphabetical
+- added "cim_modactions" index to the default suppressions
+- added cisco:ios default suppression
+- added pan_config and pan:config default suppressions
+
 v3.3.1:
 
 - bug fixes for splunk certification
--- scale icon sizes down to splunk approved sizes
+ - scale icon sizes down to splunk approved sizes
 
 v3.3.0:
 
@@ -147,4 +157,3 @@ v2.0: complete re-write of the app from scratch
 
 - uses dbinspect and metadata commands to make this search much faster
 - uses a lookup table to make tuning a breeze
-
