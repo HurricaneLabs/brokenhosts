@@ -1,4 +1,4 @@
-Copyright 2016 Hurricane Labs
+Copyright 2017 Hurricane Labs
 
 Default configuration for broken hosts sanity check  
 Use the expectedTime lookup table for tuning
@@ -87,12 +87,17 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 # RELEASE NOTES: #
 ==================
 
+v3.3.1:
+
+- bug fixes for splunk certification
+-- scale icon sizes down to splunk approved sizes
+
 v3.3.0:
 
 - updated savedsearch to include any hosts that are sending logs from the future
 - added the ability to add custom search additions to make the search more flexible
 - added dashboard panel to show suppressed items
-- updated dashbaord panels to show currently broken items, and all items from the future
+- updated dashboard panels to show currently broken items, and all items from the future
 - added sparkline to the dashboard panels
 
 v3.2.1:
