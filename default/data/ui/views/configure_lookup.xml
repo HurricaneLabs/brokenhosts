@@ -1,0 +1,3 @@
+<dashboard script="lookup_configure.js" stylesheet="lookup_configure.css">
+  <label>Configure Broken Hosts Lookup</label>
+</dashboard>
