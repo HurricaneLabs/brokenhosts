@@ -1,0 +1,13 @@
+span[id^="inputWrapper"] {
+    float: left;
+    margin-right: 10px;
+}
+span[id^="inputWrapper"] .select2-container {
+    width: 219px !important;
+}
+.splunk-choice-input {
+    padding-bottom: 0 !important;
+}
+.form-group {
+    clear: both;
+}
