@@ -1,4 +1,4 @@
-<dashboard script="lookup_configure.js" stylesheet="lookup_configure.css" hideEdit="false">
+<dashboard script="lookup_configure.js" stylesheet="lookup_configure.css,flatpickr.min.css" hideEdit="true">
   <label>Configure Broken Hosts Lookup</label>
   <search id="addRow">
     <query>| inputlookup  expectedTime | eval key=_key
