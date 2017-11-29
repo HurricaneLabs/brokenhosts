@@ -33,7 +33,6 @@
   <row>
     <panel id="lookupPanel">
       <table id="lookupTable">
-        <title>Addresses</title>
         <search id="lookupSearch">
           <query>| inputlookup expectedTime
             | eval Remove="Remove" | eval key=_key | eval Edit="Edit"

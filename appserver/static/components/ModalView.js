@@ -2,7 +2,8 @@ require.config({
     paths: {
         text: "../app/broken_hosts/components/lib/text",
         "modalTemplate" : "../app/broken_hosts/components/templates/modalTemplate.html",
-        "flatPickr" : "../app/broken_hosts/components/lib/flatpickr/dist/flatpickr.min"
+        "flatPickr" : "../app/broken_hosts/components/lib/flatpickr/dist/flatpickr.min",
+        "validate" : "../app/broken_hosts/components/lib/jquery-validation/jquery.validate.min"
     }
 });
 
@@ -13,16 +14,13 @@ define([
     "splunkjs/mvc",
     "text!modalTemplate",
     "flatPickr",
+    "validate",
     "splunkjs/mvc/searchmanager",
     "splunkjs/mvc/dropdownview",
     "splunkjs/mvc/timerangeview"
-    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, SearchManager, DropdownView, TimeRangeView) {
+    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView) {
 
         var ModalView = Backbone.View.extend({
-    
-            defaults: {
-               title: "Not set"
-            },        
     
             initialize: function(options) {
                 this.options = options;
@@ -43,7 +41,7 @@ define([
             events: {
                 "click .close": "close",
                 "click .modal-backdrop": "close",
-                "click #submitData": "submitData",
+                "click #submitData": "validateData",
                 "change input" : "changed",
                 "change select" : "changed",
                 "change textarea" : "changed"
@@ -180,8 +178,94 @@ define([
 
             },
 
+            validateData: function() {
+
+                console.log("SUBMIT DATA");
+
+                var that = this;
+
+                $.validator.addMethod("are_valid_emails",
+                    function (value, element) {
+                        if (this.optional(element)) {
+                            return true;
+                        }
+
+                        var emails = value.split(','),
+                        valid = true;
+
+                        for (var i = 0, limit = emails.length; i < limit; i++) {
+                            value = emails[i];
+                            valid = valid && jQuery.validator.methods.email.call(this, value, element);
+                        }
+
+                    return valid;
+                 }, "Invalid email format: please use a comma to separate multiple email addresses.");
+
+                $.validator.addMethod("bhDate",
+                    function(value, element) {
+                        return value.match(/(^\d\d?\/\d\d?\/\d\d\d\d?\s\d\d?:\d\d?:\d\d$|^0$)/);
+                    }, "Please enter a date in the format MM/DD/YYYY HH:MM:SS or 0 to always suppress.");
+
+                $("#brokenHostForm", this.el).validate({
+
+                    rules: {
+                        host: 'required',
+                        sourcetype: 'required',
+                        index: 'required',
+                        lateSecs: {
+                            required: true,
+                            number: true
+                        },
+                        suppressUntil: {
+                            required: true,
+                            bhDate: true
+                        },
+                        contact: {
+                            are_valid_emails: true
+                        },
+                        comments: {
+                            required: true
+                        }
+                    },
+
+                    messages: {
+                        host: {
+                            required: "The Host field is required."
+                        },
+                        sourcetype: {
+                            required: "The Sourcetype field is required."
+                        },
+                        index: {
+                            required: "The Index field is required."
+                        },
+                        lateSecs: {
+                            required: "The Late Seconds field is required.",
+                            number: "Not a valid number."
+                        },
+                        suppressUntil: {
+                            required: "The Suppress Until field is required.",
+                            date: "Not a valid date."
+                        },
+                        contact: {
+                            are_valid_emails: "Must be a valid email; use commas to separate multiple emails."
+                        },
+                        comments: {
+                            required: "You must provide a comment."
+                        }
+                    },
+
+                    submitHandler: function(form) {
+
+                        that.submitData();
+
+                    }
+
+                });
+
+            },
+
             submitData: function() {
-                
+
 				if(this.mode === "New") {
 
 					this.tokens.set("host_add_tok", this.model.get("host"));
