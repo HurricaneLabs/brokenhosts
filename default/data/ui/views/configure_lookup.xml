@@ -1,4 +1,4 @@
-<dashboard script="lookup_configure.js" stylesheet="lookup_configure.css,flatpickr.min.css" hideEdit="true">
+<dashboard script="lookup_configure.js,lookup_configure_table.js" stylesheet="lookup_configure.css,flatpickr.min.css" hideEdit="true">
   <label>Configure Broken Hosts Lookup</label>
   <search id="addRow">
     <query>| inputlookup  expectedTime | eval key=_key
@@ -51,6 +51,11 @@
         </search>
         <option name="count">100</option>
       </table>
+      <html>
+        <div>
+          <p><span id="redBox"></span> Indicates suppressUntil is set to ALWAYS suppress [0] but lateSecs's value is greater than 0.</p>
+        </div>
+      </html>
     </panel>
   </row>
 </dashboard>

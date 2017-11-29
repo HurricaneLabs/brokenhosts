@@ -17,3 +17,14 @@ span[id^="inputWrapper"] .select2-container {
 .form-group {
     clear: both;
 }
+/*Table*/
+#lookupTable tr.status-warning td {
+    background-color: orangered !Important;
+    color: white !Important;
+}
+#redBox {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orangered;
+}

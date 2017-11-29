@@ -4,7 +4,6 @@ require.config({
     }
 });
 
-
 require([
     'underscore',
     'backbone',
@@ -164,3 +163,4 @@ require([
 
 
 });
+//# sourceURL=lookup_configure.js
