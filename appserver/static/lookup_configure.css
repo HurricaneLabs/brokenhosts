@@ -17,6 +17,9 @@ span[id^="inputWrapper"] .select2-container {
 .form-group {
     clear: both;
 }
+#submitData {
+    margin: 0 !important;
+}
 /*Table*/
 #lookupTable tr.status-warning td {
     background-color: orangered !Important;
