@@ -168,10 +168,11 @@ define([
                 });
 
                 $(this.el).find(".form-group #suppressUntil").flatpickr({
-                    minDate : "today",
+                    minDate : new Date(),
                     enableTime : "true",
                     dateFormat: "m/d/Y H:i:S",
-                    allowInput: "true"
+                    allowInput: "true",
+                    time_24hr: "true"
                 });
 
                 this.splunkComponentsInit();
@@ -201,10 +202,21 @@ define([
                     return valid;
                  }, "Invalid email format: please use a comma to separate multiple email addresses.");
 
-                $.validator.addMethod("bhDate",
+                $.validator.addMethod("bh_date",
                     function(value, element) {
                         return value.match(/(^\d\d?\/\d\d?\/\d\d\d\d?\s\d\d?:\d\d?:\d\d$|^0$)/);
                     }, "Please enter a date in the format MM/DD/YYYY HH:MM:SS or 0 to always suppress.");
+
+                $.validator.addMethod("is_not_in_past",
+                    function(value, element) {
+                        var date = new Date(value);
+                        var now = new Date();
+
+                        if (date >= now) {
+                            return true;
+                        }
+
+                    }, "You cannot choose a date & time in the past.");
 
                 $.validator.addMethod("has_ticket_number",
                     function(value, element) {
@@ -224,7 +236,8 @@ define([
                         },
                         suppressUntil: {
                             required: true,
-                            bhDate: true
+                            bh_date: true,
+                            is_not_in_past: true
                         },
                         contact: {
                             are_valid_emails: true

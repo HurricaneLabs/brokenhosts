@@ -25,9 +25,19 @@ span[id^="inputWrapper"] .select2-container {
     background-color: orangered !Important;
     color: white !Important;
 }
-#redBox {
+#lookupTable tr.status-past td {
+    background-color: orange !Important;
+    color: white !Important;
+}
+#alwaysSuppress {
     display: inline-block;
     width: 10px;
     height: 10px;
     background-color: orangered;
+}
+#inPast {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orange;
 }
