@@ -82,10 +82,16 @@
       <title>Suppressed Items</title>
       <table id="suppressed">
         <search id="suppressedSearch">
-          <query>| inputlookup expectedTime | where lateSecs=0 OR suppressUntil&gt;now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil) | convert ctime(suppressUntil) | fields index, sourcetype, host, suppressUntil, comments | rename host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype" suppressUntil AS "Suppressed Until" comments as Comments</query>
+          <query>| inputlookup expectedTime 
+| eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
+| where lateSecs=0 OR suppressUntil_epoch&gt;now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil)
+| fields index, sourcetype, host, suppressUntil, suppressUntil, comments | rename host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype" suppressUntil AS "Suppressed Until" comments as Comments</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
         </search>
         <option name="count">50</option>
         <option name="dataOverlayMode">none</option>
+        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
         <fields>["Event Index","Event Sourcetype","Event Host","Suppressed Until","Comments"]</fields>

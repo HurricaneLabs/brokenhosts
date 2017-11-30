@@ -3,9 +3,9 @@
   <search id="addRow">
     <query>| inputlookup  expectedTime | eval key=_key
       | append [| stats count
-      | eval index="$index_add_tok$"
-      | eval sourcetype="$sourcetype_add_tok$"
-      | eval host="$host_add_tok$"
+      | eval index=lower("$index_add_tok$")
+      | eval sourcetype=lower("$sourcetype_add_tok$")
+      | eval host=lower("$host_add_tok$")
       | eval lateSecs="$late_secs_add_tok$"
       | eval suppressUntil="$suppress_until_add_tok$"
       | eval contact="$contact_add_tok$"
@@ -21,9 +21,9 @@
   <search id="updateRow">
     <query>| inputlookup expectedTime | eval key=_key
       | WHERE key="$key_update_tok$"
-      | eval index="$index_update_tok$"
-      | eval sourcetype="$sourcetype_update_tok$"
-      | eval host="$host_update_tok$"
+      | eval index=lower("$index_update_tok$")
+      | eval sourcetype=lower("$sourcetype_update_tok$")
+      | eval host=lower("$host_update_tok$")
       | eval lateSecs="$late_secs_update_tok$"
       | eval suppressUntil="$suppress_until_update_tok$"
       | eval contact="$contact_update_tok$"
@@ -50,6 +50,7 @@
           </progress>
         </search>
         <option name="count">100</option>
+        <option name="fields">comments,contact,host,inbex,lateSecs,sourcetype,suppressUntil,Edit,Remove</option>
       </table>
       <html>
         <div>
