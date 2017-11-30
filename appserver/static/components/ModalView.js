@@ -206,6 +206,12 @@ define([
                         return value.match(/(^\d\d?\/\d\d?\/\d\d\d\d?\s\d\d?:\d\d?:\d\d$|^0$)/);
                     }, "Please enter a date in the format MM/DD/YYYY HH:MM:SS or 0 to always suppress.");
 
+                $.validator.addMethod("has_ticket_number",
+                    function(value, element) {
+                        var hasNumber = /(#\d{5,}$)/;
+                        return hasNumber.test(value);
+                    }, "You must include a ticket number for reference (e.g. #12345)");
+
                 $("#brokenHostForm", this.el).validate({
 
                     rules: {
@@ -224,7 +230,8 @@ define([
                             are_valid_emails: true
                         },
                         comments: {
-                            required: true
+                            required: true,
+                            has_ticket_number: true
                         }
                     },
 

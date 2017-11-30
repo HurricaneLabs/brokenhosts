@@ -50,7 +50,7 @@
           </progress>
         </search>
         <option name="count">100</option>
-        <option name="fields">comments,contact,host,inbex,lateSecs,sourcetype,suppressUntil,Edit,Remove</option>
+        <option name="fields">comments,contact,host,index,lateSecs,sourcetype,suppressUntil,Edit,Remove</option>
       </table>
       <html>
         <div>

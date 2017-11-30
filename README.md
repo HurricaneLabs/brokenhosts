@@ -70,14 +70,17 @@ Because the lookup table is searched from the top down and splunk takes the firs
 # Dashboard #
 -------------
 
-Broken Hosts dashboard can be used to get a visual picture of the current status of hosts.
+Broken Hosts Dashboard
+- Can be used to get a visual picture of the current status of hosts.
 
-"Broken Hosts" panel will show all hosts that are not reporting in time.
-"Future Hosts" panel will show all hosts that are reporting timestamps from the future.
+- "Broken Hosts" panel will show all hosts that are not reporting in time.
+- "Future Hosts" panel will show all hosts that are reporting timestamps from the future.
+- These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+- "Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
 
-These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+Configure Broken Hosts Lookup
 
-"Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
+
 
 # For support: #
 ================
@@ -88,6 +91,11 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 
 # RELEASE NOTES: #
 ==================
+
+v3.4:
+- Now uses KV Store for expectedTime instead of a lookup
+- "Configure Broken Hosts Lookup" dashboard allows for CRUDing expectedTime KV Store
+   - Applies validation to help ensure proper values are added into the lookup
 
 v3.3.2:
 
