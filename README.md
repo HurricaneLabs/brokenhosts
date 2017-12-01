@@ -13,6 +13,14 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 1. install app on your splunk search head
 2. run app setup
 
+# Update Instructions [IMPORTANT]: #
+=======================
+1. Because v3.4 uses a KV Store, you will need to back up a copy of your expectedTime.csv lookup
+2. Once you've backed up your lookup, update the app and then run debug/refresh to ensure the modified transforms.conf takes affect
+3. In the Splunk GUI then run the following search which will dump all the results from the lookup into the KV Store
+| inputlookup expectedTime.csv | outputlookup expectedTime
+4. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating.
+
 # How does the app work? #
 ==========================
 
@@ -78,7 +86,9 @@ Broken Hosts Dashboard
 - These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
 - "Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
 
-Configure Broken Hosts Lookup
+Configure Broken Hosts Lookup [New in v3.4]
+- Allows users to CRUD the expectedTime KV Store.
+- Validation is applied to specific fields to help ensure appropriate values are provided
 
 
 
@@ -93,9 +103,13 @@ Configure Broken Hosts Lookup
 ==================
 
 v3.4:
-- Now uses KV Store for expectedTime instead of a lookup
-- "Configure Broken Hosts Lookup" dashboard allows for CRUDing expectedTime KV Store
+
+- expectedTime is now a KV Store instead of a lookup
+- New dashboard: "Configure Broken Hosts Lookup" allows for CRUDing expectedTime KV Store
    - Applies validation to help ensure proper values are added into the lookup
+- New alert: "Broken Hosts – Suppress Until Is Set Past Date"
+   - Runs nightly at 12:01am to check if any suppressUntil values are in the past
+   - Alerts pre-defined contact
 
 v3.3.2:
 
