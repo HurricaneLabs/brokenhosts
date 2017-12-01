@@ -204,23 +204,34 @@ define([
 
                 $.validator.addMethod("bh_date",
                     function(value, element) {
-                        return value.match(/(^\d\d?\/\d\d?\/\d\d\d\d?\s\d\d?:\d\d?:\d\d$|^0$)/);
+
+                        if (value === 0) {
+                            return true;
+                        } else {
+                            return value.match(/(^\d\d?\/\d\d?\/\d\d\d\d?\s\d\d?:\d\d?:\d\d$|^0$)/);
+                        }
                     }, "Please enter a date in the format MM/DD/YYYY HH:MM:SS or 0 to always suppress.");
 
                 $.validator.addMethod("is_not_in_past",
                     function(value, element) {
-                        var date = new Date(value);
-                        var now = new Date();
 
-                        if (date >= now) {
+                        if (value === "0") {
                             return true;
+                        } else {
+                            var date = new Date(value);
+                            var now = new Date();
+
+                            if (date >= now) {
+                                return true;
+                            }
                         }
+
 
                     }, "You cannot choose a date & time in the past.");
 
                 $.validator.addMethod("has_ticket_number",
                     function(value, element) {
-                        var hasNumber = /(#\d{5,}$)/;
+                        var hasNumber = /(#\d{5,}.*)/;
                         return hasNumber.test(value);
                     }, "You must include a ticket number for reference (e.g. #12345)");
 
