@@ -8,7 +8,7 @@ require([
     'splunkjs/mvc/simplexml/ready!'
 ], function(_, Backbone, $, mvc, TableView) {
 
-    var lateSecsIsZero = true;
+    var lateSecsValue = "";
     var tableElement = mvc.Components.getInstance("lookupTable");
     var now = new Date();
 
@@ -26,20 +26,33 @@ require([
 
             if (field === "lateSecs" && parseInt(value) > 0) {
                 console.log("lateSecs is greater than 0");
-                lateSecsIsZero = false;
+            } else if (field === "lateSecs" && parseInt(value) === 0) {
+
+                value = "Always Suppress";
+
+                lateSecsValue = value;
+
             }
             if (field === 'suppressUntil') {
 
                 var suppressUntilDate = new Date(value);
 
-                if (lateSecsIsZero === false) {
+                if (parseInt(value) === 0) {
+
+                    value = "No Suppression";
+
+                } else if (lateSecsValue === "Always Suppress") {
+
                     $td.addClass('range-cell').addClass('status-warning');
-                    lateSecsIsZero = true;
+
                 }
 
-                if(value !== "0" && suppressUntilDate < now) {
+                if (value !== "No Suppression" && suppressUntilDate < now) {
                     $td.addClass('range-cell').addClass('status-past');
                 }
+
+                lateSecsValue = "";
+
 
             }
 
