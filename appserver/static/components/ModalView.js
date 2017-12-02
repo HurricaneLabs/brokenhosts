@@ -229,6 +229,15 @@ define([
 
                     }, "You cannot choose a date & time in the past.");
 
+                $.validator.addMethod("is_relative_time",
+                    function(value, element) {
+
+                        return value.match(/(((?:([+-]*)(\d{1,})((seconds|second|secs|sec|minutes|minute|min|hours|hour|hrs|hr|days|day|weeks|week|w[0-6]|months|month|mon|quarters|quarter|qtrs|qtr|years|year|yrs|yr|(s$|s@)|(h$|h@)|(m$|m@)|(d$|d@)|(w$|w@)|(y$|y@)|(w$|w@)|(q$|q@)){1}))([\@]?)(((seconds|second|secs|sec|minutes|minute|min|hours|hour|hrs|hr|days|day|weeks|week|w[0-6]|months|month|mon|quarters|quarter|qtrs|qtr|years|year|yrs|yr|s$|h$|m$|d$|w$|y$|w$|q$){1})?$)|^0$)|^0$)/);
+
+                    }, "Value is not in SPL relative time format e.g. +1d@d");
+
+
+
                 $.validator.addMethod("has_ticket_number",
                     function(value, element) {
                         var hasNumber = /(#\d{5,}.*)/;
@@ -243,7 +252,8 @@ define([
                         index: 'required',
                         lateSecs: {
                             required: true,
-                            number: true
+                            //number: true
+                            is_relative_time: true
                         },
                         suppressUntil: {
                             required: true,
@@ -271,7 +281,7 @@ define([
                         },
                         lateSecs: {
                             required: "The Late Seconds field is required.",
-                            number: "Not a valid number."
+                            //number: "Not a valid number."
                         },
                         suppressUntil: {
                             required: "The Suppress Until field is required.",

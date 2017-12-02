@@ -54,7 +54,7 @@
       </table>
       <html>
         <div>
-          <p><span id="alwaysSuppress"></span>Indicates suppressUntil lateSecs is set to "Always Suppress"
+          <p><span id="alwaysSuppress"></span> Indicates suppressUntil lateSecs is set to "Always Suppress"
               but a suppressUntil data has been provided.</p>
           <p><span id="inPast"></span> Indicates suppressUntil is set to a value in the past.</p>
         </div>
