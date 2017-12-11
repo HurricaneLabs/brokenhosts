@@ -232,9 +232,9 @@ define([
                 $.validator.addMethod("is_relative_time",
                     function(value, element) {
 
-                        return value.match(/(((?:([-]+)(\d{1,})((seconds$|seconds@|second$|second@|secs$|secs@|sec$|sec@|minutes$|minutes@|minute$|minute@|min$|min@|hours$|hours@|hour$|hour@|hrs$|hrs@|hr$|hr@|days$|days@|day$|day@|weeks$|weeks@|week$|w[0-6]|months$|months@|month$|month@|mon$|mon@|quarters$|quarts@|quarter$|quarter@|qtrs$|qtrs@|qtr$|qtr@|years$|years@|year$|year@|yrs$|yrs@|yr$|yr@|s$|s@|h$|h@|m$|m@|d$|d@|w$|w@|y$|y@|w$|w@|q$|q@){1}))([\@]?)(((seconds|second|secs|sec|minutes|minute|min|hours|hour|hrs|hr|days|day|weeks|week|w[0-6]|months|month|mon|quarters|quarter|qtrs|qtr|years|year|yrs|yr|s$|h$|m$|d$|w$|y$|w$|q$){1})?$)|^0$)|^0$)/);
+                        return value.match(/(((?:([-]+)(\d{1,})((seconds$|seconds@|second$|second@|secs$|secs@|sec$|sec@|minutes$|minutes@|minute$|minute@|min$|min@|hours$|hours@|hour$|hour@|hrs$|hrs@|hr$|hr@|days$|days@|day$|day@|weeks$|weeks@|week$|w[0-6]|months$|months@|month$|month@|mon$|mon@|quarters$|quarts@|quarter$|quarter@|qtrs$|qtrs@|qtr$|qtr@|years$|years@|year$|year@|yrs$|yrs@|yr$|yr@|s$|s@|h$|h@|m$|m@|d$|d@|w$|w@|y$|y@|w$|w@|q$|q@){1}))([\@]?)(((seconds|second|secs|sec|minutes|minute|min|hours|hour|hrs|hr|days|day|weeks|week|w[0-6]|months|month|mon|quarters|quarter|qtrs|qtr|years|year|yrs|yr|s$|h$|m$|d$|w$|y$|w$|q$){1})?$)|^0$)|^\d+$)/);
 
-                    }, "Value is not in SPL relative time format e.g. -1d@d");
+                    }, "Value must be in seconds or Splunk's relative time format.");
 
                 $.validator.addMethod("has_ticket_number",
                     function(value, element) {

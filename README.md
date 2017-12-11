@@ -20,7 +20,6 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 3. Then, in the Splunk GUI run the following search which will dump all the results from the lookup into the KV Store
 | inputlookup expectedTime.csv | outputlookup expectedTime
 4. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating.
-5. Convert lateSecs values from seconds to relative time format (e.g. 1800 becomes -30m)
 
 # How does the app work? #
 ==========================
