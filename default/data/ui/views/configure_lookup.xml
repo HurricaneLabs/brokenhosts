@@ -50,13 +50,13 @@
           </progress>
         </search>
         <option name="count">100</option>
-        <option name="fields">comments,contact,host,index,lateSecs,sourcetype,suppressUntil,Edit,Remove</option>
+        <option name="fields">comments,contact,host,index,sourcetype,lateSecs,suppressUntil,Edit,Remove</option>
       </table>
       <html>
         <div>
-          <p><span id="alwaysSuppress"></span> Indicates suppressUntil lateSecs is set to "Always Suppress"
-              but a suppressUntil data has been provided.</p>
-          <p><span id="inPast"></span> Indicates suppressUntil is set to a value in the past.</p>
+          <p><span id="alwaysSuppress"></span> Indicates lateSecs is set to "Always Suppress"
+              but suppressUntil date has been provided.</p>
+          <p><span id="inPast"></span> Indicates suppressUntil is set to a date in the past.</p>
         </div>
       </html>
     </panel>

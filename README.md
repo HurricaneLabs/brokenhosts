@@ -14,12 +14,13 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 2. run app setup
 
 # Update Instructions [IMPORTANT]: #
-=======================
+====================================
 1. Because v3.4 uses a KV Store, you will need to back up a copy of your expectedTime.csv lookup
 2. Once you've backed up your lookup, update the app and then run debug/refresh to ensure the modified transforms.conf takes affect
-3. In the Splunk GUI then run the following search which will dump all the results from the lookup into the KV Store
+3. Then, in the Splunk GUI run the following search which will dump all the results from the lookup into the KV Store
 | inputlookup expectedTime.csv | outputlookup expectedTime
 4. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating.
+5. Convert lateSecs values from seconds to relative time format (e.g. 1800 becomes -30m)
 
 # How does the app work? #
 ==========================
@@ -105,8 +106,12 @@ Configure Broken Hosts Lookup [New in v3.4]
 v3.4:
 
 - expectedTime is now a KV Store instead of a lookup
+- lateSecs field now accepts Splunk's relative time format e.g. -1d@d OR 0 for 'Always Suppress'
 - New dashboard: "Configure Broken Hosts Lookup" allows for CRUDing expectedTime KV Store
    - Applies validation to help ensure proper values are added into the lookup
+   - Table highlights when two conditions are met:
+       - If lateSecs is set to 'Always Suppress' and but a suppressUntil date has been provided.
+       - If suppressUntil has a date that is in the past.
 - New alert: "Broken Hosts – Suppress Until Is Set Past Date"
    - Runs nightly at 12:01am to check if any suppressUntil values are in the past
    - Alerts pre-defined contact
