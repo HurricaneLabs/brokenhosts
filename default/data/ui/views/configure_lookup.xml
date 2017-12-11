@@ -55,7 +55,7 @@
       <html>
         <div>
           <p><span id="alwaysSuppress"></span> Indicates lateSecs is set to "Always Suppress"
-              but suppressUntil date has been provided.</p>
+              but a suppressUntil date has also been provided.</p>
           <p><span id="inPast"></span> Indicates suppressUntil is set to a date in the past.</p>
         </div>
       </html>
