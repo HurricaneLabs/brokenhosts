@@ -74,7 +74,6 @@ require([
 	lookupTable.on("click", function(e) {
         e.preventDefault();
 		var target = $(e.data)[0]["click.value2"];
-		console.log('Target? ', target);
 
 		var event = $(e.data)[0];
 
@@ -91,7 +90,6 @@ require([
 
 		if(target === 'Edit') {
 
-			console.log('Edit it!');
 			tokens.set('key_update_tok',$(e.data)[0]['row.key']);
 			var modal = new ModalView({ model : model,
 				eventBus : eventBus,
@@ -112,8 +110,6 @@ require([
 			tokens.set('lateSecs_remove_tok', model.get("lateSecs"));
 			tokens.set('suppress_until_remove_tok', model.get("suppressUntil"));
 
-			console.log('remove tokens: ' + tokens);
-
 			eventBus.trigger("remove:row");
 
 			//removeRow.startSearch();
@@ -126,27 +122,19 @@ require([
 	});
 
 	eventBus.on("add:row", function(e) {
-		console.log('Add Row!');
 		addRow.startSearch();
 	});
 
 	eventBus.on("update:row", function(e) {
-		console.log('Update Row!');
 		updateRow.startSearch();
 	});
 
 	eventBus.on("remove:row", function(e) {
-		console.log('Remove Row!');
 		removeRow.startSearch();
 	});
 
 	addRow.on('search:failed', function(properties) {
-		// Print the entire properties object
-		console.log("FAILED:", properties);
-	});
-
-	addRow.on("search:progress", function(props) {
-		console.log("Add row search start ... ", props);
+		console.error("FAILED:", properties);
 	});
 
 	addRow.on("search:done", function(props) {

@@ -53,7 +53,6 @@ define([
                 var obj = {};
                 obj[changed.id] = value;
 
-                console.log('CHANGED: ' + changed + " = " + value);
                 this.model.set(obj);
             },
 
@@ -159,8 +158,7 @@ define([
                     width:"40%",
                     height:"auto",
                     left: "30%",
-                    "margin-left": "0",
-                    "max-height":"800px"
+                    "margin-left": "0"
                 });
 
                 $(this.el).find(".modal-body").css({
@@ -181,8 +179,6 @@ define([
 
             validateData: function() {
 
-                console.log("SUBMIT DATA");
-
                 var that = this;
 
                 $.validator.addMethod("are_valid_emails",
@@ -191,16 +187,18 @@ define([
                             return true;
                         }
 
-                        var emails = value.split(','),
-                        valid = true;
+                        var emails = value.split(",");
+                        var valid = true;
+                        var regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-                        for (var i = 0, limit = emails.length; i < limit; i++) {
-                            value = emails[i];
-                            valid = valid && jQuery.validator.methods.email.call(this, value, element);
+                        for (var i = 0; i < emails.length; i++) {
+                             if( emails[i] == "" || ! regex.test(emails[i])){
+                                 valid = false;
+                             }
                         }
 
                     return valid;
-                 }, "Invalid email format: please use a comma to separate multiple email addresses.");
+                 }, "Invalid email address(es). Please use a comma to separate multiple email addresses.");
 
                 $.validator.addMethod("bh_date",
                     function(value, element) {
@@ -285,9 +283,6 @@ define([
                             required: "The Suppress Until field is required.",
                             date: "Not a valid date."
                         },
-                        contact: {
-                            are_valid_emails: "Must be a valid email; use commas to separate multiple emails."
-                        },
                         comments: {
                             required: "You must provide a comment."
                         }
@@ -315,13 +310,9 @@ define([
 					this.tokens.set("sourcetype_add_tok", this.model.get("sourcetype"));
 					this.tokens.set("suppress_until_add_tok", this.model.get("suppressUntil"));
 
-					console.log("this.tokens [new]", this.tokens);
-
 					this.eventBus.trigger("add:row");
 
 				} else if(this.mode === "Edit") {
-
-				    console.log("this.model ", this.model);
 
 					this.tokens.set("key_update_tok", this.model.get("_key"));
 					this.tokens.set("host_update_tok", this.model.get("host"));
@@ -332,8 +323,6 @@ define([
 					this.tokens.set("sourcetype_update_tok", this.model.get("sourcetype"));
 					this.tokens.set("suppress_until_update_tok", this.model.get("suppressUntil"));
 					this.eventBus.trigger("update:row");
-
-					console.log("this.tokens [update]", this.tokens);
 
 				}
 
