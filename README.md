@@ -15,11 +15,10 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 
 # Update Instructions [IMPORTANT]: #
 ====================================
-1. Because v3.4 uses a KV Store, you will need to back up a copy of your expectedTime.csv lookup
-2. Once you've backed up your lookup, update the app and then run debug/refresh to ensure the modified transforms.conf takes affect
-3. Then, in the Splunk GUI run the following search which will dump all the results from the lookup into the KV Store
+v3.3.3 using a KV Store instead of a lookup file. Once the app is updated then populate the KV Store.
+1. Run the following search which will dump all the results from the lookup into the KV Store:
 | inputlookup expectedTime.csv | outputlookup expectedTime
-4. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating.
+2. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating on dashboard.
 
 # How does the app work? #
 ==========================
@@ -86,7 +85,7 @@ Broken Hosts Dashboard
 - These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
 - "Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
 
-Configure Broken Hosts Lookup [New in v3.4]
+Configure Broken Hosts Lookup [New in v3.3.3]
 - Allows users to CRUD the expectedTime KV Store.
 - Validation is applied to specific fields to help ensure appropriate values are provided
 
@@ -102,9 +101,11 @@ Configure Broken Hosts Lookup [New in v3.4]
 # RELEASE NOTES: #
 ==================
 
-v3.4:
+v3.3.3:
 
-- expectedTime is now a KV Store instead of a lookup
+- The expectedTime lookup definition now references a KV Store instead of a lookup file
+- Removed bin/ directory - Python script for generating lookup is no longer needed
+- Removed lookups directory as it is now using a KV Store [expectedTime]
 - lateSecs field now accepts Splunk's relative time format e.g. -1d@d OR 0 for 'Always Suppress'
 - New dashboard: "Configure Broken Hosts Lookup" allows for CRUDing expectedTime KV Store
    - Applies validation to help ensure proper values are added into the lookup
