@@ -1,0 +1,64 @@
+<dashboard script="lookup_configure.js,lookup_configure_table.js" stylesheet="lookup_configure.css,flatpickr.min.css" hideEdit="true">
+  <label>Configure Broken Hosts Lookup</label>
+  <search id="addRow">
+    <query>| inputlookup  expectedTime | eval key=_key
+      | append [| stats count
+      | eval index=lower("$index_add_tok$")
+      | eval sourcetype=lower("$sourcetype_add_tok$")
+      | eval host=lower("$host_add_tok$")
+      | eval lateSecs="$late_secs_add_tok$"
+      | eval suppressUntil="$suppress_until_add_tok$"
+      | eval contact="$contact_add_tok$"
+      | eval comments="$comments_add_tok$"]
+      | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
+  </search>
+  <search id="removeRow">
+    <query>| inputlookup  expectedTime | eval key=_key
+      | WHERE NOT key="$key_remove_tok$"
+      | outputlookup expectedTime
+    </query>
+  </search>
+  <search id="updateRow">
+    <query>| inputlookup expectedTime | eval key=_key
+      | WHERE key="$key_update_tok$"
+      | eval index=lower("$index_update_tok$")
+      | eval sourcetype=lower("$sourcetype_update_tok$")
+      | eval host=lower("$host_update_tok$")
+      | eval lateSecs="$late_secs_update_tok$"
+      | eval suppressUntil="$suppress_until_update_tok$"
+      | eval contact="$contact_update_tok$"
+      | eval comments="$comments_update_tok$"
+      | outputlookup expectedTime append=t</query>
+  </search>
+  <row>
+    <panel id="lookupPanel">
+      <table id="lookupTable">
+        <search id="lookupSearch">
+          <query>| inputlookup expectedTime
+            | eval Remove="Remove" | eval key=_key | eval Edit="Edit"
+            | table * Edit, Remove
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <progress>
+            <condition match="'job.resultCount' &gt; 0">
+              <set token="panel_show">true</set>
+            </condition>
+            <condition>
+              <unset token="panel_show"></unset>
+            </condition>
+          </progress>
+        </search>
+        <option name="count">100</option>
+        <option name="fields">comments,contact,host,index,sourcetype,lateSecs,suppressUntil,Edit,Remove</option>
+      </table>
+      <html>
+        <div>
+          <p><span id="alwaysSuppress"></span> Indicates lateSecs is set to "Always Suppress"
+              but a suppressUntil date has also been provided.</p>
+          <p><span id="inPast"></span> Indicates suppressUntil is set to a date in the past.</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+</dashboard>

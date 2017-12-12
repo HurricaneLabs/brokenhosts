@@ -13,6 +13,13 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 1. install app on your splunk search head
 2. run app setup
 
+# Update Instructions [IMPORTANT]: #
+====================================
+v3.3.3 using a KV Store instead of a lookup file. Once the app is updated then populate the KV Store.
+1. Run the following search which will dump all the results from the lookup into the KV Store:
+| inputlookup expectedTime.csv | outputlookup expectedTime
+2. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating on dashboard.
+
 # How does the app work? #
 ==========================
 
@@ -70,14 +77,19 @@ Because the lookup table is searched from the top down and splunk takes the firs
 # Dashboard #
 -------------
 
-Broken Hosts dashboard can be used to get a visual picture of the current status of hosts.
+Broken Hosts Dashboard
+- Can be used to get a visual picture of the current status of hosts.
 
-"Broken Hosts" panel will show all hosts that are not reporting in time.
-"Future Hosts" panel will show all hosts that are reporting timestamps from the future.
+- "Broken Hosts" panel will show all hosts that are not reporting in time.
+- "Future Hosts" panel will show all hosts that are reporting timestamps from the future.
+- These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+- "Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
 
-These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
+Configure Broken Hosts Lookup [New in v3.3.3]
+- Allows users to CRUD the expectedTime KV Store.
+- Validation is applied to specific fields to help ensure appropriate values are provided
 
-"Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
+
 
 # For support: #
 ================
@@ -88,6 +100,21 @@ These panels will allow you to quickly update expectedTime lookup table to suppr
 
 # RELEASE NOTES: #
 ==================
+
+v3.3.3:
+
+- The expectedTime lookup definition now references a KV Store instead of a lookup file
+- Removed bin/ directory - Python script for generating lookup is no longer needed
+- Removed lookups directory as it is now using a KV Store [expectedTime]
+- lateSecs field now accepts Splunk's relative time format e.g. -1d@d OR 0 for 'Always Suppress'
+- New dashboard: "Configure Broken Hosts Lookup" allows for CRUDing expectedTime KV Store
+   - Applies validation to help ensure proper values are added into the lookup
+   - Table highlights when two conditions are met:
+       - If lateSecs is set to 'Always Suppress' and but a suppressUntil date has been provided.
+       - If suppressUntil has a date that is in the past.
+- New alert: "Broken Hosts – Suppress Until Is Set Past Date"
+   - Runs nightly at 12:01am to check if any suppressUntil values are in the past
+   - Alerts pre-defined contact
 
 v3.3.2:
 

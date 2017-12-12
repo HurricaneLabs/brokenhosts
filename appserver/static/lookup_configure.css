@@ -1,0 +1,43 @@
+span[id^="inputWrapper"] {
+    float: left;
+    margin-right: 10px;
+}
+label[class$="error"] {
+    color: red;
+}
+input.error, textarea.error {
+    border: 1px solid red;
+}
+span[id^="inputWrapper"] .select2-container {
+    width: 219px !important;
+}
+.splunk-choice-input {
+    padding-bottom: 0 !important;
+}
+.form-group {
+    clear: both;
+}
+#submitData {
+    margin: 0 !important;
+}
+/*Table*/
+#lookupTable tr.status-warning td {
+    background-color: orangered !Important;
+    color: white !Important;
+}
+#lookupTable tr.status-past td {
+    background-color: orange !Important;
+    color: white !Important;
+}
+#alwaysSuppress {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orangered;
+}
+#inPast {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orange;
+}
