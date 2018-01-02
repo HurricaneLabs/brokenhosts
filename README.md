@@ -15,7 +15,7 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 
 # Update Instructions [IMPORTANT]: #
 ====================================
-v3.3.3 using a KV Store instead of a lookup file. Once the app is updated then populate the KV Store.
+v3.3.3 and greater uses a KV Store instead of a lookup file. Once the app is updated then populate the KV Store.
 1. Run the following search which will dump all the results from the lookup into the KV Store:
 | inputlookup expectedTime.csv | outputlookup expectedTime
 2. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating on dashboard.
@@ -100,6 +100,9 @@ Configure Broken Hosts Lookup [New in v3.3.3]
 
 # RELEASE NOTES: #
 ==================
+
+v3.3.4
+- Removed unnecessary inputs.conf
 
 v3.3.3:
 
