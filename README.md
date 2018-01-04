@@ -101,6 +101,9 @@ Configure Broken Hosts Lookup [New in v3.3.3]
 # RELEASE NOTES: #
 ==================
 
+v3.3.5
+- updated the savedsearch to account for sourcetype rewrites
+
 v3.3.4
 - Removed unnecessary inputs.conf
 
