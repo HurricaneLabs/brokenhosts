@@ -2,17 +2,17 @@
   <label>Stats Broken Hosts</label>
   <search id="indexBaseSearch">
     <query>
-      |loadjob savedsearch="nobody:StatsforBrokenHosts:Index Frequency" | fields index frequency Percentile
+      |loadjob savedsearch="nobody:broken_hosts:Index Frequency" | fields index frequency Percentile
     </query>
   </search>
   <search id="sourcetypeBaseSearch">
     <query>
-      |loadjob savedsearch="nobody:StatsforBrokenHosts:Sourcetype Frequency" | fields sourcetype frequency Percentile
+      |loadjob savedsearch="nobody:broken_hosts:Sourcetype Frequency" | fields sourcetype frequency Percentile
     </query>
   </search>
   <search id="hostBaseSearch">
     <query>
-      |loadjob savedsearch="nobody:StatsforBrokenHosts:Host Frequency" | fields host frequency Percentile
+      |loadjob savedsearch="nobody:broken_hosts:Host Frequency" | fields host frequency Percentile
     </query>
   </search>
   <search id="sourcetypeSearchStats">
@@ -99,7 +99,7 @@
           <condition field="frequency"></condition>
           <condition field="Percentile"></condition>
           <condition field="index">
-            <link target="_blank">/app/StatsforBrokenHosts/tune_indexes?form.index=$click.value2$</link>
+            <link target="_blank">/app/broken_hosts/tune_indexes?form.index=$click.value2$</link>
           </condition>
         </drilldown>
       </table>
@@ -141,7 +141,7 @@
           <condition field="frequency"></condition>
           <condition field="Percentile"></condition>
           <condition field="sourcetype">
-            <link target="_blank">/app/StatsforBrokenHosts/tune_sourcetypes?form.sourcetype=$click.value2$</link>
+            <link target="_blank">/app/broken_hosts/tune_sourcetypes?form.sourcetype=$click.value2$</link>
           </condition>
         </drilldown>
       </table>
@@ -180,7 +180,7 @@ eventstats p95(frequency) as p95 p75(frequency) as p75 p50(frequency) as p50 p25
           <condition field="frequency"></condition>
           <condition field="Percentile"></condition>
           <condition field="host">
-            <link target="_blank">/app/StatsforBrokenHosts/tune_hosts?form.host=$click.value2$</link>
+            <link target="_blank">/app/broken_hosts/tune_hosts?form.host=$click.value2$</link>
           </condition>
         </drilldown>
       </table>

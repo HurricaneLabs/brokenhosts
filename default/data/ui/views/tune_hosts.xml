@@ -111,12 +111,12 @@
         <drilldown>
           <condition field="host"></condition>
           <condition field="index">
-            <link target="_blank">/app/StatsforBrokenHosts/tune_indexes?form.index=$click.value2$</link>
+            <link target="_blank">/app/broken_hosts/tune_indexes?form.index=$click.value2$</link>
           </condition>
           <condition field="avg"></condition>
           <condition field="max"></condition>
           <condition field="sourcetype">
-            <link target="_blank">/app/StatsforBrokenHosts/tune_sourcetypes?form.sourcetype=$click.value2$</link>
+            <link target="_blank">/app/broken_hosts/tune_sourcetypes?form.sourcetype=$click.value2$</link>
           </condition>
         </drilldown>
       </table>
