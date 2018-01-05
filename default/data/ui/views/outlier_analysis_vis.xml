@@ -1,0 +1,76 @@
+<form>
+  <label>Outlier Analysis</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="index">
+      <label>Select Index:</label>
+      <fieldForLabel>index</fieldForLabel>
+      <fieldForValue>index</fieldForValue>
+      <search>
+        <query>|inputlookup state.csv | fields combo | eval combo=split(combo,"-") | eval host=mvindex(combo,0) |eval sourcetype=mvindex(combo,1) | eval index=mvindex(combo,2) | fields index sourcetype |  dedup index</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="sourcetype">
+      <label>Select Sourcetype:</label>
+      <fieldForLabel>sourcetype</fieldForLabel>
+      <fieldForValue>sourcetype</fieldForValue>
+      <search>
+        <query>|inputlookup state.csv | fields combo | eval combo=split(combo,"-") | eval host=mvindex(combo,0) |eval sourcetype=mvindex(combo,1) | eval index=mvindex(combo,2) | fields index sourcetype | search index=$index$|  dedup sourcetype</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="host">
+      <label>Select Host:</label>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>|inputlookup state.csv | fields combo | eval combo=split(combo,"-") | eval host=mvindex(combo,0) |eval sourcetype=mvindex(combo,1) | eval index=mvindex(combo,2) | fields index sourcetype host | search index=$index$ sourcetype=$sourcetype$ |  dedup host</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <search>
+          <query>| tstats count WHERE sourcetype=$sourcetype$ host=$host$ index=$index$ by _time host sourcetype index span=30m 
+| makecontinuous _time span=30m 
+| eval combo=host."-".sourcetype."-".index 
+| xyseries _time combo count 
+| makecontinuous _time span=30m 
+| fillnull value=0 
+| untable _time combo count | eval HourOfDay=strftime(_time, "%H") 
+| eval BucketMinuteOfHour=strftime(_time, "%M") 
+| eval DayOfWeek=strftime(_time, "%A") 
+| stats max(count) as actual by HourOfDay,BucketMinuteOfHour,DayOfWeek,combo, _time | lookup state.csv HourOfDay as HourOfDay BucketMinuteOfHour as BucketMinuteOfHour DayOfWeek as DayOfWeek combo as combo OUTPUT upperBound lowerBound 
+| eval isOutlierLow=if(actual &lt; lowerBound ,
+    abs(actual-lowerBound)/lowerBound, 0) 
+| eval isOutlierHigh=if(actual &gt; upperBound,
+    abs(actual-upperBound)/upperBound, 0) 
+| eval isOutlier=if(actual &lt; lowerBound OR actual &gt; upperBound,
+    abs(actual-upperBound)/abs(upperBound-lowerBound), 0) | fields - DayOfWeek BucketMinuteOfHour isOutlierHigh isOutlierLow combo</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">isOutlier</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+</form>
