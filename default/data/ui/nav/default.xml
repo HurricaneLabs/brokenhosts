@@ -1,6 +1,12 @@
 <nav search_view="search" color="#2ca888">
   <view name="broken_hosts" default="true" />
   <view name="configure_lookup" />
+    <view name="stats_broken_hosts" default="true" />
+  <collection label="Tuning Dashboards">
+    <view name="tune_hosts" />
+    <view name="tune_sourcetypes" />
+    <view name="tune_indexes" />
+  </collection>
   <view name="search" />
   <a href="setup">Setup</a>
 </nav>
