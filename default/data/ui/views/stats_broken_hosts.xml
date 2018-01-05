@@ -18,7 +18,7 @@
   <search id="sourcetypeSearchStats">
     <query>
      index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput 
-| bin _time span=15m 
+| bin _time span=30m 
 | eval time=_time 
 | eval is_sourcetype=case(sourcetype==lower("$sourcetype$"), "yes", 1=1, "no") 
 | dedup is_sourcetype time 
@@ -66,7 +66,7 @@
       <title>Selected Sourcetype Timechart of Events</title>
       <chart>
         <search>
-          <query>| tstats count WHERE sourcetype=$sourcetype$ by _time host sourcetype index span=15m | makecontinuous span=15m _time | eval combo=host."-".sourcetype."-".index |  xyseries _time combo count | fillnull value=0</query>
+          <query>| tstats count WHERE sourcetype=$sourcetype$ by _time host sourcetype index span=30m | makecontinuous span=30m _time | eval combo=host."-".sourcetype."-".index |  xyseries _time combo count | fillnull value=0</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>

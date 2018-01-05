@@ -7,14 +7,14 @@
   </search>
   <search id="sourcetypeSearchStats">
     <query>
-| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index | sort - host | search range &gt; 900 | stats avg(range) as avg max(range) as max by sourcetype host index | eval max=round(max/60,0) | eval avg=round(avg/60,0) | rename max as "Maximum Gap" avg as "Average Gap"
+| tstats count WHERE host=$host$ by _time host sourcetype index span=30m | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index | sort - host | search range &gt; 900 | stats avg(range) as avg max(range) as max by sourcetype host index | eval max=round(max/60,0) | eval avg=round(avg/60,0) | rename max as "Maximum Gap" avg as "Average Gap"
     </query>
     <earliest>$field1.earliest$</earliest>
     <latest>$field1.latest$</latest>
   </search>
   <search id="nighttimeweekdaySearch">
     <query>
-| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index
+| tstats count WHERE host=$host$ by _time host sourcetype index span=30m | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index
 | eval HourOfDay=strftime(_time, "%H") 
 | eval DayOfWeek=strftime(_time, "%A") 
 | eval weekend=case(LIKE(DayOfWeek,"Saturday"), "weekend", LIKE(DayOfWeek,"Sunday"), "weekend", 1=1, "weekday") 
@@ -48,7 +48,7 @@
       <title>Latest Event</title>
       <single>
         <search>
-          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | eval combo=host."-".sourcetype."-".index | stats last(_time) as last by host | eval c_time=strftime(last,"%m/%d/%y %H:%M:%S") | fields c_time</query>
+          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=30m | eval combo=host."-".sourcetype."-".index | stats last(_time) as last by host | eval c_time=strftime(last,"%m/%d/%y %H:%M:%S") | fields c_time</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -81,7 +81,7 @@
     <panel>
       <chart>
         <search>
-          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | eval combo=host."-".sourcetype."-".index | xyseries _time combo count | makecontinuous _time span=15m | fillnull value=0</query>
+          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=30m | eval combo=host."-".sourcetype."-".index | xyseries _time combo count | makecontinuous _time span=30m | fillnull value=0</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
         </search>
@@ -97,11 +97,11 @@
       <title>Specific Gap Broken Down by Host/Index/Sourcetype</title>
       <table>
         <search>
-          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=15m 
+          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=30m 
 | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index | eval combo=host."-".sourcetype."-".index | stats avg(range) as avg max(range) as max count(combo) as M by sourcetype host index| eval max=round(max,0) 
 | eval avg=round(avg,0) 
 | addinfo 
-| eval N=ceiling((info_max_time-info_min_time)/15/60)
+| eval N=ceiling((info_max_time-info_min_time)/30/60)
 | eval frequency=M/N
 | fields index sourcetype host frequency avg max| eval frequency=round(frequency*100,0)."%"</query>
           <earliest>$field1.earliest$</earliest>
