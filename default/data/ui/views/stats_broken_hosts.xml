@@ -1,0 +1,198 @@
+<form>
+  <label>Stats Broken Hosts</label>
+  <search id="indexBaseSearch">
+    <query>
+      |loadjob savedsearch="nobody:StatsforBrokenHosts:Index Frequency" | fields index frequency Percentile
+    </query>
+  </search>
+  <search id="sourcetypeBaseSearch">
+    <query>
+      |loadjob savedsearch="nobody:StatsforBrokenHosts:Sourcetype Frequency" | fields sourcetype frequency Percentile
+    </query>
+  </search>
+  <search id="hostBaseSearch">
+    <query>
+      |loadjob savedsearch="nobody:StatsforBrokenHosts:Host Frequency" | fields host frequency Percentile
+    </query>
+  </search>
+  <search id="sourcetypeSearchStats">
+    <query>
+     index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput 
+| bin _time span=15m 
+| eval time=_time 
+| eval is_sourcetype=case(sourcetype==lower("$sourcetype$"), "yes", 1=1, "no") 
+| dedup is_sourcetype time 
+| fields is_sourcetype time 
+| mvcombine is_sourcetype 
+| eval send=mvcount(is_sourcetype) 
+| fields time send 
+| sort - time 
+| streamstats reset_on_change=true  range(time) as duration by send | eval t=duration/60
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label>Select Time</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="sourcetype">
+      <label>Sourcetype Select</label>
+      <fieldForLabel>sourcetype</fieldForLabel>
+      <fieldForValue>sourcetype</fieldForValue>
+      <search>
+        <query>|metadata type=sourcetypes index=* | table sourcetype</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Frequency of Selected Sourcetype (last 60 Days)</title>
+      <single>
+        <search base="sourcetypeBaseSearch">
+          <query> search sourcetype="$sourcetype$" | fields frequency</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="unit">%</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Selected Sourcetype Timechart of Events</title>
+      <chart>
+        <search>
+          <query>| tstats count WHERE sourcetype=$sourcetype$ by _time host sourcetype index span=15m | makecontinuous span=15m _time | eval combo=host."-".sourcetype."-".index |  xyseries _time combo count | fillnull value=0</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Index Frequency</title>
+        <search base="indexBaseSearch">
+          <query/>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.overlayFields">Percentile</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>Index Frequency Table</title>
+        <search base="indexBaseSearch">
+          <query/>
+        </search>
+        <drilldown>
+          <condition field="frequency"></condition>
+          <condition field="Percentile"></condition>
+          <condition field="index">
+            <link target="_blank">/app/StatsforBrokenHosts/tune_indexes?form.index=$click.value2$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Index Frequency Percentile Breakdown</title>
+        <search base="indexBaseSearch">
+          <query> stats count by Percentile</query>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Sourcetype Frequency</title>
+        <search base="sourcetypeBaseSearch">
+          <query>  sort - frequency 
+| eventstats p95(frequency) as p95 p75(frequency) as p75 p50(frequency) as p50 p25(frequency) as p25
+| eval Percentile = case(frequency &gt;= p95, "95",frequency &gt;= p75, "75",frequency &gt;= p50, "50", frequency &gt;= p25, "25", 1=1, "0") | fields - p*</query>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.overlayFields">Percentile</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>Sourcetype Frequency Table</title>
+        <search base="sourcetypeBaseSearch">
+          <query>  sort - frequency 
+| eventstats p95(frequency) as p95 p75(frequency) as p75 p50(frequency) as p50 p25(frequency) as p25
+| eval Percentile = case(frequency &gt;= p95, "95",frequency &gt;= p75, "75",frequency &gt;= p50, "50", frequency &gt;= p25, "25", 1=1, "0") | fields - p*</query>
+        </search>
+        <option name="drilldown">all</option>
+        <drilldown>
+          <condition field="frequency"></condition>
+          <condition field="Percentile"></condition>
+          <condition field="sourcetype">
+            <link target="_blank">/app/StatsforBrokenHosts/tune_sourcetypes?form.sourcetype=$click.value2$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Sourcetype Frequency Percentile Breakdown</title>
+        <search base="sourcetypeBaseSearch">
+          <query> 
+eventstats p95(frequency) as p95 p75(frequency) as p75 p50(frequency) as p50 p25(frequency) as p25
+| eval Percentile = case(frequency &gt;= p95, "95",frequency &gt;= p75, "75",frequency &gt;= p50, "50", frequency &gt;= p25, "25", 1=1, "0") | fields - p* | stats count by Percentile</query>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Host Frequency</title>
+        <search base="hostBaseSearch">
+          <query/>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.overlayFields">Percentile</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>Host Frequency Table</title>
+        <search base="hostBaseSearch">
+          <query/>
+        </search>
+        <drilldown>
+          <condition field="frequency"></condition>
+          <condition field="Percentile"></condition>
+          <condition field="host">
+            <link target="_blank">/app/StatsforBrokenHosts/tune_hosts?form.host=$click.value2$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Host Frequency Percentile Breakdown</title>
+        <search base="hostBaseSearch">
+          <query> stats count by Percentile</query>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>

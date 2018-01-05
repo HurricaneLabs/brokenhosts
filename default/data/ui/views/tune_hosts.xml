@@ -1,0 +1,157 @@
+<form>
+  <label>Tune Hosts</label>
+  <search id="sourcetypeBaseSearch">
+    <query>
+      |loadjob savedsearch="roconnor:search:Sourcetype Frequency" | fields series frequency Percentile
+    </query>
+  </search>
+  <search id="sourcetypeSearchStats">
+    <query>
+| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index | sort - host | search range &gt; 900 | stats avg(range) as avg max(range) as max by sourcetype host index | eval max=round(max/60,0) | eval avg=round(avg/60,0) | rename max as "Maximum Gap" avg as "Average Gap"
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <search id="nighttimeweekdaySearch">
+    <query>
+| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index
+| eval HourOfDay=strftime(_time, "%H") 
+| eval DayOfWeek=strftime(_time, "%A") 
+| eval weekend=case(LIKE(DayOfWeek,"Saturday"), "weekend", LIKE(DayOfWeek,"Sunday"), "weekend", 1=1, "weekday") 
+| eval business_hour=case(HourOfDay&gt;8 AND HourOfDay&lt;17 AND weekend!="weekend", "businesshour", 1=1, "nonbusinesshour")
+| fields business_hour weekend sourcetype index host count
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label>Select Time</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="host">
+      <label>Host Select</label>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>|metadata type=hosts index=* | table host</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Latest Event</title>
+      <single>
+        <search>
+          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | eval combo=host."-".sourcetype."-".index | stats last(_time) as last by host | eval c_time=strftime(last,"%m/%d/%y %H:%M:%S") | fields c_time</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Maximum Data Gap  (By Host)</title>
+      <single>
+        <search base="sourcetypeSearchStats">
+          <query>fields "Maximum Gap"</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="unit">Minutes</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Average Data Gap (By Host)</title>
+      <single>
+        <search base="sourcetypeSearchStats">
+          <query> fields "Average Gap"</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="unit">Minutes</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <search>
+          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=15m | eval combo=host."-".sourcetype."-".index | xyseries _time combo count | makecontinuous _time span=15m | fillnull value=0</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">zero</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Specific Gap Broken Down by Host/Index/Sourcetype</title>
+      <table>
+        <search>
+          <query>| tstats count WHERE host=$host$ by _time host sourcetype index span=15m 
+| sort 0 - host sourcetype index _time | streamstats window=2 range(_time) as range by host sourcetype index | eval combo=host."-".sourcetype."-".index | stats avg(range) as avg max(range) as max count(combo) as M by sourcetype host index| eval max=round(max,0) 
+| eval avg=round(avg,0) 
+| addinfo 
+| eval N=ceiling((info_max_time-info_min_time)/15/60)
+| eval frequency=M/N
+| fields index sourcetype host frequency avg max| eval frequency=round(frequency*100,0)."%"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <condition field="host"></condition>
+          <condition field="index">
+            <link target="_blank">/app/StatsforBrokenHosts/tune_indexes?form.index=$click.value2$</link>
+          </condition>
+          <condition field="avg"></condition>
+          <condition field="max"></condition>
+          <condition field="sourcetype">
+            <link target="_blank">/app/StatsforBrokenHosts/tune_sourcetypes?form.sourcetype=$click.value2$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Percent Difference (Business Hour vs Non-Business Hour)</title>
+      <table>
+        <search base="nighttimeweekdaySearch">
+          <query>| eval combo=host."-".sourcetype."-".index | stats avg(count) as avg by business_hour,combo 
+| xyseries combo business_hour avg 
+| eval perc_diff=abs(((businesshour-nonbusinesshour)/((businesshour+nonbusinesshour)/2))*100) 
+| fillnull value=0 perc_diff 
+| eventstats p95(frequency) as p95 p75(frequency) as p75 p50(frequency) as p50 p25(frequency) as p25
+| eval Percentile = case(frequency &gt;= p95, "95",frequency &gt;= p75, "75",frequency &gt;= p50, "50", frequency &gt;= p25, "25", 1=1, "0") 
+| fields perc_diff combo | eval perc_diff=round(perc_diff,0)."%"|rename perc_diff as "Percent Difference" combo as "host-sourcetype-index" </query>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Percent Difference (Weekday vs Weekend)</title>
+      <table>
+        <search base="nighttimeweekdaySearch">
+          <query>| eval combo=host."-".sourcetype."-".index | stats avg(count) as avg by weekend,combo
+| xyseries combo weekend avg 
+| eval perc_diff=abs(((weekday-weekend)/((weekday+weekend)/2))*100) 
+| fillnull value=0 perc_diff 
+| eventstats p95(perc_diff) as p95 p80(perc_diff) as p80 p50(perc_diff) as p50 
+| eval Percentile = case(frequency &gt;= p95, "95",frequency &gt;= p75, "75",frequency &gt;= p50, "50", frequency &gt;= p25, "25", 1=1, "0") 
+| fields perc_diff combo |  eval perc_diff=round(perc_diff,0)."%"|rename perc_diff as "Percent Difference" combo as "host-sourcetype-index"</query>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>
