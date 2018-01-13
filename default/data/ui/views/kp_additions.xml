@@ -1,0 +1,267 @@
+<form>
+  <init>
+    <set token="refresh">60</set>
+    <set token="mode">LA</set>
+    <set token="filter">Default</set>
+    <set token="seconds">`default_expected_time`</set>
+  </init>
+  <label>Tuning Dashboard</label>
+  <search id="baseSearch">
+    <query>index=$i$ sourcetype=$s$ host=$h$ earliest=$timeSetting$ | streamstats current=f last(_time) as LastTime by host index sourcetype | eval LastTime=round(LastTime,0), Time=round(Time,0) | eval LastTime=coalesce(LastTime, now()) | eval Time=strftime(_time, "%s") |</query>
+    <earliest>-30d@d</earliest>
+    <refresh>$refresh$</refresh>
+    <refreshType>delay</refreshType>
+  </search>
+  <fieldset submitButton="true" autoRun="false">
+    <html>
+      <style>
+        a {color: #2ca888; text-decoration: none;}
+        input[type=text]{border: 1px solid #ccc; max-width: 75%; display:inline-block;}
+        input[type=text]:focus{border: 1px solid #2ca888; box-shadow: inset 0 1px 1px rgba(0,0,0,.075); display:inline-block;}
+        .splunk-linklist-choices {margin-bottom: 0px;}
+        a.btn-pill{color: #2ca888; width: auto;}
+        a.btn-pill.active{
+          background-color: rgba(44,168,136,.25); 
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075); 
+          color: #2ca888;}
+        a.btn-pill:hover{
+          background-color: rgba(44,168,136,.15); 
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+          color: #2ca888;}
+        .btn-primary{
+          background-image: linear-gradient(180deg,#2ca888,#2ca888);
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+          color: #fff;
+          border: 0px solid #ccc;
+          padding: 6px 10px;}
+        .btn-primary:hover{
+          background-image: linear-gradient(180deg,#38b493,#38b493);
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+          border: 0px solid #ccc;}
+        .fieldset {margin: 0px;}
+         rect.block-background{fill: rgb(44, 168, 136)};
+      </style> 
+    </html>
+    <input type="text" token="index" searchWhenChanged="false">
+      <label>Index</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="sourcetype" searchWhenChanged="false">
+      <label>Sourcetype</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="host" searchWhenChanged="false">
+      <label>Host</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="mode" searchWhenChanged="true">
+      <label>Dynamic Panels</label>
+      <choice value="bin">Difference Bins</choice>
+      <choice value="LA">Overview</choice>
+      <change>
+        <condition value="LA">
+          <unset token="table_panel"></unset>
+          <unset token="showBin"></unset>
+          <unset token="showLA"></unset>
+          <unset token="showStats"></unset>
+          <set token="message">$i$, $s$, $h$</set>
+          <set token="LA">| eval difference=LastTime-Time | where difference !=0 | eval num=difference, difference=if(difference&lt;0,"-".tostring(abs(difference),"duration"),tostring(difference,"duration")) | eval mod=num%3600, rounded=num+(3600-mod) | replace 3600 with "" in rounded | rex field=difference mode=sed "s/\+/ days /" | rex field=difference mode=sed "s/^1 days/1 day /" | convert ctime(LastTime), ctime(Time) | sort LastTime | reverse | table LastTime Time difference num rounded | rename difference as "Difference" num as "Difference in Seconds" rounded as "Next Hour in Seconds"</set>
+          <set token="stats">| eval difference=round(LastTime-Time,0) | bin difference span=60m | eval num=difference | where difference &gt;= `default_expected_time`
+            | eval difference=if(difference&lt;0,"-".tostring(abs(difference),"duration"),tostring(difference,"duration")) 
+            | rex field=difference mode=sed "s/\+/ days /" | rex field=difference mode=sed "s/^1 days/1 day /"
+            | eval short=split(difference,":"), short=mvindex(short,0)
+            | eval message=case(num==0,difference." - ".short."00:59:59",num!=0,difference." - ".short.":59:59")
+            | eval seconds=num+3599 | eval note=num." - ".seconds | convert ctime(LastTime), ctime(Time) 
+            | stats count(difference) as count by difference num short message note
+            | rename difference as "Difference" num as "Difference in Seconds" count as "Event Count" message as "Difference Range" note as "Difference Range in Seconds"
+            | fields - index, sourcetype, host, short, Difference, "Difference in Seconds"</set>
+          <set token="panel">$table_panel$</set>
+          <set token="show">$showLA$</set>
+          <set token="table_panel">$LA$</set>
+          <set token="showLA">$LA$</set>
+          <set token="header">Overview</set>
+        </condition>
+        <condition value="bin">
+          <unset token="table_panel"></unset>
+          <unset token="showBin"></unset>
+          <unset token="showLA"></unset>
+          <unset token="showStats"></unset>
+          <set token="message">$i$, $s$, $h$</set>
+          <set token="bin">| eval difference=LastTime-Time | where difference &gt;= $seconds$ | sort difference | reverse | eval bop=difference
+| eval difference=if(difference&lt;0,"-".tostring(abs(difference),"duration"),tostring(difference,"duration")) 
+| rex field=difference mode=sed "s/\+/ days /" | rex field=difference mode=sed "s/^1 days/1 day /" 
+| bin bop start=1800 minspan=12h bins=30 as boop | stats values(difference) as values values(bop) as seconds count as Count values(host) as hosts by boop 
+| eval difference=boop | eval difference=split(difference,"-") | eval min_value=mvindex(difference,0) | eval max_value=mvindex(difference,1)
+| eval min_value=if(min_value&lt;0,"-".tostring(abs(min_value),"duration"),tostring(min_value,"duration")) 
+| rex field=min_value mode=sed "s/\+/ days /" | rex field=min_value mode=sed "s/^1 days/1 day /"
+| eval max_value=if(max_value&lt;0,"-".tostring(abs(max_value),"duration"),tostring(max_value,"duration")) 
+| rex field=max_value mode=sed "s/\+/ days /" | rex field=max_value mode=sed "s/^1 days/1 day /"
+| eval range=min_value."-".max_value | sort seconds | table range boop values seconds
+| rename range as "Time Range" values as "Values in Time Range" boop as "Range Integers" seconds as "Converted to Seconds"</set>
+          <set token="panel">$table_panel$</set>
+          <set token="show">$showBin$</set>
+          <set token="showBin">$bin$</set>
+          <set token="table_panel">$bin$</set>
+          <set token="header">Difference Bins</set>
+        </condition>
+      </change>
+      <default>LA</default>
+      <initialValue>LA</initialValue>
+    </input>
+    <input type="link" token="timeSetting" searchWhenChanged="false">
+      <label>Earliest Time for Dynamic Panels</label>
+      <choice value="-7d@d">7 Days</choice>
+      <choice value="-30d@d">30 Days</choice>
+      <choice value="-90d@d">90 Days</choice>
+      <default>-30d@d</default>
+      <initialValue>-30d@d</initialValue>
+    </input>
+    <input type="text" token="message" searchWhenChanged="true" depends="$hidden$">
+      <label>Index, Sourcetype, Host</label>
+      <default>No row selected from Filtered Broken Hosts Search</default>
+      <initialValue>No row selected from Filtered Broken Hosts Search</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <search base="BH">
+          <query>| stats count</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="rangeColors">["0x2ca888","0x2ca888","0x2ca888","0x2ca888","0x2ca888"]</option>
+        <option name="underLabel">Filtered Broken Host Alerts</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>| inputlookup sim_forwarder_assets | eval forwarder_type=if(forwarder_type="uf","Universal Forwarder","Heavy Forwarder")| search NOT [| inputlookup sim_assets | dedup serverName | rename serverName as hostname | fields hostname] | eval test=last_connected | eval threshold=now()-2592000 | where test &gt;=threshold | convert ctime(last_connected) | fields hostname, forwarder_type, version, os, arch, status, last_connected | search hostname=$h$ | rename hostname as Instance, forwarder_type as Type, version as Version, os as OS, arch as Architecture, status as Status, last_connected as "Last Connected to Indexers" | eval Status=if(Status=="missing", "MISSING", "Active") | table Status</query>
+          <refresh>$refresh$</refresh>
+          <refreshType>interval</refreshType>
+        </search>
+        <option name="drilldown">all</option>
+        <drilldown target="_blank">
+          <set token="details">| inputlookup sim_forwarder_assets | eval forwarder_type=if(forwarder_type="uf","Universal Forwarder","Heavy Forwarder")| search NOT [| inputlookup sim_assets | dedup serverName | rename serverName as hostname | fields hostname] | eval test=last_connected | eval threshold=now()-2592000 | where test &gt;=threshold | convert ctime(last_connected) | fields hostname, forwarder_type, version, os, arch, status, last_connected | search hostname=$h$ | rename hostname as Instance, forwarder_type as Type, version as Version, os as OS, arch as Architecture, status as Status, last_connected as "Last Connected to Indexers"</set>
+          <link>search?q=$details$</link>
+        </drilldown>
+        <option name="colorMode">block</option>
+        <option name="rangeColors">["0x2ca888","0x2ca888","0x2ca888","0x2ca888","0x2ca888"]</option>
+        <option name="underLabel">Forwarder Status</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>| makeresults | eval message="$message$" | head 1 | table message</query>
+        </search>
+        <option name="colorBy">trend</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <drilldown target="_blank">
+          <set token="details">index=$i$ sourcetype=$s$ host=$h$ earliest=-30d@d</set>
+          <link>search?q=$details$</link>
+        </drilldown>
+        <option name="rangeColors">["0x2ca888","0x2ca888"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="underLabel">Selected Row</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Broken Hosts Search</title>
+      <table>
+        <title>Filters Applied: $index$, $sourcetype$, $host$</title>
+        <search id="BH">
+          <query>| savedsearch "Broken Hosts Tuning Dashboard Version (Custom)" replace index=$index$ sourcetype=$sourcetype$ host=$host$</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <format field="Sparkline" type="sparkline">
+          <option name="lineColor">#2ca888</option>
+        </format>
+        <drilldown>
+          <set token="i">$row.Event Index$</set>
+          <set token="s">$row.Event Sourcetype$</set>
+          <set token="h">$row.Event Host$</set>
+          <set token="message">$i$, $s$, $h$</set>
+          <set token="panel">$panel$</set>
+          <set token="show">$show$</set>
+          <set token="seconds">$seconds$</set>
+          <unset token="event"></unset>
+          <unset token="parse"></unset>
+        </drilldown>
+      </table>
+    </panel>
+    <panel depends="$showBin$">
+      <title>Difference Bins</title>
+      <table>
+        <title>$header$</title>
+        <search base="baseSearch">
+          <query>$table_panel$</query>
+        </search>
+        <option name="drilldown">row</option>
+        <drilldown>
+          <set token="parse">$row.Range Integers$</set>
+          <set token="parse_title">$row.Time Range$</set>
+          <set token="details">index=$i$ sourcetype=$s$ host=$h$ earliest=-30d
+            | streamstats current=f last(_time) as LastTime by host index sourcetype 
+            | eval LastTime=coalesce(LastTime, now())
+            | eval Time=strftime(_time, "%s") | eval difference=LastTime-Time
+            | eval num=difference | eval parse="$parse$" | eval parse=split(parse,"-") 
+            | eval min_value=mvindex(parse,0), max_value=mvindex(parse,1)
+            | eval min_value=tonumber(min_value), eval max_value=tonumber(max_value)
+            | where num&gt;=min_value AND num&lt;max_value
+            | eval difference=if(difference&lt;0,"-".tostring(abs(difference),"duration"),tostring(difference,"duration")) 
+            | rex field=difference mode=sed "s/\+/ days /" | rex field=difference mode=sed "s/^1 days/1 day /"
+            | convert ctime(LastTime) | convert ctime(Time)
+            | table LastTime Time difference num | rename difference as "Difference" num as "Difference in Seconds"</set>
+        </drilldown>
+      </table>
+      <table depends="$showBin$,$parse$">
+        <title>$parse_title$</title>
+        <search>
+          <query>$details$</query>
+        </search>
+        <option name="count">5</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel depends="$showLA$">
+      <title>Dynamic Panels</title>
+      <table>
+        <title>$header$</title>
+        <search base="baseSearch">
+          <query>$LA$</query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">row</option>
+        <drilldown target="_blank">
+          <set token="event">$row.Time$</set>
+          <set token="more">index=$i$ sourcetype=$s$ host=$h$ | convert ctime(_time) | where _time="$event$" | table _raw _time | rename _raw as Raw _time as Time</set>
+          <link>search?q=$more$</link>
+        </drilldown>
+      </table>
+      <table>
+        <title>Difference Ranges</title>
+        <search base="baseSearch">
+          <query>$stats$</query>
+        </search>
+        <option name="count">5</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>
