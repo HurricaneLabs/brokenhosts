@@ -1,6 +1,7 @@
 require.config({
     paths: {
-        "BHTableView" : '../app/broken_hosts/components/BHTableView'
+        "BHTableView" : '../app/broken_hosts/components/BHTableView',
+        "modalModel" : '../app/broken_hosts/components/models/modalModel'
     }
 });
 
@@ -13,12 +14,38 @@ require([
     'BHTableView',
     'splunkjs/mvc/tableview',
     'splunkjs/mvc/searchmanager',
+    '../app/broken_hosts/components/ModalView',
+    "modalModel",
     'splunkjs/mvc/simplexml/ready!'
-], function(_, Backbone, $, mvc, BHTableView, TableView, SearchManager) {
+], function(_, Backbone, $, mvc, BHTableView, TableView, SearchManager, ModalView, ModalModel) {
 
-    var lateSecsValue = "";
-    //var tableElement = mvc.Components.getInstance("lookupTable");
+    var tokens = mvc.Components.get("submitted");
+    var lookupSearch = mvc.Components.get("lookupSearch");
+	var updateRow = mvc.Components.get("updateRow");
+	var addRow = mvc.Components.get("addRow");
     var now = new Date();
+    var eventBus = _.extend({}, Backbone.Events);
+	var model = ModalModel;
+	var searches = [];
+	var childViews = [];
+	var new_row = "";
+
+	var sourcetypeInputSearch = new SearchManager({
+		id: "sourcetype-input-search",
+		search: "| metadata type=sourcetypes index=* | table sourcetype"
+	});
+	var hostInputSearch = new SearchManager({
+		id: "host-input-search",
+		search: "| metadata type=hosts index=* | table host"
+	});
+	var indexInputSearch = new SearchManager({
+		id: "index-input-search",
+		search: "| tstats count WHERE index=* by index"
+	});
+
+	searches.push(sourcetypeInputSearch);
+	searches.push(hostInputSearch);
+	searches.push(indexInputSearch);
 
     var expectedTimeSearch = new SearchManager({
         id: "expectedTimeSearch",
@@ -30,6 +57,8 @@ require([
     });
 
     var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
+
+    $(document).find('.dashboard-body .panel-body').prepend('<button id="addNewRow" class="btn btn-primary">Add New</button>');
 
     results.on("data", function() {
 
@@ -62,13 +91,70 @@ require([
         });
 
 
-        new BHTableView({
+        var bhTable = new BHTableView({
             id: "BHTableView",
             results: results_obj,
-            el: $("#BHTableWrapper")
+            el: $("#BHTableWrapper"),
+            eventBus: eventBus
         }).render();
 
     });
+
+    $(document).on('click', '#addNewRow', function(e) {
+
+		e.preventDefault();
+
+		model.set({
+			_key: "",
+            comments: "",
+            contact: "",
+            host: "",
+            index: "",
+            lateSecs: "",
+            sourcetype: "",
+            suppressUntil: ""
+		});
+
+		var modal = new ModalView({ model : model,
+			eventBus : eventBus,
+			mode : 'New',
+			searches : searches,
+			tokens : tokens });
+
+		modal.show();
+
+	});
+
+    eventBus.on("row:edit", function(row_data) {
+
+		console.log("Row data edit: ", row_data);
+
+	});
+
+    eventBus.on("row:update", function(e) {
+        console.log("row update");
+		updateRow.startSearch();
+	});
+
+    eventBus.on("row:new", function(row_data) {
+        console.log('new row ', row_data);
+        new_row = row_data;
+        addRow.startSearch();
+    });
+
+	addRow.on("search:done", function(props) {
+		//lookupSearch.startSearch();
+        //expectedTimeSearch.startSearch();
+        //console.log("props: ", props);
+
+        eventBus.trigger("row:update:done", new_row);
+	});
+
+	updateRow.on("search:done", function(props) {
+		//eventBus.trigger("row:update:done");
+        expectedTimeSearch.startSearch();
+	});
+
 
     /*
     var StatusRenderer = TableView.BaseCellRenderer.extend({

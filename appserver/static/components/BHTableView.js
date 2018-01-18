@@ -40,12 +40,164 @@ define([
 				this.sourcetypeDropdown = "";
                 this.data_table = null;
                 this.results = this.options.results;
+                this.eventBus.on("row:update:done", this.getUpdatedData, this);
                 //_.bindAll(this, "changed");
             },
             
             events: {
+                'click .edit' : 'editRow',
+                'click .remove' : 'removeRow'
+            },
+
+            editRow: function(e) {
+
+                var row_data = this.data_table.row( $(e.target).parents('tr') ).data();
+                //console.log("Row's data: ", row_data);
+
+                this.eventBus.trigger("row:edit", row_data);
 
             },
+
+            removeRow: function(e) {
+                console.log("e ", e);
+                console.log("e.parent", $(e.currentTarget).parents('tr'));
+
+                this.data_table.row($(e.currentTarget).parents('tr')).remove().draw();
+
+                this.processDataForUpdate();
+
+            },
+
+            addRow: function(row_data_obj) {
+
+                console.log("this.data_table? ", this.data_table);
+
+                console.log("row_array ", row_data_obj);
+
+                var row_arr = [
+                    'comments',
+                    'contact',
+                    'host',
+                    'index',
+                    'sourcetype',
+                    'lateSecs',
+                    'suppressUntil'
+                ];
+
+                /*
+                _.each(row_data_obj, function(v,k){
+
+                    switch(k):
+                        case 'comments':
+                            row_arr[0]
+                            break;
+                        case '':
+
+                            break;
+                        case '':
+
+                            break;
+                        case '':
+
+                            break;
+                        case '':
+
+                            break;
+                        default:
+                            break;
+
+                }); */
+
+                this.data_table.row.add(row_data_obj).draw();
+
+            },
+
+            reDraw: function(data) {
+
+                var that = this;
+                this.results = data;
+
+                setTimeout(function() {
+                    that.renderList(false);
+                }.bind(this), 100);
+
+                return;
+            },
+
+            getUpdatedData: function(data) {
+
+                var service = mvc.createService({ owner: "nobody" });
+                var that = this;
+                var auth = "";
+                //var done = false;
+                //var res = "";
+
+
+                service.get('storage/collections/data/expectedTime', auth, function(err,res) {
+
+                    if(err) {
+                        console.log("Error getting KVStore data: ", err);
+                        return;
+                    }
+
+                    var cleaned_data = [];
+
+                    function fix_key(key) {
+                        console.log("the key is: ", key);
+                        return key.replace(/^_key/, "key"); }
+
+                    _.each(res.data, function(row_obj, row_k) {
+                        var row =
+                        _.object(
+                            _.map(_.keys(row_obj), fix_key),
+                            _.values(row_obj)
+                        );
+
+                        row['Edit'] = 'Edit';
+                        row['Remove'] = 'Remove';
+
+                        cleaned_data.push(row);
+
+                    });
+
+
+                     console.log("Success getting KVStore data: ",cleaned_data);
+
+                     that.reDraw(cleaned_data);
+
+                });
+
+                /*
+                service.request(
+                "storage/collections/data/expectedTime",
+                "GET",
+                null,
+                null,
+                null,
+                {"Content-Type": "application/json"}, null)
+                .done(function(response) {
+
+                    console.log('Updated data response: ', response);
+
+                    //that.results = response;
+                    //hat.data_table.draw();
+                    that.reDraw(response);
+
+                });
+
+                if(done) {
+                    console.log("done");
+                    this.results = res;
+                    var that = this;
+
+                    setTimeout(function() {
+                        that.data_table.clear().draw();
+                    }, 1000);
+                }
+                */
+
+            },
+
 
             renderList: function(retain_datatables_state) {
 
@@ -64,7 +216,7 @@ define([
 
                 this.data_table = $('#bhTable', this.$el).DataTable( {
                     rowReorder: {
-                        selector: 'tr',
+                        selector: 'td:first-child',
                     },
                     select: true,
                     "pageLength" : 25,
@@ -83,50 +235,58 @@ define([
 
                     that.data_table.draw();
 
-                    setTimeout(function() {
-                        var headers_data = that.data_table.columns().header();
-                        var updatedData = that.data_table.rows( { order: 'applied' } ).data();
-                        var headers = [];
-                        var mappedHeaders = [
-                            { header : "Key", mapped : "_key" },
-                            { header : "Comments", mapped : "comments" },
-                            { header : "Contact", mapped : "contact" },
-                            { header : "Host", mapped : "host" },
-                            { header : "Index", mapped : "index" },
-                            { header : "Sourcetype", mapped : "sourcetype" },
-                            { header : "Late Seconds", mapped : "lateSecs" },
-                            { header : "Suppress Until", mapped : "suppressUntil" }
-                        ];
-                        //var updatedData = that.data_table.columns().data(0);
-
-                        _.each(headers_data, function(header,k) {
-
-                            var header_val = header.innerText;
-
-                            _.each(mappedHeaders, function(mapping,k) {
-
-                                if(header_val === mapping['header'] ) {
-
-                                    var mapped_val = mapping["mapped"];
-
-                                    headers.push(mapped_val);
-
-                                }
-
-                            });
-
-                        });
-
-                        console.log('updatedData ', updatedData);
-                        console.log('headers ', headers)
-                        that.mapData(updatedData, headers);
-
-                    }, 1000);
-
+                    that.processDataForUpdate();
 
                 });
 
             },
+
+            processDataForUpdate: function() {
+
+                var that = this;
+
+                setTimeout(function() {
+                    var headers_data = that.data_table.columns().header();
+                    var updatedData = that.data_table.rows({order: 'applied'}).data();
+                    var headers = [];
+                    var mappedHeaders = [
+                        {header: "Key", mapped: "_key"},
+                        {header: "Comments", mapped: "comments"},
+                        {header: "Contact", mapped: "contact"},
+                        {header: "Host", mapped: "host"},
+                        {header: "Index", mapped: "index"},
+                        {header: "Sourcetype", mapped: "sourcetype"},
+                        {header: "Late Seconds", mapped: "lateSecs"},
+                        {header: "Suppress Until", mapped: "suppressUntil"}
+                    ];
+                    //var updatedData = that.data_table.columns().data(0);
+
+                    _.each(headers_data, function (header, k) {
+
+                        var header_val = header.innerText;
+
+                        _.each(mappedHeaders, function (mapping, k) {
+
+                            if (header_val === mapping['header']) {
+
+                                var mapped_val = mapping["mapped"];
+
+                                headers.push(mapped_val);
+
+                            }
+
+                        });
+
+                    });
+
+                    console.log('updatedData ', updatedData);
+                    console.log('headers ', headers);
+                    that.mapData(updatedData, headers);
+
+                }, 1000);
+
+            },
+
 
             mapData: function(updatedData, headers) {
 
@@ -179,8 +339,6 @@ define([
                     cache: false,
                     search: "| outputlookup expectedTime"
                 });
-
-                this.childViews.push(emptyExpectedTime);
 
                 emptyExpectedTime.on("search:done", function() {
                     service.request(

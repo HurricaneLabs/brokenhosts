@@ -71,6 +71,14 @@ require([
 
 	});
 
+	eventBus.on("row:update", function(e) {
+		updateRow.startSearch();
+	});
+
+	updateRow.on("search:done", function(props) {
+		lookupSearch.startSearch();
+	});
+
 	/*
 	lookupTable.on("click", function(e) {
         e.preventDefault();
@@ -124,10 +132,6 @@ require([
 
 	eventBus.on("add:row", function(e) {
 		addRow.startSearch();
-	});
-
-	eventBus.on("update:row", function(e) {
-		updateRow.startSearch();
 	});
 
 	eventBus.on("remove:row", function(e) {
