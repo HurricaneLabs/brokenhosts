@@ -1,17 +1,76 @@
+require.config({
+    paths: {
+        "BHTableView" : '../app/broken_hosts/components/BHTableView'
+    }
+});
+
+
 require([
     'underscore',
     'backbone',
     'jquery',
     'splunkjs/mvc',
+    'BHTableView',
     'splunkjs/mvc/tableview',
     'splunkjs/mvc/searchmanager',
     'splunkjs/mvc/simplexml/ready!'
-], function(_, Backbone, $, mvc, TableView) {
+], function(_, Backbone, $, mvc, BHTableView, TableView, SearchManager) {
 
     var lateSecsValue = "";
-    var tableElement = mvc.Components.getInstance("lookupTable");
+    //var tableElement = mvc.Components.getInstance("lookupTable");
     var now = new Date();
 
+    var expectedTimeSearch = new SearchManager({
+        id: "expectedTimeSearch",
+        search: "| inputlookup expectedTime\n" +
+            "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
+            "| table * Edit, Remove",
+        earliest_time: "-1m",
+        latest_time: "now"
+    });
+
+    var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
+
+    results.on("data", function() {
+
+        var headers = results.data().fields;
+        var rows = results.data().rows;
+        var results_obj = [];
+
+        console.log("Headers: ", headers);
+        console.log("Rows: ", rows);
+
+        _.each(rows, function(row,key) {
+
+            var row_arr = [];
+
+            _.each(row, function(v,k) {
+
+                var header = headers[k];
+                var obj = {};
+
+                if(v === null) {
+                    v = "";
+                }
+
+                row_arr[header] = v;
+
+            });
+
+            results_obj.push(row_arr);
+
+        });
+
+
+        new BHTableView({
+            id: "BHTableView",
+            results: results_obj,
+            el: $("#BHTableWrapper")
+        }).render();
+
+    });
+
+    /*
     var StatusRenderer = TableView.BaseCellRenderer.extend({
 
         canRender: function(cell) {
@@ -73,5 +132,6 @@ require([
         });
 
     });
+    */
 
 });

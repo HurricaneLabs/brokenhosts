@@ -1,0 +1,63 @@
+<script type="text/x-template" id="bhTable-template">
+            <table cellpadding="0" cellspacing="0" border="0"
+                   class="table table-chrome table-striped display dataTable"
+                   id="bhTable">
+                <thead>
+                    <tr role="row">
+                        <th>Key</th>
+                        <th>Comments</th>
+                        <th>Contact</th>
+                        <th>Host</th>
+                        <th>Index</th>
+                        <th>Sourcetype</th>
+                        <th>Late Seconds</th>
+                        <th>Suppress Until</th>
+                        <th>Edit</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(suppressions.length !== 0) { %>
+                        <% for (var i = 0; i < suppressions.length; i++) { %>
+                            <tr id="<%- i %>">
+                                <td class="reorder"><%- suppressions[i].key %></td>
+                                <td><%- suppressions[i].comments %></td>
+                                <td><%- suppressions[i].contact %></td>
+                                <td><%- suppressions[i].host %></td>
+                                <td><%- suppressions[i].index %></td>
+                                <td><%- suppressions[i].sourcetype %></td>
+                                <td><%- suppressions[i].lateSecs %></td>
+                                <td><%- suppressions[i].suppressUntil %></td>
+                                <td><a href="#"><%- suppressions[i].Edit %></a></td>
+                                <td><a href="#"><%- suppressions[i].Remove %></a></td>
+                            </tr>
+                        <% } %>
+                    <% } else { %>
+                        <tr>
+                            <td>No suppressions.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+</script>
+
+<div id="bh-content">
+    <div class="loading-placeholder">
+        Retrieving data...
+
+        <div class="progress">
+          <div class="bar" style="width: 0%;"></div>
+        </div>
+    </div>
+</div>

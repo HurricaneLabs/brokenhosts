@@ -71,6 +71,7 @@ require([
 
 	});
 
+	/*
 	lookupTable.on("click", function(e) {
         e.preventDefault();
 		var target = $(e.data)[0]["click.value2"];
@@ -149,6 +150,7 @@ require([
 		lookupSearch.startSearch();
 	});
 
+*/
 
 });
 //# sourceURL=lookup_configure.js
