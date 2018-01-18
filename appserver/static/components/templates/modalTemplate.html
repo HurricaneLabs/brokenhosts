@@ -1,6 +1,10 @@
 <div id="pivotModal" class="modal">
     <div class="modal-header">
-        <h3>Edit</h3><button class="close">Close</button>
+        <% if(mode==='Edit') { %>
+            <h3>Edit Suppression</h3><button class="close">Close</button>
+        <% } else { %>
+            <h3>New Suppression</h3><button class="close">Close</button>
+        <% } %>
     </div>
     <div class="modal-body">
 

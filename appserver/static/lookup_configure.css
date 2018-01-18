@@ -1,3 +1,25 @@
+.dashboard-body {
+    padding: 0 !important;
+}
+.dashboard-row .dashboard-panel {
+    background: none !important;
+    margin-top: 45px !important;
+}
+.dashboard-row .dashboard-panel .panel-body {
+    overflow: visible !important;
+}
+.dashboard-row .dashboard-panel .panel-body.html {
+    padding: 0 !important;
+}
+.dashboard-header h2 {
+    margin: 0 10px;
+}
+.row {
+    margin-top: 12px;
+    margin-left: 0;
+    background: #fff;
+    border-bottom: 1px solid #d5d5d5;
+}
 span[id^="inputWrapper"] {
     float: left;
     margin-right: 10px;
@@ -40,4 +62,40 @@ span[id^="inputWrapper"] .select2-container {
     width: 10px;
     height: 10px;
     background-color: orange;
+}
+#addNewRow {
+    float: right;
+    margin: 0 10px;
+}
+input.search-query {
+    width: 200px;
+    margin: 0 10px;
+}
+.loading {
+    padding: 20px;
+}
+#bhTable_info {
+    padding: 10px 25px;
+}
+#bhTable_paginate {
+    padding: 0 25px;
+}
+#bhTable_paginate a.disabled {
+    cursor: default !important;
+    color: #ccc !important;
+}
+#bhTable_paginate a.disabled:hover {
+    text-decoration: none !important;
+}
+#bhTable_paginate a.previous {
+    margin-right: 5px;
+}
+#bhTable_paginate a.next {
+    margin-left: 5px;
+}
+#bhTable_paginate a.current {
+    text-decoration: underline !important;
+}
+#bhTable_paginate span a.paginate_button {
+    margin: 0 5px;
 }

@@ -112,7 +112,8 @@ require([
             index: "",
             lateSecs: "",
             sourcetype: "",
-            suppressUntil: ""
+            suppressUntil: "",
+            mode: "New"
 		});
 
 		var modal = new ModalView({ model : model,
@@ -128,6 +129,28 @@ require([
     eventBus.on("row:edit", function(row_data) {
 
 		console.log("Row data edit: ", row_data);
+
+		model.set({
+			_key: row_data[0],
+			comments: row_data[1],
+			contact: row_data[2],
+			host: row_data[3],
+			index: row_data[4],
+            sourcetype: row_data[5],
+			lateSecs: row_data[6],
+			suppressUntil: row_data[7],
+            mode: "Edit"
+		});
+
+		var modal = new ModalView({
+            model : model,
+			eventBus : eventBus,
+			mode : 'Edit',
+			searches : searches,
+			tokens : tokens
+		});
+
+		modal.show();
 
 	});
 

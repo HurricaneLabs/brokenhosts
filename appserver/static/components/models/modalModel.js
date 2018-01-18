@@ -14,7 +14,8 @@ define([
             index: "",
             lateSecs: "",
             sourcetype: "",
-            suppressUntil: ""
+            suppressUntil: "",
+            mode: "Edit"
         }
 
     });

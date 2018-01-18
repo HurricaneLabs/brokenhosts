@@ -52,8 +52,6 @@ define([
             editRow: function(e) {
 
                 var row_data = this.data_table.row( $(e.target).parents('tr') ).data();
-                //console.log("Row's data: ", row_data);
-
                 this.eventBus.trigger("row:edit", row_data);
 
             },
@@ -65,50 +63,6 @@ define([
                 this.data_table.row($(e.currentTarget).parents('tr')).remove().draw();
 
                 this.processDataForUpdate();
-
-            },
-
-            addRow: function(row_data_obj) {
-
-                console.log("this.data_table? ", this.data_table);
-
-                console.log("row_array ", row_data_obj);
-
-                var row_arr = [
-                    'comments',
-                    'contact',
-                    'host',
-                    'index',
-                    'sourcetype',
-                    'lateSecs',
-                    'suppressUntil'
-                ];
-
-                /*
-                _.each(row_data_obj, function(v,k){
-
-                    switch(k):
-                        case 'comments':
-                            row_arr[0]
-                            break;
-                        case '':
-
-                            break;
-                        case '':
-
-                            break;
-                        case '':
-
-                            break;
-                        case '':
-
-                            break;
-                        default:
-                            break;
-
-                }); */
-
-                this.data_table.row.add(row_data_obj).draw();
 
             },
 
@@ -167,35 +121,6 @@ define([
 
                 });
 
-                /*
-                service.request(
-                "storage/collections/data/expectedTime",
-                "GET",
-                null,
-                null,
-                null,
-                {"Content-Type": "application/json"}, null)
-                .done(function(response) {
-
-                    console.log('Updated data response: ', response);
-
-                    //that.results = response;
-                    //hat.data_table.draw();
-                    that.reDraw(response);
-
-                });
-
-                if(done) {
-                    console.log("done");
-                    this.results = res;
-                    var that = this;
-
-                    setTimeout(function() {
-                        that.data_table.clear().draw();
-                    }, 1000);
-                }
-                */
-
             },
 
 
@@ -219,10 +144,12 @@ define([
                         selector: 'td:first-child',
                     },
                     select: true,
-                    "pageLength" : 25,
+                    "iDisplayLength" : 10,
                     "bLengthChange" : false,
-                    "searching" : false,
+                    "searching" : true,
                     "bFilter" : false,
+                    "pagingType" : "simple_numbers",
+                    "language" : { search: "" },
                     //"oLanguage": { "sSearch": "" },
                     "aLengthMenu" : [[5,10,15,-1], [5,10,15,"All"]],
                     //"ordering" : false,
@@ -230,6 +157,11 @@ define([
                         return retain_datatables_state;
                     }
                 });
+
+                $('div.dataTables_filter input').addClass('search-query');
+                $('div.dataTables_filter input[type="search"]').attr('placeholder', 'Filter');
+
+
 
                 this.data_table.on('row-reorder', function (e, details, changes) {
 
