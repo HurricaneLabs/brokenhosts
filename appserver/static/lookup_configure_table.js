@@ -58,7 +58,7 @@ require([
 
     var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
 
-    $(document).find('.dashboard-body .panel-body').prepend('<button id="addNewRow" class="btn btn-primary">Add New</button>');
+    $(document).find('.dashboard-body .panel-body').prepend('');
 
     results.on("data", function() {
 

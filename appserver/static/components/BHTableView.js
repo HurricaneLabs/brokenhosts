@@ -26,7 +26,8 @@ define([
     "text!BHTableTemplate",
     "splunkjs/mvc/searchmanager",
     "splunkjs/mvc/dropdownview",
-    "splunkjs/mvc/timerangeview"
+    "splunkjs/mvc/timerangeview",
+    "bootstrap.dropdown",
     ], function(_, Backbone, $, mvc, dataTable, rowReorder, Clipboard, BHTableTemplate, SearchManager, DropdownView, TimeRangeView) {
 
         var BHTableView = Backbone.View.extend({
@@ -42,6 +43,7 @@ define([
 				this.sourcetypeDropdown = "";
                 this.data_table = null;
                 this.results = this.options.results;
+                this.per_page = 10;
                 this.eventBus.on("row:update:done", this.getUpdatedData, this);
                 //_.bindAll(this, "changed");
             },
@@ -49,7 +51,8 @@ define([
             events: {
                 'click .edit' : 'editRow',
                 'click .remove' : 'removeRow',
-                'click .clipboard' : 'copyRow'
+                'click .clipboard' : 'copyRow',
+                'click .per-page' : 'pageCountChanged'
             },
 
             editRow: function(e) {
@@ -88,6 +91,17 @@ define([
 
                     }
                 });
+
+            },
+
+            pageCountChanged: function(e) {
+
+                var per_page = $(e.currentTarget).data('page-count');
+                this.per_page = parseInt(per_page);
+
+                this.reDraw(this.results);
+
+                console.log("Page count changed!", e);
 
             },
 
@@ -171,7 +185,8 @@ define([
                 console.log('this.results', this.results);
 
                 $("#bh-content", this.$el).html(_.template(bh_template, {
-                    suppressions: this.results
+                    suppressions: this.results,
+                    per_page: this.per_page
                 }));
 
                 this.data_table = $('#bhTable', this.$el).DataTable( {
@@ -180,7 +195,7 @@ define([
                     },
                     select: true,
                     ordering: false,
-                    "iDisplayLength" : 10,
+                    "iDisplayLength" : this.per_page,
                     "bLengthChange" : false,
                     "searching" : true,
                     "bFilter" : false,
