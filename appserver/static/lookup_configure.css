@@ -71,8 +71,8 @@ input.search-query {
     width: 200px;
     margin: 0 10px;
 }
-.loading {
-    padding: 20px;
+p.loading {
+    text-align: center !Important;
 }
 #bhTable_info {
     padding: 10px 25px;

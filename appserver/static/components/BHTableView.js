@@ -4,6 +4,7 @@ require.config({
         datatables: "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/jquery.dataTables",
         bootstrapDataTables: "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/dataTables.bootstrap",
         rowreorders: "../app/broken_hosts/components/lib/DataTables/RowReorder-1.2.3/js/dataTables.rowReorder",
+        clipboard : "../app/broken_hosts/components/lib/clipboard/clipboard.min",
         text: "../app/broken_hosts/components/lib/text",
         'BHTableTemplate' : '../app/broken_hosts/components/templates/BHTableTemplate.html',
     },
@@ -21,11 +22,12 @@ define([
     "splunkjs/mvc",
     "datatables",
     "rowreorders",
+    "clipboard",
     "text!BHTableTemplate",
     "splunkjs/mvc/searchmanager",
     "splunkjs/mvc/dropdownview",
     "splunkjs/mvc/timerangeview"
-    ], function(_, Backbone, $, mvc, dataTable, rowReorder, BHTableTemplate, SearchManager, DropdownView, TimeRangeView) {
+    ], function(_, Backbone, $, mvc, dataTable, rowReorder, Clipboard, BHTableTemplate, SearchManager, DropdownView, TimeRangeView) {
 
         var BHTableView = Backbone.View.extend({
     
@@ -43,16 +45,49 @@ define([
                 this.eventBus.on("row:update:done", this.getUpdatedData, this);
                 //_.bindAll(this, "changed");
             },
-            
+
             events: {
                 'click .edit' : 'editRow',
-                'click .remove' : 'removeRow'
+                'click .remove' : 'removeRow',
+                'click .clipboard' : 'copyRow'
             },
 
             editRow: function(e) {
 
                 var row_data = this.data_table.row( $(e.target).parents('tr') ).data();
                 this.eventBus.trigger("row:edit", row_data);
+
+            },
+
+            copyRow: function(e) {
+
+                new Clipboard('.clipboard', {
+                    text: function(trigger) {
+
+                        var comments, contact, host, index, sourcetype, lateSecs, suppressUntil = "";
+
+                        $(trigger).parents('tr').each(function(i, el) {
+
+                            var td = $(this).find('td');
+                            comments = td.eq(1).text();
+                            contact = td.eq(2).text();
+                            host = td.eq(3).text();
+                            index = td.eq(4).text();
+                            sourcetype = td.eq(5).text();
+                            lateSecs = td.eq(6).text();
+                            suppressUntil = td.eq(7).text();
+
+                        });
+
+                        var final_output = "Comments: " + comments + "\n" +
+                            "Contact: " + contact + "\n" + "Host: " + host + "\n" + "Index: " + index + "\n" +
+                            "Sourcetype: " + sourcetype + "\n" + "Late Seconds: " + lateSecs + "\n" +
+                            "Suppress Until: " + suppressUntil;
+
+                        return final_output;
+
+                    }
+                });
 
             },
 
@@ -144,6 +179,7 @@ define([
                         selector: 'td:first-child',
                     },
                     select: true,
+                    ordering: false,
                     "iDisplayLength" : 10,
                     "bLengthChange" : false,
                     "searching" : true,

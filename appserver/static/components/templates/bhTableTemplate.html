@@ -14,12 +14,13 @@
                         <th>Suppress Until</th>
                         <th>Edit</th>
                         <th>Remove</th>
+                        <th>Copy</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if(suppressions.length !== 0) { %>
                         <% for (var i = 0; i < suppressions.length; i++) { %>
-                            <tr id="<%- i %>">
+                            <tr id="row-<%- i %>">
                                 <td class="reorder"><%- suppressions[i].key %></td>
                                 <td><%- suppressions[i].comments %></td>
                                 <td><%- suppressions[i].contact %></td>
@@ -30,6 +31,7 @@
                                 <td><%- suppressions[i].suppressUntil %></td>
                                 <td><a class="edit" href="#"><%- suppressions[i].Edit %></a></td>
                                 <td><a class="remove" href="#"><%- suppressions[i].Remove %></a></td>
+                                <td><a class="clipboard" data-clipboard-target="#row-<%- i %>" href="#">Copy</a></td>
                             </tr>
                         <% } %>
                     <% } else { %>
