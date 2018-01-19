@@ -4,6 +4,7 @@ require.config({
         datatables: "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/jquery.dataTables",
         bootstrapDataTables: "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/dataTables.bootstrap",
         rowreorders: "../app/broken_hosts/components/lib/DataTables/RowReorder-1.2.3/js/dataTables.rowReorder",
+        selects: "../app/broken_hosts/components/lib/DataTables/Select-1.2.4/js/dataTables.select.min",
         clipboard : "../app/broken_hosts/components/lib/clipboard/clipboard.min",
         text: "../app/broken_hosts/components/lib/text",
         'BHTableTemplate' : '../app/broken_hosts/components/templates/BHTableTemplate.html',
@@ -22,13 +23,14 @@ define([
     "splunkjs/mvc",
     "datatables",
     "rowreorders",
+    "selects",
     "clipboard",
     "text!BHTableTemplate",
     "splunkjs/mvc/searchmanager",
     "splunkjs/mvc/dropdownview",
     "splunkjs/mvc/timerangeview",
     "bootstrap.dropdown",
-    ], function(_, Backbone, $, mvc, dataTable, rowReorder, Clipboard, BHTableTemplate, SearchManager, DropdownView, TimeRangeView) {
+    ], function(_, Backbone, $, mvc, dataTable, rowReorder, selects, Clipboard, BHTableTemplate, SearchManager, DropdownView, TimeRangeView) {
 
         var BHTableView = Backbone.View.extend({
     
@@ -101,13 +103,9 @@ define([
 
                 this.reDraw(this.results);
 
-                console.log("Page count changed!", e);
-
             },
 
             removeRow: function(e) {
-                console.log("e ", e);
-                console.log("e.parent", $(e.currentTarget).parents('tr'));
 
                 this.data_table.row($(e.currentTarget).parents('tr')).remove().draw();
 
@@ -139,14 +137,12 @@ define([
                 service.get('storage/collections/data/expectedTime', auth, function(err,res) {
 
                     if(err) {
-                        console.log("Error getting KVStore data: ", err);
                         return;
                     }
 
                     var cleaned_data = [];
 
                     function fix_key(key) {
-                        console.log("the key is: ", key);
                         return key.replace(/^_key/, "key"); }
 
                     _.each(res.data, function(row_obj, row_k) {
@@ -162,9 +158,6 @@ define([
                         cleaned_data.push(row);
 
                     });
-
-
-                     console.log("Success getting KVStore data: ",cleaned_data);
 
                      that.reDraw(cleaned_data);
 
@@ -182,8 +175,6 @@ define([
                     return;
                 }
 
-                console.log('this.results', this.results);
-
                 $("#bh-content", this.$el).html(_.template(bh_template, {
                     suppressions: this.results,
                     per_page: this.per_page
@@ -193,8 +184,7 @@ define([
                     rowReorder: {
                         selector: 'td:first-child',
                     },
-                    select: true,
-                    ordering: false,
+                    ordering: true,
                     "iDisplayLength" : this.per_page,
                     "bLengthChange" : false,
                     "searching" : true,
@@ -262,8 +252,6 @@ define([
 
                     });
 
-                    console.log('updatedData ', updatedData);
-                    console.log('headers ', headers);
                     that.mapData(updatedData, headers);
 
                 }, 1000);
@@ -284,15 +272,11 @@ define([
 
                        if(headers[col_k]) {
 
-                           console.log('column header: ', headers[col_k]);
-
                            var header = headers[col_k];
 
                            row_obj[header] = col;
 
                            //row_arr.push(row_obj);
-
-                           console.log("row_obj ", row_obj);
                        }
 
                    });
@@ -300,8 +284,6 @@ define([
                    results.push(row_obj);
 
                 });
-
-                console.log('Final results: ', JSON.stringify(results));
 
                 var data = JSON.stringify(results);
 
