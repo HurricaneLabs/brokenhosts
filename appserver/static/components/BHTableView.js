@@ -7,7 +7,7 @@ require.config({
         selects: "../app/broken_hosts/components/lib/DataTables/Select-1.2.4/js/dataTables.select.min",
         clipboard : "../app/broken_hosts/components/lib/clipboard/clipboard.min",
         text: "../app/broken_hosts/components/lib/text",
-        'BHTableTemplate' : '../app/broken_hosts/components/templates/BHTableTemplate.html',
+        'BHTableTemplate' : '../app/broken_hosts/components/templates/bhTableTemplate.html',
     },
     shim: {
         'bootstrapDataTables': {
