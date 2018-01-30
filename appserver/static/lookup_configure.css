@@ -99,3 +99,9 @@ p.loading {
 #bhTable_paginate span a.paginate_button {
     margin: 0 5px;
 }
+#emptyKVNotice {
+    padding: 0 10px;
+}
+table.dataTable td.reorder {
+    text-align: left !Important;
+}

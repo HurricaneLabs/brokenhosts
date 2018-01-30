@@ -47,6 +47,7 @@ define([
                 this.results = this.options.results;
                 this.per_page = 10;
                 this.eventBus.on("row:update:done", this.getUpdatedData, this);
+                this.eventBus.on("populated:kvstore", this.renderList, this);
                 //_.bindAll(this, "changed");
             },
 
@@ -54,7 +55,8 @@ define([
                 'click .edit' : 'editRow',
                 'click .remove' : 'removeRow',
                 'click .clipboard' : 'copyRow',
-                'click .per-page' : 'pageCountChanged'
+                'click .per-page' : 'pageCountChanged',
+                'click #populateDefault' : 'populateTable'
             },
 
             editRow: function(e) {
@@ -74,13 +76,13 @@ define([
                         $(trigger).parents('tr').each(function(i, el) {
 
                             var td = $(this).find('td');
-                            comments = td.eq(1).text();
-                            contact = td.eq(2).text();
-                            host = td.eq(3).text();
-                            index = td.eq(4).text();
-                            sourcetype = td.eq(5).text();
-                            lateSecs = td.eq(6).text();
-                            suppressUntil = td.eq(7).text();
+                            comments = td.eq(0).text();
+                            contact = td.eq(1).text();
+                            host = td.eq(2).text();
+                            index = td.eq(3).text();
+                            sourcetype = td.eq(4).text();
+                            lateSecs = td.eq(5).text();
+                            suppressUntil = td.eq(6).text();
 
                         });
 
@@ -184,6 +186,16 @@ define([
                     rowReorder: {
                         selector: 'td:first-child',
                     },
+                    columnDefs: [
+                        {
+                            "targets" : [0],
+                            "visible" : false
+                        },
+                        {
+                            "targets" : [1],
+                            "className" : "reorder"
+                        }
+                    ],
                     ordering: true,
                     "iDisplayLength" : this.per_page,
                     "bLengthChange" : false,
@@ -211,6 +223,30 @@ define([
                     that.processDataForUpdate();
 
                 });
+
+            },
+
+            populateTable: function() {
+
+                var service = mvc.createService({ owner: "nobody" });
+                var that = this;
+
+                $("#populateDefault").text("Populating...");
+
+                service.request(
+                    "/servicesNS/nobody/broken_hosts/bhosts/bhosts_setup/setup",
+                    "POST",
+                    null,
+                    null,
+                    null,
+                    {"Content-Type": "application/json"}, null)
+                    .done(function(response) {
+
+                        console.log("populated kvstore: ", response);
+                        that.results = null;
+                        that.eventBus.trigger("populated:kvstore");
+
+                    });
 
             },
 

@@ -56,10 +56,29 @@ require([
         latest_time: "now"
     });
 
+    expectedTimeSearch.on("search:done", function(state, job) {
+
+        console.log("expectedTimeSearch: ", state);
+
+        if(state.content.resultCount === 0) {
+
+            var results_obj = [];
+
+            var bhTable = new BHTableView({
+                id: "BHTableView",
+                results: results_obj,
+                el: $("#BHTableWrapper"),
+                eventBus: eventBus
+            }).render();
+
+        }
+    });
+
     var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
 
     results.on("data", function() {
 
+        console.log("results? ", results);
         var headers = results.data().fields;
         var rows = results.data().rows;
         var results_obj = [];
@@ -95,6 +114,9 @@ require([
         }).render();
 
     });
+
+
+
 
     $(document).on('click', '#addNewRow', function(e) {
 
@@ -173,5 +195,9 @@ require([
 		//eventBus.trigger("row:update:done");
         expectedTimeSearch.startSearch();
 	});
+
+	eventBus.on("populated:kvstore", function() {
+	    expectedTimeSearch.startSearch();
+    });
 
 });

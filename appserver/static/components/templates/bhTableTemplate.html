@@ -17,6 +17,7 @@
                     </ul>
                 </div>
             </div>
+            <% if(suppressions.length > 0) { %>
             <table cellpadding="0" cellspacing="0" border="0"
                    class="table table-chrome table-striped display dataTable"
                    id="bhTable">
@@ -69,6 +70,15 @@
                     <% } %>
                 </tbody>
             </table>
+            <% } else { %>
+                <div id="emptyKVNotice">
+                    <p>Your Broken Hosts KV Store is empty.
+                        <button id="populateDefault" class="btn btn-primary">
+                            Populate with Default Values
+                        </button>
+                    </p>
+                </div>
+            <% } %>
         </div>
 </script>
 
