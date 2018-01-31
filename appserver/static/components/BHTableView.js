@@ -95,9 +95,11 @@ define([
 
                 this.updating = updating;
                 if(this.updating === true) {
+                    this.data_table.rowReorder.disable();
                     $(".updating").fadeIn();
                     $("td").css({ "color" : "#7a7a7a"});
                 } else {
+                    this.data_table.rowReorder.enable();
                     $(".updating").fadeOut();
                     $("td").css({ "color" : "#000000"});
                 }
@@ -112,6 +114,7 @@ define([
                 var current_row_data = this.current_row.data();
                 console.log("current row data: ", current_row_data);
                 this.eventBus.trigger("row:edit", current_row_data);
+
             },
 
             addNewRow: function() {
@@ -181,9 +184,8 @@ define([
 
             runAddNewSearch: function(row_data) {
 
-                that.data_table.rowReorder.disable();
-
                 this.trigger("updating", true);
+
                 var that = this;
 
                 //Run addRow search created in dashboard simple XML
@@ -229,8 +231,8 @@ define([
                             new_row_data["contact"],
                             new_row_data["host"],
                             new_row_data["index"],
-                            new_row_data["lateSecs"],
                             new_row_data["sourcetype"],
+                            new_row_data["lateSecs"],
                             new_row_data["suppressUntil"],
                             "<a class=\"edit\" href=\"#\">Edit</a>",
                             "<a class=\"remove\" href=\"#\">Remove</a>",
@@ -250,7 +252,6 @@ define([
                 var that = this;
 
                 that.trigger("updating", true);
-                that.data_table.rowReorder.disable();
 
                 this.updateRow.startSearch();
 
@@ -267,7 +268,6 @@ define([
                 this.current_row.data(temp).invalidate();
 
                 this.updateRow.on("search:done", function() {
-                    that.data_table.rowReorder.enable();
                     that.trigger("updating", false);
                 });
 
@@ -465,7 +465,6 @@ define([
             processDataForUpdate: function() {
 
                 var that = this;
-                that.data_table.rowReorder.disable();
 
                 setTimeout(function() {
                     var headers_data = that.data_table.columns().header();
@@ -582,7 +581,6 @@ define([
                     .done(function() {
                         console.log("KVStore updated!");
                         that.trigger("updating", false);
-                        that.data_table.rowReorder.enable();
                         $('td').css({ 'color' : '#000' });
                     });
                 });
