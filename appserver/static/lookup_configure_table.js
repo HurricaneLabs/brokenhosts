@@ -19,33 +19,7 @@ require([
     'splunkjs/mvc/simplexml/ready!'
 ], function(_, Backbone, $, mvc, BHTableView, TableView, SearchManager, ModalView, ModalModel) {
 
-    var tokens = mvc.Components.get("submitted");
-    var lookupSearch = mvc.Components.get("lookupSearch");
-	var updateRow = mvc.Components.get("updateRow");
-	var addRow = mvc.Components.get("addRow");
-    var now = new Date();
     var eventBus = _.extend({}, Backbone.Events);
-	var model = ModalModel;
-	var searches = [];
-	var childViews = [];
-	var new_row = "";
-
-	var sourcetypeInputSearch = new SearchManager({
-		id: "sourcetype-input-search",
-		search: "| metadata type=sourcetypes index=* | table sourcetype"
-	});
-	var hostInputSearch = new SearchManager({
-		id: "host-input-search",
-		search: "| metadata type=hosts index=* | table host"
-	});
-	var indexInputSearch = new SearchManager({
-		id: "index-input-search",
-		search: "| tstats count WHERE index=* by index"
-	});
-
-	searches.push(sourcetypeInputSearch);
-	searches.push(hostInputSearch);
-	searches.push(indexInputSearch);
 
     var expectedTimeSearch = new SearchManager({
         id: "expectedTimeSearch",
@@ -53,151 +27,146 @@ require([
             "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
             "| table * Edit, Remove",
         earliest_time: "-1m",
-        latest_time: "now"
+        latest_time: "now",
+        autostart: false
     });
 
-    expectedTimeSearch.on("search:done", function(state, job) {
-
-        console.log("expectedTimeSearch: ", state);
-
-        if(state.content.resultCount === 0) {
-
-            var results_obj = [];
-
-            var bhTable = new BHTableView({
-                id: "BHTableView",
-                results: results_obj,
-                el: $("#BHTableWrapper"),
-                eventBus: eventBus
-            }).render();
-
-        }
+    var expectedTimeBackupSearch = new SearchManager({
+        id: "expectedTimeSearch_tmp",
+        search: "| inputlookup expectedTime_tmp\n" +
+            "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
+            "| table * Edit, Remove | outputlookup  expectedTime",
+        earliest_time: "-1m",
+        latest_time: "now",
+        autostart: false
     });
 
-    var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
+	var initialRun = function() {
 
-    results.on("data", function() {
+        expectedTimeSearch.startSearch();
 
-        console.log("results? ", results);
-        var headers = results.data().fields;
-        var rows = results.data().rows;
-        var results_obj = [];
+	    //Check if there is data in expectedTime
+        expectedTimeSearch.on("search:done", function(state, job) {
 
+            console.log("expectedTimeSearch: ", state);
 
-        _.each(rows, function(row,key) {
+            //No data? Then pull from _tmp backup KVStore
+            if(state.content.resultCount === 0) {
 
-            var row_arr = [];
+                console.log("expected time results are empty...");
+                //no results -- check backup
+                checkBackup("expectedTimeSearch_tmp").done(function(results) {
 
-            _.each(row, function(v,k) {
+                    var bhTable = new BHTableView({
+                        id: "BHTableView",
+                        results: results,
+                        el: $("#BHTableWrapper"),
+                        eventBus: eventBus,
+                        restored: true
+                    }).render();
 
-                var header = headers[k];
-                var obj = {};
+                });
 
-                if(v === null) {
-                    v = "";
-                }
+            } else {
 
-                row_arr[header] = v;
+                //Has results
+                getResults("expectedTimeSearch").done(function(results) {
 
-            });
+                    var bhTable = new BHTableView({
+                        id: "BHTableView",
+                        results: results,
+                        el: $("#BHTableWrapper"),
+                        eventBus: eventBus,
+                        restored: false
+                    }).render();
 
-            results_obj.push(row_arr);
+                });
+
+            }
 
         });
 
+    };
 
-        var bhTable = new BHTableView({
-            id: "BHTableView",
-            results: results_obj,
-            el: $("#BHTableWrapper"),
-            eventBus: eventBus
-        }).render();
+	function checkBackup() {
+	    var deferred = new $.Deferred();
+	    var results = [];
 
-    });
+	    expectedTimeBackupSearch.startSearch();
 
+	    expectedTimeBackupSearch.on("search:done", function(state, job) {
 
+	        if(state.content.resultCount === 0) {
 
+	            console.log("backup results are empty...");
+	            results = [];
+	            deferred.resolve(results);
 
-    $(document).on('click', '#addNewRow', function(e) {
+            } else {
 
-		e.preventDefault();
+	            console.log("attempting to get backup results...");
 
-		model.set({
-			_key: "",
-            comments: "",
-            contact: "",
-            host: "",
-            index: "",
-            lateSecs: "",
-            sourcetype: "",
-            suppressUntil: "",
-            mode: "New"
-		});
+	            getResults("expectedTimeSearch_tmp").done(function(results) {
 
-		var modal = new ModalView({ model : model,
-			eventBus : eventBus,
-			mode : 'New',
-			searches : searches,
-			tokens : tokens });
+	                console.log("backup results? ", results);
+	                deferred.resolve(results);
 
-		modal.show();
+                });
 
-	});
+            }
 
-    eventBus.on("row:edit", function(row_data) {
+        });
 
-		console.log("Row data edit: ", row_data);
+	    return deferred.promise();
 
-		model.set({
-			_key: row_data[0],
-			comments: row_data[1],
-			contact: row_data[2],
-			host: row_data[3],
-			index: row_data[4],
-            sourcetype: row_data[5],
-			lateSecs: row_data[6],
-			suppressUntil: row_data[7],
-            mode: "Edit"
-		});
+    };
 
-		var modal = new ModalView({
-            model : model,
-			eventBus : eventBus,
-			mode : 'Edit',
-			searches : searches,
-			tokens : tokens
-		});
+	function getResults(search_name) {
+        var deferred = new $.Deferred();
 
-		modal.show();
+	    if(search_name === "expectedTimeSearch_tmp") {
+	        var results = expectedTimeBackupSearch.data("results", { output_mode : "json_rows", count: 0 });
+        } else if(search_name === "expectedTimeSearch") {
+	        var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
+        }
 
-	});
+        results.on("data", function() {
 
-    eventBus.on("row:update", function(e) {
-        console.log("row update");
-		updateRow.startSearch();
-	});
+            console.log("results? ", results);
+            var headers = results.data().fields;
+            var rows = results.data().rows;
+            var results_obj = [];
 
-    eventBus.on("row:new", function(row_data) {
-        console.log('new row ', row_data);
-        new_row = row_data;
-        addRow.startSearch();
-    });
+            _.each(rows, function(row,key) {
 
-	addRow.on("search:done", function(props) {
-		//lookupSearch.startSearch();
-        //expectedTimeSearch.startSearch();
-        //console.log("props: ", props);
+                var row_arr = [];
 
-        eventBus.trigger("row:update:done", new_row);
-	});
+                _.each(row, function(v,k) {
 
-	updateRow.on("search:done", function(props) {
-		//eventBus.trigger("row:update:done");
-        expectedTimeSearch.startSearch();
-	});
+                    var header = headers[k];
+                    var obj = {};
 
-	eventBus.on("populated:kvstore", function() {
-	    expectedTimeSearch.startSearch();
-    });
+                    if(v === null) {
+                        v = "";
+                    }
+
+                    row_arr[header] = v;
+
+                });
+
+                results_obj.push(row_arr);
+
+            });
+
+            console.log("getResults results_obj: ", results_obj);
+            deferred.resolve(results_obj);
+
+        });
+
+	    return deferred.promise();
+
+    };
+
+    initialRun();
 
 });

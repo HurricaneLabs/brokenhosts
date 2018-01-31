@@ -10,7 +10,7 @@
       | eval suppressUntil="$suppress_until_add_tok$"
       | eval contact="$contact_add_tok$"
       | eval comments="$comments_add_tok$"]
-      | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
+      | table key,index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
   </search>
   <search id="removeRow">
     <query>| inputlookup  expectedTime | eval key=_key

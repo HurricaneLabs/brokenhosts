@@ -173,6 +173,10 @@ define([
                     time_24hr: "true"
                 });
 
+                splunkjs.mvc.Components.revokeInstance("sourcetype");
+                splunkjs.mvc.Components.revokeInstance("host");
+                splunkjs.mvc.Components.revokeInstance("index");
+
                 this.splunkComponentsInit();
 
             },
@@ -310,7 +314,7 @@ define([
 					this.tokens.set("sourcetype_add_tok", this.model.get("sourcetype"));
 					this.tokens.set("suppress_until_add_tok", this.model.get("suppressUntil"));
 
-					this.eventBus.trigger("row:new", this.model);
+					this.eventBus.trigger("row:new", this.model.attributes);
 
 				} else if(this.mode === "Edit") {
 
@@ -322,7 +326,7 @@ define([
                     this.tokens.set("contact_update_tok", this.model.get("contact"));
 					this.tokens.set("sourcetype_update_tok", this.model.get("sourcetype"));
 					this.tokens.set("suppress_until_update_tok", this.model.get("suppressUntil"));
-					this.eventBus.trigger("row:update");
+					this.eventBus.trigger("row:update", this.model.attributes);
 
 				}
 
@@ -330,6 +334,7 @@ define([
             },
     
             close: function() {
+
                 this.unsetSplunkComponents();
                 this.unbind();
                 this.remove();
