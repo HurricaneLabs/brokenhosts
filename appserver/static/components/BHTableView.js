@@ -92,14 +92,14 @@ define([
             },
 
             updateStatus: function(updating) {
-
+                var that = this;
                 this.updating = updating;
                 if(this.updating === true) {
-                    this.data_table.rowReorder.disable();
+                    that.data_table.rowReorder.disable();
                     $(".updating").fadeIn();
                     $("td").css({ "color" : "#7a7a7a"});
                 } else {
-                    this.data_table.rowReorder.enable();
+                    that.data_table.rowReorder.enable();
                     $(".updating").fadeOut();
                     $("td").css({ "color" : "#000000"});
                 }
