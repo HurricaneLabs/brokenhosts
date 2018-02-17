@@ -303,7 +303,7 @@ define([
             },
 
             submitData: function() {
-
+                console.log("SUBMIT DATA!");
 				if(this.mode === "New") {
 
 					this.tokens.set("host_add_tok", this.model.get("host"));
@@ -338,6 +338,7 @@ define([
                 this.unsetSplunkComponents();
                 this.unbind();
                 this.remove();
+
             }
 
         });

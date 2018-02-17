@@ -12,6 +12,9 @@ require.config({
 
     },
     shim: {
+        'datatables.net': {
+            deps: ['datatables']
+        },
         'bootstrapDataTables': {
             deps: ['datatables']
         }
@@ -38,6 +41,7 @@ define([
         var BHTableView = Backbone.View.extend({
     
             initialize: function(options) {
+                console.log("INITIALIZING...");
                 this.options = options;
                 this.options = _.extend({}, this.defaults, this.options);
                 this.mode = options.mode;
@@ -52,15 +56,17 @@ define([
                 this.restored = this.options.restored; //restored from backup?
                 this.updating = false;
                 this.per_page = 10;
+                this.modal = null;
                 this.modalModel = ModalModel;
                 this.updateRow = mvc.Components.get("updateRow");
-                this.addRow = mvc.Components.get("addRow");
+                this.addRow = "";
                 this.tokens = mvc.Components.get("submitted");
-                //this.eventBus.on("row:update:done", this.getUpdatedData, this);
-                this.eventBus.on("populated:kvstore", this.renderList, this);
+                this.eventBus.on("row:update:done", this.getUpdatedData, this);
+                //this.eventBus.on("populated:kvstore", this.renderList, this);
                 this.eventBus.on("row:edit", this.showEditModal, this);
                 this.eventBus.on("row:update", this.runUpdateSearch, this); //triggered from modal view
                 this.eventBus.on("row:new", this.runAddNewSearch, this); //triggered from modal view
+
                 this.on("updating", this.updateStatus, this);
                 this.searches = [];
                 var sourcetypeInputSearch = new SearchManager({
@@ -97,22 +103,31 @@ define([
                 if(this.updating === true) {
                     that.data_table.rowReorder.disable();
                     $(".updating").fadeIn();
-                    $("td").css({ "color" : "#7a7a7a"});
+                    that.data_table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+                        var rowNode = this.node();
+                        $(rowNode).find("td").each(function (){
+                              $(this).css({ "color" : "#7a7a7a"});
+                        });
+                    } );
+
                 } else {
                     that.data_table.rowReorder.enable();
                     $(".updating").fadeOut();
-                    $("td").css({ "color" : "#000000"});
+                    that.data_table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+                        var rowNode = this.node();
+                        $(rowNode).find("td").each(function (){
+                              $(this).css({ "color" : "#000000"});
+                        });
+                    } );
                 }
 
             },
 
             editRow: function(e) {
 
-                console.log("Edit row...");
                 e.preventDefault();
                 this.current_row = this.data_table.row( $(e.target).parents('tr') );
                 var current_row_data = this.current_row.data();
-                console.log("current row data: ", current_row_data);
                 this.eventBus.trigger("row:edit", current_row_data);
 
             },
@@ -135,7 +150,7 @@ define([
                     mode: "New"
                 });
 
-                var modal = new ModalView({
+                this.modal = new ModalView({
                     model : that.modalModel,
                     eventBus : that.eventBus,
                     mode : 'New',
@@ -143,18 +158,17 @@ define([
                     tokens : that.tokens
                 });
 
-                this.childComponents.push(modal);
+                this.childComponents.push(this.modal);
 
-                modal.show();
+                this.modal.show();
 
             },
 
             showEditModal: function(row_data) {
 
-                this.unsetModal();
+                //this.unsetModal();
 
                 var that = this;
-                console.log("Row data edit: ", row_data);
 
                 this.modalModel.set({
                     _key: row_data[0],
@@ -168,7 +182,7 @@ define([
                     mode: "Edit"
                 });
 
-                var modal = new ModalView({
+                this.modal = new ModalView({
                     model : that.modalModel,
                     eventBus : that.eventBus,
                     mode : 'Edit',
@@ -176,20 +190,43 @@ define([
                     tokens : that.tokens
                 });
 
-                this.childComponents.push(modal);
+                this.childComponents.push(this.modal);
 
-                modal.show();
+                this.modal.show();
 
             },
 
             runAddNewSearch: function(row_data) {
 
+                console.log("runAddNewSearch");
+
                 this.trigger("updating", true);
 
                 var that = this;
 
+                //this.addRow = mvc.Components.get("addRow");
+
+                this.addRow = new SearchManager({
+                    id: "addRow",
+                    autostart: false,
+                    search: "| inputlookup  expectedTime | eval key=_key" +
+                    "      | append [| stats count" +
+                    "      | eval index=lower(\"" + this.tokens.get("index_add_tok") + "\")" +
+                    "      | eval sourcetype=lower(\""+this.tokens.get("sourcetype_add_tok")+"\")" +
+                    "      | eval host=lower(\""+this.tokens.get("host_add_tok")+"\")" +
+                    "      | eval lateSecs=\""+this.tokens.get("late_secs_add_tok")+"\"" +
+                    "      | eval suppressUntil=\""+this.tokens.get("suppress_until_add_tok")+"\"" +
+                    "      | eval contact=\""+this.tokens.get("contact_add_tok")+"\"" +
+                    "      | eval comments=\""+this.tokens.get("comments_add_tok")+"\"]" +
+                    "      | table key,index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime"
+                });
+
                 //Run addRow search created in dashboard simple XML
                 this.addRow.startSearch();
+
+                this.addRow.on("search:start", function(props) {
+                    console.log("starting...search....", props);
+                });
 
                 this.addRow.on("search:done", function() {
 
@@ -219,8 +256,6 @@ define([
 
                         });
 
-                        console.log("cleaned data: ", cleaned_data);
-                        console.log("cleaned data last row ", cleaned_data[cleaned_data.length-1]);
                         var new_row_idx = cleaned_data.length-1;
                         var new_row_data = cleaned_data[cleaned_data.length-1];
 
@@ -240,7 +275,7 @@ define([
                         ]).draw(false).node();
 
                         that.trigger("updating", false);
-                        //that.processDataForUpdate();
+                        that.processDataForUpdate();
 
                     });
 
@@ -293,9 +328,9 @@ define([
 
                         });
 
-                        var final_output = "Comments: " + comments + "\n" +
-                            "Contact: " + contact + "\n" + "Host: " + host + "\n" + "Index: " + index + "\n" +
-                            "Sourcetype: " + sourcetype + "\n" + "Late Seconds: " + lateSecs + "\n" +
+                        var final_output = "Comments: " + comments + "" +
+                            "Contact: " + contact + "" + "Host: " + host + "" + "Index: " + index + "" +
+                            "Sourcetype: " + sourcetype + "" + "Late Seconds: " + lateSecs + "" +
                             "Suppress Until: " + suppressUntil;
 
                         return final_output;
@@ -310,7 +345,7 @@ define([
                 var per_page = $(e.currentTarget).data('page-count');
                 this.per_page = parseInt(per_page);
 
-                this.reDraw(this.results);
+                //this.reDraw(this.results);
 
             },
 
@@ -323,6 +358,7 @@ define([
 
             },
 
+            /*
             reDraw: function(data) {
 
                 var that = this;
@@ -334,6 +370,7 @@ define([
 
                 return;
             },
+            */
 
 
             getUpdatedData: function() {
@@ -370,7 +407,7 @@ define([
 
                     });
 
-                    that.reDraw(cleaned_data);
+                    //that.reDraw(cleaned_data);
 
                 });
 
@@ -393,9 +430,7 @@ define([
                 }));
 
                 this.data_table = $('#bhTable', this.$el).DataTable( {
-                    rowReorder: {
-                        selector: 'td:first-child',
-                    },
+                    rowReorder: true,
                     columnDefs: [
                         {
                             "targets" : [0],
@@ -427,9 +462,7 @@ define([
 
                 this.data_table.on('row-reorder', function (e, details, changes) {
 
-                    that.data_table.draw(false);
                     that.trigger("updating", true);
-
 
                     that.processDataForUpdate();
 
@@ -453,7 +486,6 @@ define([
                     {"Content-Type": "application/json"}, null)
                     .done(function(response) {
 
-                        console.log("populated kvstore: ", response);
                         //that.results = null;
 
                         that.getUpdatedData();
@@ -534,7 +566,6 @@ define([
 
                 var data = JSON.stringify(results);
 
-                console.log("Data to update: ", data);
                 this.updateKVStore(data);
 
             },
@@ -579,9 +610,10 @@ define([
                     data,
                     {"Content-Type": "application/json"}, null)
                     .done(function() {
-                        console.log("KVStore updated!");
                         that.trigger("updating", false);
-                        $('td').css({ 'color' : '#000' });
+                        that.data_table.rowReorder.enable();
+                        splunkjs.mvc.Components.revokeInstance("addRow");
+
                     });
                 });
 
@@ -610,9 +642,12 @@ define([
 
             unsetModal: function() {
                 _.each(this.childComponents, function(c) {
+
                     c.unbind();
                     c.remove();
                 });
+
+
             }
 
         });

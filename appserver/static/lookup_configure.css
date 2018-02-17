@@ -127,3 +127,7 @@ table.dataTable td.reorder {
 .updating>i {
     color: green;
 }
+.modal .modal-body {
+    height: 450px !important;
+    overflow: scroll !important;
+}

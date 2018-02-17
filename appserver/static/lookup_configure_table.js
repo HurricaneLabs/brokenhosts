@@ -45,6 +45,8 @@ require([
 
         expectedTimeSearch.startSearch();
 
+        console.log("initial run...");
+
 	    //Check if there is data in expectedTime
         expectedTimeSearch.on("search:done", function(state, job) {
 
