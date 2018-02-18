@@ -290,6 +290,7 @@ define([
                         that.results = arr.push(that.data_table.rows().data());
                         if(that.data_table.rows().count() === 1) {
                             $("#emptyKVNotice").fadeOut();
+                            $("#backupNotice").fadeOut();
                         }
                         console.log("results", that.results);
                         that.trigger("updating", false);
