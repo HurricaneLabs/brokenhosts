@@ -103,20 +103,32 @@ define([
                 if(this.updating === true) {
                     that.data_table.rowReorder.disable();
                     $(".updating").fadeIn();
+                    $("#addNewRow").prop("disabled", true);
+                    $(".pageDropDown").addClass("disabled");
+                    $(".dataTables_paginate a").addClass("disabled");
                     that.data_table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
                         var rowNode = this.node();
                         $(rowNode).find("td").each(function (){
-                              $(this).css({ "color" : "#7a7a7a"});
+                              $(this).addClass("disabled");
+                        });
+                        $(rowNode).find("td > a").each(function (){
+                              $(this).addClass("disabled");
                         });
                     } );
 
                 } else {
                     that.data_table.rowReorder.enable();
                     $(".updating").fadeOut();
+                    $("#addNewRow").prop("disabled", false);
+                    $(".pageDropDown").removeClass("disabled");
+                    $(".dataTables_paginate a").removeClass("disabled");
                     that.data_table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
                         var rowNode = this.node();
                         $(rowNode).find("td").each(function (){
-                              $(this).css({ "color" : "#000000"});
+                              $(this).removeClass("disabled");
+                        });
+                        $(rowNode).find("td > a").each(function (){
+                              $(this).removeClass("disabled");
                         });
                     } );
                 }
@@ -328,9 +340,9 @@ define([
 
                         });
 
-                        var final_output = "Comments: " + comments + "" +
-                            "Contact: " + contact + "" + "Host: " + host + "" + "Index: " + index + "" +
-                            "Sourcetype: " + sourcetype + "" + "Late Seconds: " + lateSecs + "" +
+                        var final_output = "Comments: " + comments + "\n" +
+                            "Contact: " + contact + "\n" + "Host: " + host + "\n" + "Index: " + index + "\n" +
+                            "Sourcetype: " + sourcetype + "\n" + "Late Seconds: " + lateSecs + "\n" +
                             "Suppress Until: " + suppressUntil;
 
                         return final_output;
@@ -345,7 +357,7 @@ define([
                 var per_page = $(e.currentTarget).data('page-count');
                 this.per_page = parseInt(per_page);
 
-                //this.reDraw(this.results);
+                this.reDraw(this.results);
 
             },
 
@@ -358,7 +370,6 @@ define([
 
             },
 
-            /*
             reDraw: function(data) {
 
                 var that = this;
@@ -370,7 +381,6 @@ define([
 
                 return;
             },
-            */
 
 
             getUpdatedData: function() {
@@ -407,7 +417,7 @@ define([
 
                     });
 
-                    //that.reDraw(cleaned_data);
+                    that.reDraw(cleaned_data);
 
                 });
 

@@ -152,7 +152,7 @@ define([
     
             show: function() {
 
-                $(document.body).append(this.render().el);
+                $(document.body).addClass("modal-shown").append(this.render().el);
 
                 $(this.el).find(".modal").css({
                     width:"40%",
@@ -335,6 +335,7 @@ define([
     
             close: function() {
 
+                $(document.body).removeClass("modal-shown");
                 this.unsetSplunkComponents();
                 this.unbind();
                 this.remove();

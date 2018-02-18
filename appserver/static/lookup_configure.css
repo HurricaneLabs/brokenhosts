@@ -112,8 +112,8 @@ table.dataTable td.reorder {
     background-color: #d8d8d8;
 }
 .notice {
-    float: right;
-    margin-top: 0px;
+    margin: 0 15%;
+    position: absolute;
 }
 .notice p.restored {
     margin: 0;
@@ -130,4 +130,12 @@ table.dataTable td.reorder {
 .modal .modal-body {
     height: 450px !important;
     overflow: scroll !important;
+}
+.disabled {
+   pointer-events: none;
+   cursor: default;
+   color: #7a7a7a;
+}
+.modal-shown {
+    overflow: hidden;
 }
