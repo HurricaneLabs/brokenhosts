@@ -362,8 +362,8 @@ define([
 
                 var per_page = $(e.currentTarget).data('page-count');
                 this.per_page = parseInt(per_page);
+                $(".pageDropDown").html(per_page + " per page <span class=\"caret\"></span>");
                 this.data_table.page.len( this.per_page ).draw();
-                //this.reDraw(this.results);
 
             },
 
