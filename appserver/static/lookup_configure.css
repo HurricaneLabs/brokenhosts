@@ -101,6 +101,16 @@ p.loading {
 }
 #emptyKVNotice {
     padding: 0 10px;
+    position: absolute;
+    margin-top: -45px;
+}
+#backupNotice {
+    padding: 5px 10px 0;
+    position: absolute;
+    margin-top: -45px;
+    width: 100%;
+    background: orangered;
+    color: #FFF;
 }
 table.dataTable td.reorder {
     text-align: left !Important;
@@ -115,7 +125,11 @@ table.dataTable td.reorder {
     margin: 0 15%;
     position: absolute;
 }
-.notice p.restored {
+.notice-error {
+    margin: 0 35%;
+    position: absolute;
+}
+.notice-error p.restored {
     margin: 0;
     padding: 5px 12px !important;
     color: #fff;

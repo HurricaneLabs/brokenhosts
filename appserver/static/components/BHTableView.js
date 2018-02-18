@@ -52,8 +52,11 @@ define([
 				this.sourcetypeDropdown = "";
                 this.data_table = null;
                 this.current_row = "";
+                //this.initial_load = this.options.initial_load;
                 this.results = this.options.results;
-                this.restored = this.options.restored; //restored from backup?
+                //this.restored = this.options.restored; //restored from backup?
+                this.backup_available = this.options.backup_available;
+                console.log("backup? ", this.backup_available);
                 this.updating = false;
                 this.per_page = 10;
                 this.modal = null;
@@ -94,6 +97,7 @@ define([
                 'click .clipboard' : 'copyRow',
                 'click .per-page' : 'pageCountChanged',
                 'click #populateDefault' : 'populateTable',
+                'click #populateBackup' : 'populateFromBackup',
                 'click #addNewRow' : 'addNewRow'
             },
 
@@ -236,10 +240,6 @@ define([
                 //Run addRow search created in dashboard simple XML
                 this.addRow.startSearch();
 
-                this.addRow.on("search:start", function(props) {
-                    console.log("starting...search....", props);
-                });
-
                 this.addRow.on("search:done", function() {
 
                     var service = mvc.createService({ owner: "nobody" });
@@ -286,6 +286,12 @@ define([
                             "<a class=\"clipboard\" data-clipboard-target=\"#row-"+new_row_idx+"\" href=\"#\">Copy</a>"
                         ]).draw(false).node();
 
+                        var arr = [];
+                        that.results = arr.push(that.data_table.rows().data());
+                        if(that.data_table.rows().count() === 1) {
+                            $("#emptyKVNotice").fadeOut();
+                        }
+                        console.log("results", that.results);
                         that.trigger("updating", false);
                         that.processDataForUpdate();
 
@@ -356,17 +362,33 @@ define([
 
                 var per_page = $(e.currentTarget).data('page-count');
                 this.per_page = parseInt(per_page);
-
-                this.reDraw(this.results);
+                this.data_table.page.len( this.per_page ).draw();
+                //this.reDraw(this.results);
 
             },
 
             removeRow: function(e) {
 
+                var service = mvc.createService({ owner: "nobody" });
                 this.trigger("updating", true);
+                var that = this;
+                var _key = this.data_table.row($(e.currentTarget).parents('tr')).data()[0];
+                console.log("_key", _key);
                 this.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
 
-                this.processDataForUpdate();
+                //this.processDataForUpdate();
+                service.request(
+                    "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/"+_key,
+                    "DELETE",
+                    null,
+                    null,
+                    null,
+                    {"Content-Type": "application/json"}, null)
+                    .done(function() {
+                        that.trigger("updating", false);
+                        that.data_table.rowReorder.enable();
+                        //splunkjs.mvc.Components.revokeInstance("addRow");
+                });
 
             },
 
@@ -376,12 +398,11 @@ define([
                 this.results = data;
 
                 setTimeout(function() {
-                    that.renderList(false);
+                    that.renderList(true);
                 }.bind(this), 100);
 
                 return;
             },
-
 
             getUpdatedData: function() {
 
@@ -423,7 +444,6 @@ define([
 
             },
 
-
             renderList: function(retain_datatables_state) {
 
                 var bh_template = $('#bhTable-template', this.$el).text();
@@ -436,7 +456,8 @@ define([
                 $("#bh-content", this.$el).html(_.template(bh_template, {
                     suppressions: this.results,
                     per_page: this.per_page,
-                    restored: this.restored
+                    restored: this.restored,
+                    backup_available: this.backup_available
                 }));
 
                 this.data_table = $('#bhTable', this.$el).DataTable( {
@@ -456,7 +477,7 @@ define([
                     "bLengthChange" : false,
                     "searching" : true,
                     "bFilter" : false,
-                    "bStateSave" : true,
+                    "stateSave" : true,
                     "pagingType" : "simple_numbers",
                     "language" : { search: "" },
                     //"oLanguage": { "sSearch": "" },
@@ -476,6 +497,33 @@ define([
 
                     that.processDataForUpdate();
 
+                });
+
+            },
+
+            populateFromBackup: function() {
+
+                var service = mvc.createService({ owner: "nobody" });
+                var that = this;
+
+                $("#populateDefault").text("Populating...");
+
+                var backupSearch = new SearchManager({
+                    id: "backupSearch",
+                    search: "| inputlookup expectedTime_tmp\n" +
+                        "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
+                        "| table * Edit, Remove | outputlookup expectedTime",
+                    earliest_time: "-1m",
+                    latest_time: "now",
+                    autostart: false
+                });
+
+                backupSearch.startSearch();
+
+                backupSearch.on("search:done", function(props) {
+                    that.backup_available = false;
+                    splunkjs.mvc.Components.revokeInstance("backupSearch");
+                    that.getUpdatedData();
                 });
 
             },
@@ -548,7 +596,6 @@ define([
 
             },
 
-
             mapData: function(updatedData, headers) {
 
                 var results = [];
@@ -575,6 +622,8 @@ define([
                 });
 
                 var data = JSON.stringify(results);
+
+                console.log('any data??? ', data);
 
                 this.updateKVStore(data);
 
@@ -606,26 +655,27 @@ define([
                     search: "| outputlookup expectedTime"
                 });
 
-                //once backup is complete, empty out the kvstore
-                backupExpectedTime.on("search:done", function() {
-                    emptyExpectedTime.startSearch()
-                });
-
-                emptyExpectedTime.on("search:done", function() {
-                    service.request(
-                    "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/batch_save",
-                    "POST",
-                    null,
-                    null,
-                    data,
-                    {"Content-Type": "application/json"}, null)
-                    .done(function() {
-                        that.trigger("updating", false);
-                        that.data_table.rowReorder.enable();
-                        splunkjs.mvc.Components.revokeInstance("addRow");
-
+                    //once backup is complete, empty out the kvstore
+                    backupExpectedTime.on("search:done", function() {
+                        emptyExpectedTime.startSearch()
                     });
-                });
+
+                    emptyExpectedTime.on("search:done", function() {
+                        service.request(
+                        "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/batch_save",
+                        "POST",
+                        null,
+                        null,
+                        data,
+                        {"Content-Type": "application/json"}, null)
+                        .done(function() {
+                            that.trigger("updating", false);
+                            that.data_table.rowReorder.enable();
+                            splunkjs.mvc.Components.revokeInstance("addRow");
+                        });
+                    });
+
+
 
             },
 

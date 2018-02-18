@@ -35,7 +35,7 @@ require([
         id: "expectedTimeSearch_tmp",
         search: "| inputlookup expectedTime_tmp\n" +
             "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
-            "| table * Edit, Remove | outputlookup  expectedTime",
+            "| table * Edit, Remove",
         earliest_time: "-1m",
         latest_time: "now",
         autostart: false
@@ -43,48 +43,17 @@ require([
 
 	var initialRun = function() {
 
-        expectedTimeSearch.startSearch();
+        getResults("expectedTimeSearch").done(function(results, backup_available) {
 
-        console.log("initial run...");
+            console.log("results ", results);
 
-	    //Check if there is data in expectedTime
-        expectedTimeSearch.on("search:done", function(state, job) {
-
-            console.log("expectedTimeSearch: ", state);
-
-            //No data? Then pull from _tmp backup KVStore
-            if(state.content.resultCount === 0) {
-
-                console.log("expected time results are empty...");
-                //no results -- check backup
-                checkBackup("expectedTimeSearch_tmp").done(function(results) {
-
-                    var bhTable = new BHTableView({
-                        id: "BHTableView",
-                        results: results,
-                        el: $("#BHTableWrapper"),
-                        eventBus: eventBus,
-                        restored: true
-                    }).render();
-
-                });
-
-            } else {
-
-                //Has results
-                getResults("expectedTimeSearch").done(function(results) {
-
-                    var bhTable = new BHTableView({
-                        id: "BHTableView",
-                        results: results,
-                        el: $("#BHTableWrapper"),
-                        eventBus: eventBus,
-                        restored: false
-                    }).render();
-
-                });
-
-            }
+            var bhTable = new BHTableView({
+                id: "BHTableView",
+                results: results,
+                el: $("#BHTableWrapper"),
+                eventBus: eventBus,
+                backup_available: backup_available
+            }).render();
 
         });
 
@@ -98,11 +67,13 @@ require([
 
 	    expectedTimeBackupSearch.on("search:done", function(state, job) {
 
+	        var backup_available = false;
+
 	        if(state.content.resultCount === 0) {
 
 	            console.log("backup results are empty...");
-	            results = [];
-	            deferred.resolve(results);
+	            //results = [];
+	            deferred.resolve(backup_available);
 
             } else {
 
@@ -110,8 +81,9 @@ require([
 
 	            getResults("expectedTimeSearch_tmp").done(function(results) {
 
+	                backup_available = true;
 	                console.log("backup results? ", results);
-	                deferred.resolve(results);
+	                deferred.resolve(backup_available);
 
                 });
 
@@ -125,47 +97,82 @@ require([
 
 	function getResults(search_name) {
         var deferred = new $.Deferred();
+	    var results_obj = [];
+        var backup_available = false;
+        //var results = expectedTimeBackupSearch.data("results", { output_mode : "json_rows", count: 0 });
 
-	    if(search_name === "expectedTimeSearch_tmp") {
-	        var results = expectedTimeBackupSearch.data("results", { output_mode : "json_rows", count: 0 });
-        } else if(search_name === "expectedTimeSearch") {
-	        var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
-        }
+        expectedTimeSearch.startSearch();
 
-        results.on("data", function() {
+        expectedTimeSearch.on("search:done", function(state, job) {
 
-            console.log("results? ", results);
-            var headers = results.data().fields;
-            var rows = results.data().rows;
-            var results_obj = [];
+            if (state.content.resultCount === 0) {
+                //check the backup search
+                expectedTimeBackupSearch.startSearch();
+            } else {
+                var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
 
-            _.each(rows, function(row,key) {
+                results.on("data", function () {
 
-                var row_arr = [];
+                    console.log("results? ", results);
+                    var headers = results.data().fields;
+                    var rows = results.data().rows;
+                    var results_obj = [];
 
-                _.each(row, function(v,k) {
+                    _.each(rows, function (row, key) {
 
-                    var header = headers[k];
-                    var obj = {};
+                        var row_arr = [];
 
-                    if(v === null) {
-                        v = "";
-                    }
+                        _.each(row, function (v, k) {
 
-                    row_arr[header] = v;
+                            var header = headers[k];
+                            var obj = {};
+
+                            if (v === null) {
+                                v = "";
+                            }
+
+                            row_arr[header] = v;
+
+                        });
+
+                        results_obj.push(row_arr);
+
+                    });
+
+                    console.log("getResults results_obj: ", results_obj);
+                    deferred.resolve(results_obj, backup_available);
 
                 });
 
-                results_obj.push(row_arr);
-
-            });
-
-            console.log("getResults results_obj: ", results_obj);
-            deferred.resolve(results_obj);
+            }
 
         });
 
-	    return deferred.promise();
+        expectedTimeBackupSearch.on("search:done", function(state, job) {
+
+            if (state.content.resultCount > 0) {
+                backup_available = true;
+            }
+
+            deferred.resolve(results_obj, backup_available);
+
+        });
+
+        expectedTimeBackupSearch.on("search:done", function(state, job) {
+
+            if (state.content.resultCount === 0) {
+                backup_available = false;
+                results_obj = [];
+                deferred.resolve(results_obj, backup_available);
+            } else {
+                backup_available = true;
+                results_obj = [];
+                deferred.resolve(results_obj, backup_available);
+            }
+
+        });
+
+        return deferred.promise();
 
     };
 
