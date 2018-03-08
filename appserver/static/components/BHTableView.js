@@ -58,7 +58,7 @@ define([
                 this.backup_available = this.options.backup_available;
                 console.log("backup? ", this.backup_available);
                 this.updating = false;
-                this.per_page = 10;
+                this.per_page = 50;
                 this.modal = null;
                 this.modalModel = ModalModel;
                 this.updateRow = mvc.Components.get("updateRow");
