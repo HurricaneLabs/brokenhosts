@@ -10,16 +10,6 @@
 
         <form id="brokenHostForm">
             <div class="form-group">
-                <label for="hostSelector">Select a Host</label>
-                <span id="inputWrapper_hostSelector">
-                    <!-- default disabled field before loading in DropdownView component --->
-                     <select class="form-control" id="hostSelector" disabled></select>
-                </span>
-                <input type="text" id="host" name="host" value="<%- host %>" />
-                <p class="help-block">Use dropdown to ensure host exists.</p>
-            </div>
-
-            <div class="form-group">
                 <label for="indexSelector">Select an Index</label>
                 <span id="inputWrapper_indexSelector">
                     <!-- default disabled field before loading in DropdownView component --->
@@ -40,6 +30,16 @@
             </div>
 
             <div class="form-group">
+                <label for="hostSelector">Select a Host</label>
+                <span id="inputWrapper_hostSelector">
+                    <!-- default disabled field before loading in DropdownView component --->
+                     <select class="form-control" id="hostSelector" disabled></select>
+                </span>
+                <input type="text" id="host" name="host" value="<%- host %>" />
+                <p class="help-block">Use dropdown to ensure host exists.</p>
+            </div>
+
+            <div class="form-group">
                 <label for="lateSecs">Late Seconds</label>
                 <input type="text" id="lateSecs" name="lateSecs" value="<%- lateSecs %>"/>
                 <p class="help-block">Use seconds or SPL relative time format. 0 means Always Suppress.</p>
@@ -52,7 +52,7 @@
             </div>
 
             <div class="form-group">
-                <label for="hostSelector">Add Contacts</label>
+                <label for="contacts">Add Contacts</label>
                 <input type="text" id="contact" name="contact" value="<%- contact %>"/>
                 <p class="help-block">May be a comma delimited list of emails.</p>
             </div>

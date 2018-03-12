@@ -72,6 +72,10 @@ define([
 
                 this.on("updating", this.updateStatus, this);
                 this.searches = [];
+                var indexInputSearch = new SearchManager({
+                    id: "index-input-search",
+                    search: "| tstats count WHERE index=* by index"
+                });
                 var sourcetypeInputSearch = new SearchManager({
                     id: "sourcetype-input-search",
                     search: "| metadata type=sourcetypes index=* | table sourcetype"
@@ -80,14 +84,10 @@ define([
                     id: "host-input-search",
                     search: "| metadata type=hosts index=* | table host"
                 });
-                var indexInputSearch = new SearchManager({
-                    id: "index-input-search",
-                    search: "| tstats count WHERE index=* by index"
-                });
 
+                this.searches.push(indexInputSearch);
                 this.searches.push(sourcetypeInputSearch);
                 this.searches.push(hostInputSearch);
-                this.searches.push(indexInputSearch);
                 //_.bindAll(this, "changed");
             },
 
@@ -158,10 +158,10 @@ define([
                     _key: "",
                     comments: "",
                     contact: "",
-                    host: "",
                     index: "",
-                    lateSecs: "",
                     sourcetype: "",
+                    host: "",
+                    lateSecs: "",
                     suppressUntil: "",
                     mode: "New"
                 });
@@ -190,9 +190,9 @@ define([
                     _key: row_data[0],
                     comments: row_data[1],
                     contact: row_data[2],
-                    host: row_data[3],
                     index: row_data[4],
                     sourcetype: row_data[5],
+                    host: row_data[3],
                     lateSecs: row_data[6],
                     suppressUntil: row_data[7],
                     mode: "Edit"
@@ -276,9 +276,9 @@ define([
                             new_row_data["key"],
                             new_row_data["comments"],
                             new_row_data["contact"],
-                            new_row_data["host"],
                             new_row_data["index"],
                             new_row_data["sourcetype"],
+                            new_row_data["host"],
                             new_row_data["lateSecs"],
                             new_row_data["suppressUntil"],
                             "<a class=\"edit\" href=\"#\">Edit</a>",
@@ -313,9 +313,9 @@ define([
 
                 temp[1] = row_data["comments"];
                 temp[2] = row_data["contact"];
-                temp[3] = row_data["host"];
-                temp[4] = row_data["index"];
-                temp[5] = row_data["sourcetype"];
+                temp[3] = row_data["index"];
+                temp[4] = row_data["sourcetype"];
+                temp[5] = row_data["host"];
                 temp[6] = row_data["lateSecs"];
                 temp[7] = row_data["suppressUntil"];
 
@@ -332,16 +332,16 @@ define([
                 new Clipboard('.clipboard', {
                     text: function(trigger) {
 
-                        var comments, contact, host, index, sourcetype, lateSecs, suppressUntil = "";
+                        var comments, contact, index, sourcetype, host, lateSecs, suppressUntil = "";
 
                         $(trigger).parents('tr').each(function(i, el) {
 
                             var td = $(this).find('td');
                             comments = td.eq(0).text();
                             contact = td.eq(1).text();
-                            host = td.eq(2).text();
-                            index = td.eq(3).text();
-                            sourcetype = td.eq(4).text();
+                            index = td.eq(2).text();
+                            sourcetype = td.eq(3).text();
+                            host = td.eq(4).text();
                             lateSecs = td.eq(5).text();
                             suppressUntil = td.eq(6).text();
 
