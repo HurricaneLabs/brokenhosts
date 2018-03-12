@@ -190,9 +190,9 @@ define([
                     _key: row_data[0],
                     comments: row_data[1],
                     contact: row_data[2],
-                    index: row_data[4],
-                    sourcetype: row_data[5],
-                    host: row_data[3],
+                    index: row_data[3],
+                    sourcetype: row_data[4],
+                    host: row_data[5],
                     lateSecs: row_data[6],
                     suppressUntil: row_data[7],
                     mode: "Edit"
