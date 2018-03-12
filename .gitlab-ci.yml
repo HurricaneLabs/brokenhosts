@@ -1,0 +1,13 @@
+image: python:2.7
+stages:
+    - splunktest
+splunktest:
+    stage: splunktest
+    script:
+    - wget --output-document splunk-appinspect.tar.gz http://dev.splunk.com/goto/appinspectdownload
+    - pip install splunk-appinspect.tar.gz 
+    - mkdir /tmp/${CI_PROJECT_NAME}
+    - git archive --format tar HEAD | tar -xC /tmp/${CI_PROJECT_NAME}
+    - splunk-appinspect inspect /tmp/${CI_PROJECT_NAME} --mode precert
+    tags: 
+        - docker
