@@ -348,9 +348,8 @@ define([
                         });
 
                         var final_output = "Comments: " + comments + "\n" +
-                            "Contact: " + contact + "\n" + "Host: " + host + "\n" + "Index: " + index + "\n" +
-                            "Sourcetype: " + sourcetype + "\n" + "Late Seconds: " + lateSecs + "\n" +
-                            "Suppress Until: " + suppressUntil;
+                            "Contact: " + contact + "\n" + "\n" + "Index: " + index + "\n" + "Sourcetype: " + sourcetype +
+                            "Host: " + host + "\n" + "Late Seconds: " + lateSecs + "\n" + "Suppress Until: " + suppressUntil;
 
                         return final_output;
 
@@ -565,9 +564,9 @@ define([
                         {header: "Key", mapped: "_key"},
                         {header: "Comments", mapped: "comments"},
                         {header: "Contact", mapped: "contact"},
-                        {header: "Host", mapped: "host"},
                         {header: "Index", mapped: "index"},
                         {header: "Sourcetype", mapped: "sourcetype"},
+                        {header: "Host", mapped: "host"},
                         {header: "Late Seconds", mapped: "lateSecs"},
                         {header: "Suppress Until", mapped: "suppressUntil"}
                     ];
