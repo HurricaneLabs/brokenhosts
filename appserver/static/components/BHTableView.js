@@ -41,7 +41,6 @@ define([
         var BHTableView = Backbone.View.extend({
     
             initialize: function(options) {
-                console.log("INITIALIZING...");
                 this.options = options;
                 this.options = _.extend({}, this.defaults, this.options);
                 this.mode = options.mode;
@@ -56,7 +55,6 @@ define([
                 this.results = this.options.results;
                 //this.restored = this.options.restored; //restored from backup?
                 this.backup_available = this.options.backup_available;
-                console.log("backup? ", this.backup_available);
                 this.updating = false;
                 this.per_page = 50;
                 this.modal = null;
@@ -214,8 +212,6 @@ define([
 
             runAddNewSearch: function(row_data) {
 
-                console.log("runAddNewSearch");
-
                 this.trigger("updating", true);
 
                 var that = this;
@@ -292,7 +288,6 @@ define([
                             $("#emptyKVNotice").fadeOut();
                             $("#backupNotice").fadeOut();
                         }
-                        console.log("results", that.results);
                         that.trigger("updating", false);
                         that.processDataForUpdate();
 
@@ -373,7 +368,6 @@ define([
                 this.trigger("updating", true);
                 var that = this;
                 var _key = this.data_table.row($(e.currentTarget).parents('tr')).data()[0];
-                console.log("_key", _key);
                 this.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
 
                 //this.processDataForUpdate();
@@ -622,8 +616,6 @@ define([
                 });
 
                 var data = JSON.stringify(results);
-
-                console.log('any data??? ', data);
 
                 this.updateKVStore(data);
 

@@ -45,8 +45,6 @@ require([
 
         getResults("expectedTimeSearch").done(function(results, backup_available) {
 
-            console.log("results ", results);
-
             var bhTable = new BHTableView({
                 id: "BHTableView",
                 results: results,
@@ -71,18 +69,13 @@ require([
 
 	        if(state.content.resultCount === 0) {
 
-	            console.log("backup results are empty...");
-	            //results = [];
 	            deferred.resolve(backup_available);
 
             } else {
 
-	            console.log("attempting to get backup results...");
-
 	            getResults("expectedTimeSearch_tmp").done(function(results) {
 
 	                backup_available = true;
-	                console.log("backup results? ", results);
 	                deferred.resolve(backup_available);
 
                 });
@@ -113,7 +106,6 @@ require([
 
                 results.on("data", function () {
 
-                    console.log("results? ", results);
                     var headers = results.data().fields;
                     var rows = results.data().rows;
                     var results_obj = [];
@@ -139,7 +131,6 @@ require([
 
                     });
 
-                    console.log("getResults results_obj: ", results_obj);
                     deferred.resolve(results_obj, backup_available);
 
                 });

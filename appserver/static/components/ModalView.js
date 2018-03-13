@@ -303,7 +303,6 @@ define([
             },
 
             submitData: function() {
-                console.log("SUBMIT DATA!");
 				if(this.mode === "New") {
 
 					this.tokens.set("index_add_tok", this.model.get("index"));
