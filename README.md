@@ -3,8 +3,6 @@ Copyright 2017 Hurricane Labs
 Default configuration for broken hosts sanity check  
 Use the expectedTime lookup table for tuning
 
-Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely helpful for tuning
-
 Additional information can be found here: https://www.hurricanelabs.com/blog/broken-hosts-app-for-splunk-part-1
 
 # Installation steps: #
@@ -101,7 +99,7 @@ Configure Broken Hosts Lookup [New in v3.3.3]
 # RELEASE NOTES: #
 ==================
 
-v3.3.6 (Dev)
+v3.3.6
 - Row reordering feature added to 'Configure Broken Hosts Lookup' page. Can drag rows using the 'Comments' column.
 - 'Add New Suppression' button added to top right to make more visible.
 - Ability to Copy formatted row data to clipboard
