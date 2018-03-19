@@ -3,8 +3,6 @@ Copyright 2017 Hurricane Labs
 Default configuration for broken hosts sanity check  
 Use the expectedTime lookup table for tuning
 
-Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely helpful for tuning
-
 Additional information can be found here: https://www.hurricanelabs.com/blog/broken-hosts-app-for-splunk-part-1
 
 # Installation steps: #
@@ -100,6 +98,17 @@ Configure Broken Hosts Lookup [New in v3.3.3]
 
 # RELEASE NOTES: #
 ==================
+
+v3.3.6
+- Row reordering feature added to 'Configure Broken Hosts Lookup' page. Can drag rows using the 'Comments' column.
+- 'Add New Suppression' button added to top right to make more visible.
+- Ability to Copy formatted row data to clipboard
+- Added expectedTime_tmp for backup purposes. 
+  - In edge cases where KV Store is being updated after a row-reorder on Configure page and user refreshes, KV Store data could be lost.
+For this reason, every change made backs up the current version to a expectedTime_tmp KV Store first
+  - On initial load of the table it will check if expectedTime is empty, if it is it will then check expectedTime_tmp for data and use
+that as a backup in case the KV Store was emptied. If both are empty then it is assumed this is a new install and the user has an option
+to add default values to the KV Store.
 
 v3.3.5
 - updated the savedsearch to account for sourcetype rewrites

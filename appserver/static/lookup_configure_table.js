@@ -1,77 +1,172 @@
+require.config({
+    paths: {
+        "BHTableView" : '../app/broken_hosts/components/BHTableView',
+        "modalModel" : '../app/broken_hosts/components/models/modalModel'
+    }
+});
+
+
 require([
     'underscore',
     'backbone',
     'jquery',
     'splunkjs/mvc',
+    'BHTableView',
     'splunkjs/mvc/tableview',
     'splunkjs/mvc/searchmanager',
+    '../app/broken_hosts/components/ModalView',
+    "modalModel",
     'splunkjs/mvc/simplexml/ready!'
-], function(_, Backbone, $, mvc, TableView) {
+], function(_, Backbone, $, mvc, BHTableView, TableView, SearchManager, ModalView, ModalModel) {
 
-    var lateSecsValue = "";
-    var tableElement = mvc.Components.getInstance("lookupTable");
-    var now = new Date();
+    var eventBus = _.extend({}, Backbone.Events);
 
-    var StatusRenderer = TableView.BaseCellRenderer.extend({
-
-        canRender: function(cell) {
-            // Enable this custom cell renderer for both the active_hist_searches and the active_realtime_searches field
-            return _(['lateSecs', 'suppressUntil', ]).contains(cell.field);
-        },
-        render: function($td, cell) {
-            // Add a class to the cell based on the returned value
-            // Apply interpretation for number of realtime searches
-            var value = cell.value;
-            var field = cell.field;
-
-            if (field === "lateSecs" && parseInt(value) > 0) {
-                console.log("lateSecs is greater than 0");
-            } else if (field === "lateSecs" && parseInt(value) === 0) {
-
-                value = "Always Suppress";
-
-                lateSecsValue = value;
-
-            }
-            if (field === 'suppressUntil') {
-
-                var suppressUntilDate = new Date(value);
-
-                if (parseInt(value) === 0) {
-
-                    value = "No Suppression";
-
-                } else if (lateSecsValue === "Always Suppress") {
-
-                    $td.addClass('range-cell').addClass('status-warning');
-
-                }
-
-                if (value !== "No Suppression" && suppressUntilDate < now) {
-                    $td.addClass('range-cell').addClass('status-past');
-                }
-
-                lateSecsValue = "";
-
-
-            }
-
-            $td.text(value).addClass('numeric');
-
-        }
-
+    var expectedTimeSearch = new SearchManager({
+        id: "expectedTimeSearch",
+        search: "| inputlookup expectedTime\n" +
+            "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
+            "| table * Edit, Remove",
+        earliest_time: "-1m",
+        latest_time: "now",
+        autostart: false
     });
 
-    tableElement.getVisualization(function(tableView) {
-        tableView.on('rendered', function() {
-            tableView.$el.find('td.range-cell').each(function() {
-                $(this).parents('tr').addClass(this.className);
-            });
+    var expectedTimeBackupSearch = new SearchManager({
+        id: "expectedTimeSearch_tmp",
+        search: "| inputlookup expectedTime_tmp\n" +
+            "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
+            "| table * Edit, Remove",
+        earliest_time: "-1m",
+        latest_time: "now",
+        autostart: false
+    });
 
-            tableView.addCellRenderer(new StatusRenderer());
+	var initialRun = function() {
+
+        getResults("expectedTimeSearch").done(function(results, backup_available) {
+
+            var bhTable = new BHTableView({
+                id: "BHTableView",
+                results: results,
+                el: $("#BHTableWrapper"),
+                eventBus: eventBus,
+                backup_available: backup_available
+            }).render();
 
         });
 
-    });
+    };
+
+	function checkBackup() {
+	    var deferred = new $.Deferred();
+	    var results = [];
+
+	    expectedTimeBackupSearch.startSearch();
+
+	    expectedTimeBackupSearch.on("search:done", function(state, job) {
+
+	        var backup_available = false;
+
+	        if(state.content.resultCount === 0) {
+
+	            deferred.resolve(backup_available);
+
+            } else {
+
+	            getResults("expectedTimeSearch_tmp").done(function(results) {
+
+	                backup_available = true;
+	                deferred.resolve(backup_available);
+
+                });
+
+            }
+
+        });
+
+	    return deferred.promise();
+
+    };
+
+	function getResults(search_name) {
+        var deferred = new $.Deferred();
+	    var results_obj = [];
+        var backup_available = false;
+        //var results = expectedTimeBackupSearch.data("results", { output_mode : "json_rows", count: 0 });
+
+        expectedTimeSearch.startSearch();
+
+        expectedTimeSearch.on("search:done", function(state, job) {
+
+            if (state.content.resultCount === 0) {
+                //check the backup search
+                expectedTimeBackupSearch.startSearch();
+            } else {
+                var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
+
+                results.on("data", function () {
+
+                    var headers = results.data().fields;
+                    var rows = results.data().rows;
+                    var results_obj = [];
+
+                    _.each(rows, function (row, key) {
+
+                        var row_arr = [];
+
+                        _.each(row, function (v, k) {
+
+                            var header = headers[k];
+                            var obj = {};
+
+                            if (v === null) {
+                                v = "";
+                            }
+
+                            row_arr[header] = v;
+
+                        });
+
+                        results_obj.push(row_arr);
+
+                    });
+
+                    deferred.resolve(results_obj, backup_available);
+
+                });
+
+            }
+
+        });
+
+        expectedTimeBackupSearch.on("search:done", function(state, job) {
+
+            if (state.content.resultCount > 0) {
+                backup_available = true;
+            }
+
+            deferred.resolve(results_obj, backup_available);
+
+        });
+
+        expectedTimeBackupSearch.on("search:done", function(state, job) {
+
+            if (state.content.resultCount === 0) {
+                backup_available = false;
+                results_obj = [];
+                deferred.resolve(results_obj, backup_available);
+            } else {
+                backup_available = true;
+                results_obj = [];
+                deferred.resolve(results_obj, backup_available);
+            }
+
+        });
+
+        return deferred.promise();
+
+    };
+
+    initialRun();
 
 });

@@ -21,7 +21,7 @@
 | stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
 | where lateSecs&gt;0 AND (lastTime &lt; now() - lateSecs) AND (now() - lastTime &lt; `ignore_after`) | sort - howLateSecs
 | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
-| rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
+| rename howLate AS "Time Since Last Event" index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host"</query>
           <earliest>-30d@d</earliest>
           <latest>+1d@d</latest>
         </search>
@@ -57,7 +57,7 @@
 | stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
 | where lateSecs&gt;0 AND (lastTime &gt; now() + 100) AND (now() - lastTime &lt; `ignore_after`) | sort - howLateSecs
 | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
-| rename howLate AS "Time Since Last Event" host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype"</query>
+| rename howLate AS "Time Since Last Event" index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host"</query>
           <earliest>-30d@d</earliest>
           <latest>+7d@d</latest>
         </search>
@@ -85,7 +85,7 @@
           <query>| inputlookup expectedTime 
 | eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
 | where lateSecs=0 OR suppressUntil_epoch&gt;now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil)
-| fields index, sourcetype, host, suppressUntil, suppressUntil, comments | rename host AS "Event Host" index AS "Event Index" sourcetype AS "Event Sourcetype" suppressUntil AS "Suppressed Until" comments as Comments</query>
+| fields index, sourcetype, host, suppressUntil, suppressUntil, comments | rename index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host" suppressUntil AS "Suppressed Until" comments as Comments</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>

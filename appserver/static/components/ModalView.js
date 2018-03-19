@@ -27,9 +27,9 @@ define([
                 this.mode = options.mode;
                 this.model = options.model;
                 this.tokens = options.tokens;
+                this.indexInputSearch = options.searches.indexInputSearch;
                 this.sourcetypeInputSearch = options.searches.sourcetypeInputSearch;
                 this.hostInputSearch = options.searches.hostInputSearch;
-                this.indexInputSearch = options.searches.indexInputSearch;
                 this.options = _.extend({}, this.defaults, this.options);
 				this.eventBus = this.options.eventBus;
 				this.childViews = [];
@@ -61,6 +61,15 @@ define([
 
                 var that = this;
 
+                this.indexDropdown = new DropdownView({
+                    id: "index",
+                    managerid: "index-input-search",
+                    default: "",
+                    labelField: "index",
+                    valueField: "index",
+                    el: $("#inputWrapper_indexSelector")
+                }).render();
+
                 this.sourcetypeDropdown = new DropdownView({
                     id: "sourcetype",
                     managerid: "sourcetype-input-search",
@@ -79,14 +88,12 @@ define([
                     el: $("#inputWrapper_hostSelector")
                 }).render();
 
-                this.indexDropdown = new DropdownView({
-                    id: "index",
-                    managerid: "index-input-search",
-                    default: "",
-                    labelField: "index",
-                    valueField: "index",
-                    el: $("#inputWrapper_indexSelector")
-                }).render();
+                this.indexDropdown.on('change', function(val) {
+                    if(val) {
+                        $("#index").val(val);
+                        that.model.set({ "index" : val });
+                    }
+                });
 
                 this.sourcetypeDropdown.on('change', function(val) {
                     if(val) {
@@ -102,16 +109,9 @@ define([
                     }
                 });
 
-                this.indexDropdown.on('change', function(val) {
-                    if(val) {
-                        $("#index").val(val);
-                        that.model.set({ "index" : val });
-                    }
-                });
-
+                this.childViews.push(this.indexDropdown);
                 this.childViews.push(this.sourcetypeDropdown);
                 this.childViews.push(this.hostDropdown);
-                this.childViews.push(this.indexDropdown);
 
             },
     
@@ -127,21 +127,21 @@ define([
 
             unsetSplunkComponents: function() {
 
-                this.tokens.unset("host_add_tok");
                 this.tokens.unset("index_add_tok");
-                this.tokens.unset("comments_add_tok");
-                this.tokens.unset("late_secs_add_tok");
-                this.tokens.unset("contact_add_tok");
                 this.tokens.unset("sourcetype_add_tok");
+                this.tokens.unset("host_add_tok");
+                this.tokens.unset("late_secs_add_tok");
                 this.tokens.unset("suppress_until_add_tok");
+                this.tokens.unset("contact_add_tok");
+                this.tokens.unset("comments_add_tok");
 
-                this.tokens.unset("host_update_tok");
                 this.tokens.unset("index_update_tok");
-                this.tokens.unset("comments_update_tok");
-                this.tokens.unset("late_secs_update_tok");
-                this.tokens.unset("contact_update_tok");
                 this.tokens.unset("sourcetype_update_tok");
+                this.tokens.unset("host_update_tok");
+                this.tokens.unset("late_secs_update_tok");
                 this.tokens.unset("suppress_until_update_tok");
+                this.tokens.unset("contact_update_tok");
+                this.tokens.unset("comments_update_tok");
 
                 _.each(this.childViews, function(childView) {
                     childView.unbind();
@@ -152,7 +152,7 @@ define([
     
             show: function() {
 
-                $(document.body).append(this.render().el);
+                $(document.body).addClass("modal-shown").append(this.render().el);
 
                 $(this.el).find(".modal").css({
                     width:"40%",
@@ -172,6 +172,10 @@ define([
                     allowInput: "true",
                     time_24hr: "true"
                 });
+
+                splunkjs.mvc.Components.revokeInstance("index");
+                splunkjs.mvc.Components.revokeInstance("sourcetype");
+                splunkjs.mvc.Components.revokeInstance("host");
 
                 this.splunkComponentsInit();
 
@@ -243,9 +247,9 @@ define([
                 $("#brokenHostForm", this.el).validate({
 
                     rules: {
-                        host: 'required',
-                        sourcetype: 'required',
                         index: 'required',
+                        sourcetype: 'required',
+                        host: 'required',
                         lateSecs: {
                             required: true,
                             //number: true
@@ -266,14 +270,14 @@ define([
                     },
 
                     messages: {
-                        host: {
-                            required: "The Host field is required."
+                        index: {
+                            required: "The Index field is required."
                         },
                         sourcetype: {
                             required: "The Sourcetype field is required."
                         },
-                        index: {
-                            required: "The Index field is required."
+                        host: {
+                            required: "The Host field is required."
                         },
                         lateSecs: {
                             required: "The Late Seconds field is required.",
@@ -299,30 +303,30 @@ define([
             },
 
             submitData: function() {
-
 				if(this.mode === "New") {
 
-					this.tokens.set("host_add_tok", this.model.get("host"));
 					this.tokens.set("index_add_tok", this.model.get("index"));
-					this.tokens.set("comments_add_tok", this.model.get("comments"));
-					this.tokens.set("late_secs_add_tok", this.model.get("lateSecs"));
-					this.tokens.set("contact_add_tok", this.model.get("contact"));
 					this.tokens.set("sourcetype_add_tok", this.model.get("sourcetype"));
+					this.tokens.set("host_add_tok", this.model.get("host"));
+					this.tokens.set("late_secs_add_tok", this.model.get("lateSecs"));
 					this.tokens.set("suppress_until_add_tok", this.model.get("suppressUntil"));
+					this.tokens.set("contact_add_tok", this.model.get("contact"));
+					this.tokens.set("comments_add_tok", this.model.get("comments"));
 
-					this.eventBus.trigger("add:row");
+					this.eventBus.trigger("row:new", this.model.attributes);
 
 				} else if(this.mode === "Edit") {
 
 					this.tokens.set("key_update_tok", this.model.get("_key"));
-					this.tokens.set("host_update_tok", this.model.get("host"));
 					this.tokens.set("index_update_tok", this.model.get("index"));
-					this.tokens.set("comments_update_tok", this.model.get("comments"));
-					this.tokens.set("late_secs_update_tok", this.model.get("lateSecs"));
-                    this.tokens.set("contact_update_tok", this.model.get("contact"));
 					this.tokens.set("sourcetype_update_tok", this.model.get("sourcetype"));
+					this.tokens.set("host_update_tok", this.model.get("host"));
+					this.tokens.set("late_secs_update_tok", this.model.get("lateSecs"));
 					this.tokens.set("suppress_until_update_tok", this.model.get("suppressUntil"));
-					this.eventBus.trigger("update:row");
+					this.tokens.set("contact_update_tok", this.model.get("contact"));
+					this.tokens.set("comments_update_tok", this.model.get("comments"));
+
+					this.eventBus.trigger("row:update", this.model.attributes);
 
 				}
 
@@ -330,9 +334,12 @@ define([
             },
     
             close: function() {
+
+                $(document.body).removeClass("modal-shown");
                 this.unsetSplunkComponents();
                 this.unbind();
                 this.remove();
+
             }
 
         });
