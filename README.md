@@ -13,6 +13,8 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 
 # Update Instructions [IMPORTANT]: #
 ====================================
+v3.3.6 may require a splunk restart for javascript changes to take effect.
+
 v3.3.3 and greater uses a KV Store instead of a lookup file. Once the app is updated then populate the KV Store.
 1. Run the following search which will dump all the results from the lookup into the KV Store:
 | inputlookup expectedTime.csv | outputlookup expectedTime
