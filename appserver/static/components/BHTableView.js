@@ -117,7 +117,6 @@ define([
                         $(this).addClass("disabled");
                     });
                 });
-
             } else {
                 that.data_table.rowReorder.enable();
                 $(".updating").fadeOut();
@@ -134,7 +133,6 @@ define([
                     });
                 });
             }
-
         },
 
         editRow: function (e) {
@@ -284,13 +282,19 @@ define([
                             "<a class=\"clipboard\" data-clipboard-target=\"#row-" + new_row_idx + "\" href=\"#\">Copy</a>"
                         ]).draw(false).node();
 
+                        $(new_row).find("td").each(function () {
+                            $(this).addClass("disabled");
+                        });
+                        $(new_row).find("td > a").each(function () {
+                            $(this).addClass("disabled");
+                        });
+
                         var arr = [];
                         that.results = arr.push(that.data_table.rows().data());
                         if (that.data_table.rows().count() === 1) {
                             $("#emptyKVNotice").fadeOut();
                             $("#backupNotice").fadeOut();
                         }
-                        that.trigger("updating", false);
                         that.processDataForUpdate();
 
                     });
