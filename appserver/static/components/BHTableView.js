@@ -651,7 +651,7 @@ define([
                 autostart: false,
                 search: "| outputlookup expectedTime"
             });
-            
+
             //once backup is complete, empty out the kvstore
             backupExpectedTime.on("search:done", function (prop) {
                 console.log('backupExpectedTime finished! ', prop);
