@@ -3,6 +3,8 @@ Copyright 2017 Hurricane Labs
 Default configuration for broken hosts sanity check  
 Use the expectedTime lookup table for tuning
 
+Lookup File Editor app (https://splunkbase.splunk.com/app/1724/) is extremely helpful for tuning
+
 Additional information can be found here: https://www.hurricanelabs.com/blog/broken-hosts-app-for-splunk-part-1
 
 # Installation steps: #
@@ -13,77 +15,20 @@ Additional information can be found here: https://www.hurricanelabs.com/blog/bro
 
 # Update Instructions [IMPORTANT]: #
 ====================================
-v3.3.6 may require a splunk restart for javascript changes to take effect.
 
-v3.3.3 and greater uses a KV Store instead of a lookup file. Once the app is updated then populate the KV Store.
-1. Run the following search which will dump all the results from the lookup into the KV Store:
-| inputlookup expectedTime.csv | outputlookup expectedTime
-2. Go to the new "Configure Broken Hosts Lookup" dashboard to check if data is populating on dashboard.
+v4.0.0 might require a splunk restart for javascript changes to take effect
 
-# How does the app work? #
+# How to use this app? #
 ==========================
 
-The main part of this app is a saved search that looks at the last time that a log was received for each index/sourcetype/host and alerts if that is later than "expected".
-
-There are macros to define a few defaults: (App setup will configure these macros)
-
-- "default_contact" - Default contact (email address) - Default contact to send alert emails to [default is a dummy email]
-- "default_expected_time" - Default expected time (in seconds) - Default number of "late seconds" (amount of time that a host can be late before alerting) [default is 4 hours]
-- "ignore_after" - Ignore host after time (seconds) - Maximum number of seconds that the app will look at (anything that has not sent logs longer than this setting will NOT trigger alerts) [default is 30 days]
-- "search_additions" - added near the beginning of the search to allow for custom actions - One example for this is two hosts that are a failover-pair can be combined with: "eval host=if(searchmatch(host=hostA OR host=hostB),"hostPair",host)"
-
-The contact and "late seconds" can be configured for different indexes/sourcetypes/hosts in the "expectedTime" lookup table (the Lookup Editor app is really helpful, since it allows you to edit the lookup table from within Splunk).
-
-The search runs every 30 minutes, and will wait 1 hour before re-alerting for the same items.
-
-Each line of the lookup table has several columns. The first three (index, sourcetype, host) are used to select which data you are adjusting settings for. These are case-insensitive and wildcard enabled fields.
-
-- These fields are all required
-- For example, if you want to specify late seconds for all hosts in an index, then you would specify the index and put an asterisk in the "sourcetype" and "host" columns.
-
-The next column is "lateSecs", this is the number of "late seconds" for this host (amount of time that a host can be late before alerting).
-
-- This field is requred
-- You can set this to zero (0) if you don't want any alerts for that host/index.
-
-The fifth column is "suppressUntil". This allows you to temporarily suppress the alerts.
-
-- This field is optional
-- Format is MM/DD/YYYY HH:MM:SS
-- A host will not alert until the given date
-- For example, if you want to suppress a host because it won't be fixed until a specific change window, then you set this column to be the datetime of that change window so that you don't get alerted every hour for that host.
-- NOTE: If this date is more than the "Ignore host after time" (see above), then this host might not alert after the "suppressUntil" time is up.
-
-The next column is "contact". This allows you to send the alerts for different items to different email addresses
-
-- This field is optional
-- This will allow you to route alerts to the most appropriate group for remediation
-
-The final column is "comments". This is a non-functional column that is intended to help remember why a line was set a certain way.
-
-- This field is optional
-- For example, if a suppression was set until a change window, then maybe the change ticket number can be referenced in this column.
-
-Because the lookup table is searched from the top down and splunk takes the first match, it is recommended to put the lookup table entries in the following order: (alphabetically sorted within each section):
-
-- All with only a specific host
-- All entries with no wildcard (except partially wildcarded fields) - these would have a specific index, sourcetype, and host
-- All entries with a wildcard ONLY in the index field
-- All entries with a wildcard ONLY in the sourcetype field
-- All entries with a wildcard ONLY in the host field
-- All with only a specific sourcetype
-- All with only a specific index
+We will fill in this section with more details instructions in a later version.
+In the mean time, take a look at the SplunkBase page for this app for usage instructions
 
 # Dashboard #
 -------------
 
 Broken Hosts Dashboard
 - Can be used to get a visual picture of the current status of hosts.
-
-- "Broken Hosts" panel will show all hosts that are not reporting in time.
-- "Future Hosts" panel will show all hosts that are reporting timestamps from the future.
-- These panels will allow you to quickly update expectedTime lookup table to suppress a host from monitoring. Clicking on "Suppress" next to an item will remove it from the dashboard and alerts by adding it to the tuning spreadsheet.
-- "Suppressed Items" will show you the current contents of the "expectedTime" lookup table.
 
 Configure Broken Hosts Lookup [New in v3.3.3]
 - Allows users to CRUD the expectedTime KV Store.
@@ -101,7 +46,12 @@ Configure Broken Hosts Lookup [New in v3.3.3]
 # RELEASE NOTES: #
 ==================
 
-v3.3.6
+v4.0.0
+- fixed a bug in Google Chrome 70 that can cause the app to completely lose its configuration
+- changed how the app works for increased flexibility and performance
+- Added investigation dashbaord
+
+v3.3.6 
 - Row reordering feature added to 'Configure Broken Hosts Lookup' page. Can drag rows using the 'Comments' column.
 - 'Add New Suppression' button added to top right to make more visible.
 - Ability to Copy formatted row data to clipboard
@@ -203,3 +153,4 @@ v2.0: complete re-write of the app from scratch
 
 - uses dbinspect and metadata commands to make this search much faster
 - uses a lookup table to make tuning a breeze
+

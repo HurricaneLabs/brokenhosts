@@ -1,8 +1,5 @@
 <dashboard script="log_host_monitoring.js" stylesheet="tableAlert.css">
   <label>Broken Hosts</label>
-  <search id="populateLookup" depends="$host_tok$,$index_tok$,$sourcetype_tok$">
-    <query>| stats count | eval index="$index_tok$" | eval host="$host_tok$" | eval sourcetype="$sourcetype_tok$" | eval lateSecs=0 | eval suppressUntil=0 | eval date=strftime(now(),"%Y%m%d") | eval comments=date." - suppressed from dashboard" | fields - count, sparkline | append [| inputlookup expectedTime] | table index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>
-  </search>
   <row>
     <panel>
       <title>Broken Hosts</title>
@@ -16,27 +13,26 @@
 | fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
-| eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
+| eval howLateSecs=now() - lastTime
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(lastTime, "%D %H:%M:%S")
-| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
+| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index
 | where lateSecs&gt;0 AND (lastTime &lt; now() - lateSecs) AND (now() - lastTime &lt; `ignore_after`) | sort - howLateSecs
-| eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
-| rename howLate AS "Time Since Last Event" index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host"</query>
+| eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /" | eval h=host | eval i=index | eval s=sourcetype
+| rename howLate AS "Time Since Last Event" i AS "Event Index" s AS "Event Sourcetype" h AS "Event Host"</query>
           <earliest>-30d@d</earliest>
           <latest>+1d@d</latest>
         </search>
         <option name="count">20</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline","Suppress"]</fields>
+        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline"]</fields>
         <drilldown>
-          <condition field="Suppress">
-            <set token="host_tok">$row.h$</set>
-            <set token="index_tok">$row.i$</set>
-            <set token="sourcetype_tok">$row.s$</set>
-          </condition>
+          <eval token="lastTime_minus_1h">relative_time($row.lastTime$, "-1h")</eval>
+          <eval token="lastTime_plus_1h">relative_time($row.lastTime$, "+1h")</eval>
+          <link target="_blank"><![CDATA[/app/broken_hosts/investigation?form.indexdropdown=$row.index$&form.sourcetypedropdown=$row.sourcetype$&form.hostdropdown=$row.host$&form.lastTime.earliest=$lastTime_minus_1h$&form.lastTime.latest=$lastTime_plus_1h$]]></link>
         </drilldown>
       </table>
     </panel>
@@ -52,9 +48,9 @@
 | fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
-| eval howLateSecs=now() - lastTime | eval Suppress="Suppress" | eval h=host | eval i=index | eval s=sourcetype
+| eval howLateSecs=now() - lastTime | eval h=host | eval i=index | eval s=sourcetype
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(lastTime, "%D %H:%M:%S")
-| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index Suppress h i s
+| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(lastTime) as lastTime by host sourcetype index h i s
 | where lateSecs&gt;0 AND (lastTime &gt; now() + 100) AND (now() - lastTime &lt; `ignore_after`) | sort - howLateSecs
 | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
 | rename howLate AS "Time Since Last Event" index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host"</query>
@@ -66,14 +62,7 @@
         <option name="drilldown">row</option>
         <option name="rowNumbers">false</option>
         <option name="wrap">true</option>
-        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline","Suppress"]</fields>
-        <drilldown>
-          <condition field="Suppress">
-            <set token="host_tok">$row.h$</set>
-            <set token="index_tok">$row.i$</set>
-            <set token="sourcetype_tok">$row.s$</set>
-          </condition>
-        </drilldown>
+        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline"]</fields>
       </table>
     </panel>
   </row>
