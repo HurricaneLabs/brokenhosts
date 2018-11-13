@@ -94,7 +94,7 @@
     <panel>
       <title>Lookup Suppressed Items</title>
       <table id="suppressed">
-        <title>These eventtypes are used by the Broken Hosts app</title>
+        <title>These items are suppressed by the Broken Hosts Lookup</title>
         <search id="suppressedSearch">
           <query>| inputlookup expectedTime 
 | eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
