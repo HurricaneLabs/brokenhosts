@@ -116,7 +116,7 @@
         <latest>+7d@d</latest>
       </default>
     </input>
-    <input type="time" token="lastTime" searchWhenChanged="true" depends="$hidden$">
+    <input type="time" token="latest_time" searchWhenChanged="true" depends="$hidden$">
       <label>Time of Last data received</label>
       <default>
         <earliest>-5h@h</earliest>
@@ -130,8 +130,8 @@
       <single>
         <search>
           <query>index=_internal host=$host$ sourcetype=splunkd component=ShutDownHandler | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search index=_internal host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "Splunk was restarted", shutdown&gt;0 AND count=1, "Splunk was stopped", shutdown=0 AND count=1, "No Splunk internal logs from $host$", shutdown=0 AND count&gt;1, "Splunk was not stopped or restarted", true(), "unknown") | fields result | eval range=case(result=="Splunk was stopped","severe",result=="Splunk was restarted","high",result=="No Splunk internal logs from $host$","guarded",result=="Splunk was not stopped or restarted","low",result=="unknown","other",true(),"unknown")</query>
-          <earliest>$lastTime.earliest$</earliest>
-          <latest>$lastTime.latest$</latest>
+          <earliest>$latest_time.earliest$</earliest>
+          <latest>$latest_time.latest$</latest>
         </search>
         <option name="field">result</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
@@ -143,8 +143,8 @@
       <single>
         <search>
           <query>`wineventlog_index` host=$host$ EventCode=6005 OR EventCode=6006 OR EventCode=6008 OR EventCode=1074 | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search `wineventlog_index` host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "$host$ was rebooted", shutdown&gt;0 AND count=1, "$host$ was shut down", shutdown=0 AND count=1, "No windows eventlog from $host$", shutdown=0 AND count&gt;1, "$host$ was not shut down or rebooted", true(), "unknown") | fields result | eval range=case(result=="$host$ was shut down","severe",result=="$host$ was rebooted","high",result=="No windows eventlog from $host$","guarded",result=="$host$ was not shut down or rebooted","low",result=="unknown","other",true(),"unknown")</query>
-          <earliest>$lastTime.earliest$</earliest>
-          <latest>$lastTime.latest$</latest>
+          <earliest>$latest_time.earliest$</earliest>
+          <latest>$latest_time.latest$</latest>
         </search>
         <option name="field">result</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
@@ -156,8 +156,8 @@
       <single>
         <search>
           <query>`linuxoslog_index` sourcetype=linux_* host=$host$ "shut*down" OR reboot* | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search `linuxoslog_index` host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "$host$ was rebooted", shutdown&gt;0 AND count=1, "$host$ was shut down", shutdown=0 AND count=1, "No linux logs from $host$", shutdown=0 AND count&gt;1, "$host$ was not shut down or rebooted", true(), "unknown") | fields result | eval range=case(result=="$host$ was shut down","severe",result=="$host$ was rebooted","high",result=="No linux logs from host","guarded",result=="$host$ was not shut down or rebooted","low",result=="unknown","other",true(),"unknown")</query>
-          <earliest>$lastTime.earliest$</earliest>
-          <latest>$lastTime.latest$</latest>
+          <earliest>$latest_time.earliest$</earliest>
+          <latest>$latest_time.latest$</latest>
         </search>
         <option name="field">result</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
