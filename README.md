@@ -16,6 +16,18 @@ The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk
 - Use Splunk modular alert actions for sending alerts
 - Lookup- and Eventtype-based configuration
 
+## Quickstart
+
+1. Install the `Broken Hosts App for Splunk` on your ad-hoc search head.
+2. Enable `bh_stats_gen` saved search in the Broken Hosts App for Splunk.
+3. Use the `Broken Hosts` dashboard to determine appropriate baselines for all of your critical
+   data.
+4. Use the `Configure Broken Hosts Lookup` dashboard to configure your baselines and create
+   suppressions.
+5. Configure alert actions on the `Broken Hosts Alert Search` saved search in the Broken Hosts
+   App for Splunk.
+6. Enable the `Broken Hosts Alert Search` saved search in the Broken Hosts App for Splunk.
+
 ## Documentation
 https://brokenhosts.hurricanelabs.com
 
