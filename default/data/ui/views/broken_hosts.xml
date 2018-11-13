@@ -10,14 +10,13 @@
 | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields, _time | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
 | lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
-| fillnull value=`default_contact` contact | fillnull value=`default_expected_time` lateSecs
-| eval lateSecs=mvindex(lateSecs,0) | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
-| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs)
-| eval howLateSecs=now() - latest_time
-| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(latest_time, "%D %H:%M:%S")
-| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(latest_time) as latest_time by host sourcetype index
-| where lateSecs&gt;0 AND (latest_time &lt; now() - lateSecs) AND (now() - latest_time &lt; `ignore_after`) | sort - howLateSecs
-| eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
+| fillnull value=`default_expected_time` lateSecs
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0)
+| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(latest_time) as latest_time max(lastAllowed) as lastAllowed values(eventtype) as eventtype sum(count) as count by host sourcetype index
+| where lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`
+| eval howLateSecs=now() - latest_time | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration"))
+| rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
+| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort latest_time | eval Last=strftime(latest_time, "%D %H:%M:%S")
 | eval h=host | eval i=index | eval s=sourcetype
 | rename howLate AS "Time Since Last Event" i AS "Event Index" s AS "Event Sourcetype" h AS "Event Host"</query>
           <earliest>-30d@d</earliest>
@@ -48,7 +47,7 @@
 | eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
 | stats max(latest_time) as latest_time by _time index, sourcetype, host
 | lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
-| fillnull value=`default_contact` contact | eval contact=mvindex(contact,0) | eval suppressUntil=mvindex(suppressUntil,0)
+| eval suppressUntil=mvindex(suppressUntil,0)
 | eval howLateSecs=now() - latest_time | eval h=host | eval i=index | eval s=sourcetype
 | eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(latest_time, "%D %H:%M:%S")
 | stats min(howLateSecs) as howLateSecs max(latest_time) as latest_time by host sourcetype index h i s
