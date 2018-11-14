@@ -31,7 +31,10 @@ input.error, textarea.error {
     border: 1px solid red;
 }
 span[id^="inputWrapper"] .select2-container {
-    width: 219px !important;
+    width: 240px !important;
+}
+span[id^="inputWrapper"] .select2-container .select2-choice {
+    width: 210px !important;
 }
 .splunk-choice-input {
     padding-bottom: 0 !important;
