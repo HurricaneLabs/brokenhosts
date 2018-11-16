@@ -6,8 +6,10 @@ _*,*,*,0,0,,default entry - don't alert on internal indexes
 *,*too_small,*,0,0,,default entry - don't alert on too_small sourcetypes
 *,stash,*,0,0,,default entry - don't alert on summary sourcetypes
 *,cisco:asa,*,1800,0,,default entry - cisco firewall logs should come in very often
+*,cisco:ios,*,0,0,,default entry - cisco network devices don't log often enough to monitor
 *summary*,*,*,0,0,,default entry - don't alert on summary indexes
 *notable*,*,*,0,0,,default entry - don't alert on ES notable event indexes
+cim_modactions,*,*,0,0,,default entry - don't alert on cim modactions index
 firedalerts,*,*,0,0,,default entry - don't alert on fired alerts index
 itsi_tracked_alerts,*,*,0,0,,default entry - don't alert on itsi alert index
 test,*,*,0,0,,default entry - don't alert on test index

@@ -15,7 +15,7 @@
                     <!-- default disabled field before loading in DropdownView component --->
                      <select class="form-control" id="indexSelector" disabled></select>
                 </span>
-                <input type="text" id="index" name="index" value="<%- index %>"/>
+                <input type="text" id="index" name="index" value="<%- index %>" autocomplete="false"/>
                 <p class="help-block">Use dropdown to ensure index exists.</p>
             </div>
 
@@ -25,7 +25,7 @@
                     <!-- default disabled field before loading in DropdownView component --->
                      <select class="form-control" id="sourcetypeSelector" disabled></select>
                 </span>
-                <input type="text" id="sourcetype" name="sourcetype" value="<%- sourcetype %>"/>
+                <input type="text" id="sourcetype" name="sourcetype" value="<%- sourcetype %>" autocomplete="false"/>
                 <p class="help-block">Use dropdown to ensure sourcetype exists.</p>
             </div>
 
@@ -35,25 +35,25 @@
                     <!-- default disabled field before loading in DropdownView component --->
                      <select class="form-control" id="hostSelector" disabled></select>
                 </span>
-                <input type="text" id="host" name="host" value="<%- host %>" />
+                <input type="text" id="host" name="host" value="<%- host %>" autocomplete="false"/>
                 <p class="help-block">Use dropdown to ensure host exists.</p>
             </div>
 
             <div class="form-group">
                 <label for="lateSecs">Late Seconds</label>
-                <input type="text" id="lateSecs" name="lateSecs" value="<%- lateSecs %>"/>
+                <input type="text" id="lateSecs" name="lateSecs" value="<%- lateSecs %>" autocomplete="false"/>
                 <p class="help-block">Use seconds or SPL relative time format. 0 means Always Suppress.</p>
             </div>
 
             <div class="form-group">
                 <label for="suppressUntil">Suppress Until</label>
-                <input type="text" id="suppressUntil" name="suppressUntil" value="<%- suppressUntil %>"/>
+                <input type="text" id="suppressUntil" name="suppressUntil" value="<%- suppressUntil %>" autocomplete="false"/>
                 <p class="help-block">0 means No Suppression</p>
             </div>
 
             <div class="form-group">
                 <label for="contacts">Add Contacts</label>
-                <input type="text" id="contact" name="contact" value="<%- contact %>"/>
+                <input type="text" id="contact" name="contact" value="<%- contact %>" autocomplete="false"/>
                 <p class="help-block">May be a comma delimited list of emails.</p>
             </div>
 

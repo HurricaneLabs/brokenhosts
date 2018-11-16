@@ -21,12 +21,13 @@ define([
     ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView) {
 
         var ModalView = Backbone.View.extend({
-    
+
             initialize: function(options) {
                 this.options = options;
                 this.mode = options.mode;
                 this.model = options.model;
                 this.tokens = options.tokens;
+                this.validate_ticket_number = true;
                 this.indexInputSearch = options.searches.indexInputSearch;
                 this.sourcetypeInputSearch = options.searches.sourcetypeInputSearch;
                 this.hostInputSearch = options.searches.hostInputSearch;
@@ -37,7 +38,7 @@ define([
 
                 _.bindAll(this, "changed");
             },
-            
+
             events: {
                 "click .close": "close",
                 "click .modal-backdrop": "close",
@@ -114,12 +115,31 @@ define([
                 this.childViews.push(this.hostDropdown);
 
             },
-    
+
+            getValidationConfig: function() {
+                const service = mvc.createService();
+                const promise = new $.Deferred();
+
+                service.get('/servicesNS/-/broken_hosts/properties/bh/validation/comments_must_have_ticket_number', '',
+                    (err, response) => {
+                        if(err) {
+                            console.error('Could not retrieve validation status: ', err);
+                            promise.reject();
+                        } else {
+                            if(response.data === '0') {
+                                this.validate_ticket_number = false;
+                            }
+                            promise.resolve();
+                        }
+                    });
+
+                return promise;
+
+            },
+
             render: function() {
 
                 $(this.$el).html(_.template(modalTemplate, this.model.toJSON()));
-
-                //this.unsetSplunkComponents();
 
                 return this;
 
@@ -149,35 +169,39 @@ define([
                 });
 
             },
-    
+
             show: function() {
 
-                $(document.body).addClass("modal-shown").append(this.render().el);
+                this.getValidationConfig().done(() => {
 
-                $(this.el).find(".modal").css({
-                    width:"40%",
-                    height:"auto",
-                    left: "30%",
-                    "margin-left": "0"
+                   $(document.body).addClass("modal-shown").append(this.render().el);
+
+                    $(this.el).find(".modal").css({
+                        width:"40%",
+                        height:"auto",
+                        left: "30%",
+                        "margin-left": "0"
+                    });
+
+                    $(this.el).find(".modal-body").css({
+                        "max-height": "750px"
+                    });
+
+                    $(this.el).find(".form-group #suppressUntil").flatpickr({
+                        minDate : new Date(),
+                        enableTime : "true",
+                        dateFormat: "m/d/Y H:i:S",
+                        allowInput: "true",
+                        time_24hr: "true"
+                    });
+
+                    splunkjs.mvc.Components.revokeInstance("index");
+                    splunkjs.mvc.Components.revokeInstance("sourcetype");
+                    splunkjs.mvc.Components.revokeInstance("host");
+
+                    this.splunkComponentsInit();
+
                 });
-
-                $(this.el).find(".modal-body").css({
-                    "max-height": "750px"
-                });
-
-                $(this.el).find(".form-group #suppressUntil").flatpickr({
-                    minDate : new Date(),
-                    enableTime : "true",
-                    dateFormat: "m/d/Y H:i:S",
-                    allowInput: "true",
-                    time_24hr: "true"
-                });
-
-                splunkjs.mvc.Components.revokeInstance("index");
-                splunkjs.mvc.Components.revokeInstance("sourcetype");
-                splunkjs.mvc.Components.revokeInstance("host");
-
-                this.splunkComponentsInit();
 
             },
 
@@ -244,6 +268,8 @@ define([
                         return hasNumber.test(value);
                     }, "You must include a ticket number for reference (e.g. #12345)");
 
+                console.log('just checking: ', that.validate_ticket_number);
+
                 $("#brokenHostForm", this.el).validate({
 
                     rules: {
@@ -265,7 +291,7 @@ define([
                         },
                         comments: {
                             required: true,
-                            has_ticket_number: true
+                            has_ticket_number: that.validate_ticket_number
                         }
                     },
 
@@ -332,7 +358,7 @@ define([
 
                 this.close();
             },
-    
+
             close: function() {
 
                 $(document.body).removeClass("modal-shown");
@@ -343,7 +369,7 @@ define([
             }
 
         });
-        
+
         return ModalView;
 
 });
