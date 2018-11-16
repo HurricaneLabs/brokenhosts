@@ -3,3 +3,4 @@ local/
 .DS_Store
 metadata/local.meta
 lookups/expectedTime.csv
+docs/_build
