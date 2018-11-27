@@ -62,6 +62,12 @@ Documentation
 Changelog
 ---------
 
+Version 4.0.3 (RELEASE PENDING)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- updated AutoSort to allow for arbitrary fields
+
+
 Version 4.0.1 (2018-11-14)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
