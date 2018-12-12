@@ -49,6 +49,8 @@ Known Issues
 - Future hosts in the ``Broken Hosts Alert Search`` may not match the future hosts displayed on the
   ``Broken Hosts`` dashboard. Future host detection will be moved to a separate search in a
   future release of the Broken Hosts App.
+- search-time renaming of sourcetypes is not taken into account
+- "Configure Broken Hosts Lookup" doesn't handle additional fields added to expectedTime lookup
 
 Documentation
 -------------
@@ -66,6 +68,7 @@ Version 4.0.4 (RELEASE PENDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - updated bh_stats_gen search to fix a bug that might cause false positives
+- set eventtypes to be local to the app instead of global
 
 Version 4.0.3 (2018-12-11)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
