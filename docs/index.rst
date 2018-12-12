@@ -62,14 +62,19 @@ Documentation
 Changelog
 ---------
 
-Version 4.0.3 (RELEASE PENDING)
+Version 4.0.4 (RELEASE PENDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- updated bh_stats_gen search to fix a bug that might cause false positives
+
+Version 4.0.3 (2018-12-11)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - updated AutoSort to allow for arbitrary fields
 - update investigation panel to have a more useful graph
 - fixed type in app.conf that was preventing successful vetting
 
-Version 4.0.1 (2018-11-14)
+Version 4.0.2 (2018-11-14)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Revamped architecture
