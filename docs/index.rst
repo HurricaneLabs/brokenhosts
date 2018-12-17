@@ -64,13 +64,19 @@ Documentation
 Changelog
 ---------
 
-Version 4.0.4 (RELEASE PENDING)
+Version 4.0.5 (RELEASE PENDING)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- update bh_stats_gen to use a more meaningful time for the summary events
+- update the alert searches to no longer look into the future for summary events, since that's not possible
+
+Version 4.0.4 (2018-12-12)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - updated bh_stats_gen search to fix a bug that might cause false positives
 - set eventtypes to be local to the app instead of global
 
-Version 4.0.3 (2018-12-11)
+Version 4.0.3 (2018-12-10)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - updated AutoSort to allow for arbitrary fields
