@@ -17,9 +17,8 @@ define([
     "validate",
     "splunkjs/mvc/searchmanager",
     "splunkjs/mvc/dropdownview",
-    "splunkjs/mvc/timerangeview",
-    "splunkjs/mvc/multidropdownview"
-    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView, MultiDropdownView) {
+    "splunkjs/mvc/timerangeview"
+    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView) {
 
         var ModalView = Backbone.View.extend({
 
@@ -81,7 +80,7 @@ define([
                     el: $("#inputWrapper_sourcetypeSelector")
                 }).render();
 
-                this.hostDropdown = new MultiDropdownView({
+                this.hostDropdown = new DropdownView({
                     id: "host",
                     managerid: "host-input-search",
                     default: "",
@@ -334,12 +333,13 @@ define([
 
 					this.tokens.set("index_add_tok", this.model.get("index"));
 					this.tokens.set("sourcetype_add_tok", this.model.get("sourcetype"));
-                    this.tokens.set("host_add_tok", this.model.get("host"));
+					this.tokens.set("host_add_tok", this.model.get("host"));
 					this.tokens.set("late_secs_add_tok", this.model.get("lateSecs"));
 					this.tokens.set("suppress_until_add_tok", this.model.get("suppressUntil"));
 					this.tokens.set("contact_add_tok", this.model.get("contact"));
 					this.tokens.set("comments_add_tok", this.model.get("comments"));
-                    this.eventBus.trigger("row:new", this.model.attributes);
+
+					this.eventBus.trigger("row:new", this.model.attributes);
 
 				} else if(this.mode === "Edit") {
 
