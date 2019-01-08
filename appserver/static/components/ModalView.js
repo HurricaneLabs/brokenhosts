@@ -17,8 +17,9 @@ define([
     "validate",
     "splunkjs/mvc/searchmanager",
     "splunkjs/mvc/dropdownview",
-    "splunkjs/mvc/timerangeview"
-    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView) {
+    "splunkjs/mvc/timerangeview",
+    "splunkjs/mvc/multidropdownview"
+    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView, MultiDropdownView) {
 
         var ModalView = Backbone.View.extend({
 
@@ -80,7 +81,7 @@ define([
                     el: $("#inputWrapper_sourcetypeSelector")
                 }).render();
 
-                this.hostDropdown = new DropdownView({
+                this.hostDropdown = new MultiDropdownView({
                     id: "host",
                     managerid: "host-input-search",
                     default: "",

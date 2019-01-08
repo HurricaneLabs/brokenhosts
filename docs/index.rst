@@ -64,7 +64,7 @@ Documentation
 Changelog
 ---------
 
-Version 4.0.5 (RELEASE PENDING)
+Version 4.0.6 (RELEASE PENDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - update bh_stats_gen to use a more meaningful time for the summary events
