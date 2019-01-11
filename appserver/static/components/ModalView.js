@@ -29,6 +29,8 @@ define([
                 this.model = options.model;
                 this.tokens = options.tokens;
                 this.validate_ticket_number = true;
+                this.bulk_host_add = false;
+                this.parsed_hosts = [];
                 this.indexInputSearch = options.searches.indexInputSearch;
                 this.sourcetypeInputSearch = options.searches.sourcetypeInputSearch;
                 this.hostInputSearch = options.searches.hostInputSearch;
@@ -44,6 +46,9 @@ define([
                 "click .close": "close",
                 "click .modal-backdrop": "close",
                 "click #submitData": "validateData",
+                "click #showBulkHostLink": "bulkHostShow",
+                "click #hideBulkHostLink": "bulkHostHide",
+                "click #viewBulkHostData": "viewBulkHostData",
                 "change input" : "changed",
                 "change select" : "changed",
                 "change textarea" : "changed"
@@ -56,6 +61,79 @@ define([
                 obj[changed.id] = value;
 
                 this.model.set(obj);
+            },
+
+            bulkHostShow: function(e) {
+                e.preventDefault();
+                this.bulk_host_add = true;
+                $(document.body).find('#bulkHostWrapper').show();
+                $(document.body).find('#hostFormGroup').hide();
+                $(document.body).find('#showBulkHostLink').hide();
+                $(document.body).find('#hideBulkHostLink').show();
+                $(document.body).find('#viewBulkHostData').show();
+
+            },
+
+            bulkHostHide: function(e) {
+                e.preventDefault();
+                this.bulk_host_add = false;
+                $(document.body).find('#bulkHostWrapper').hide();
+                $(document.body).find('#hostFormGroup').show();
+                $(document.body).find('#showBulkHostLink').show();
+                $(document.body).find('#hideBulkHostLink').hide();
+                $(document.body).find('#viewBulkHostData').hide();
+            },
+
+            viewBulkHostData: function(e) {
+                e.preventDefault();
+                let bulkHostData = $('#bulkHosts').val();
+                let delimiter = $('#delimiter').val();
+                console.log('Model state: ', this.model.attributes);
+                let index = this.model.attributes.index;
+                let sourcetype = this.model.attributes.sourcetype;
+                let lateSecs = this.model.attributes.lateSecs;
+                let suppressUntil = this.model.attributes.suppressUntil;
+                let comments = this.model.attributes.comments;
+                if(delimiter === '') {
+                    //if the delimiter is empty we will attempt to parse by checking newline characters
+                    this.parsed_hosts = bulkHostData.split("\n");
+                } else {
+                    bulkHostData = bulkHostData.replace(/[\n\r]/g, '');
+                    this.parsed_hosts = bulkHostData.split(delimiter);
+                }
+                console.log('parsed host data ', this.parsed_hosts);
+                console.log('delimiter ', delimiter);
+                this.model.set({ "host" : this.parsed_hosts });
+                let test_data = [];
+                let rows = '';
+                this.parsed_hosts.forEach((host, idx) => {
+                    rows += `<tr>
+                                <td>${host}</td>
+                                <td>${index}</td>
+                                <td>${sourcetype}</td>
+                                <td>${lateSecs}</td>
+                                <td>${suppressUntil}</td>
+                                <td>${comments}</td>
+                            </tr>`;
+                });
+                let test_table = `
+                <h3>Bulk Output</h3>
+                <p class="help-block">Confirm the bulk data looks correct before submitting.</p>
+                <table class="table table-chrome table-striped display dataTable no-footer">
+                    <thead>
+                        <th>Host</th>
+                        <th>Index</th>
+                        <th>Sourcetype</th>
+                        <th>Late Seconds</th>
+                        <th>Suppress Until</th>
+                        <th>Comments</th>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>`;
+                $(document.body).find('#exampleBulkResults').empty().append(test_table);
+                console.log('Test Data ', test_data);
             },
 
             splunkComponentsInit: function() {
@@ -81,7 +159,7 @@ define([
                     el: $("#inputWrapper_sourcetypeSelector")
                 }).render();
 
-                this.hostDropdown = new MultiDropdownView({
+                this.hostDropdown = new DropdownView({
                     id: "host",
                     managerid: "host-input-search",
                     default: "",
@@ -178,9 +256,10 @@ define([
                    $(document.body).addClass("modal-shown").append(this.render().el);
 
                     $(this.el).find(".modal").css({
-                        width:"40%",
-                        height:"auto",
-                        left: "30%",
+                        width:"100%",
+                        height:"100%",
+                        left: "0",
+                        "margin-top": "-40px",
                         "margin-left": "0"
                     });
 
@@ -277,6 +356,9 @@ define([
                         index: 'required',
                         sourcetype: 'required',
                         host: 'required',
+                        bulkHosts: {
+                            required: true
+                        },
                         lateSecs: {
                             required: true,
                             //number: true
@@ -339,8 +421,13 @@ define([
 					this.tokens.set("suppress_until_add_tok", this.model.get("suppressUntil"));
 					this.tokens.set("contact_add_tok", this.model.get("contact"));
 					this.tokens.set("comments_add_tok", this.model.get("comments"));
+                    console.log('Submitted info: ', this.model.attributes);
+                    if(this.bulk_host_add) {
+                        this.eventBus.trigger("row:new:bulk", this.model.attributes);
+                    } else {
+                        this.eventBus.trigger("row:new", this.model.attributes);
+                    }
 
-					this.eventBus.trigger("row:new", this.model.attributes);
 
 				} else if(this.mode === "Edit") {
 

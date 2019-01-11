@@ -147,9 +147,19 @@ table.dataTable td.reorder {
 .updating>i {
     color: green;
 }
+.hide {
+    display: none;
+}
+.show {
+    display: block;
+}
 .modal .modal-body {
-    height: 450px !important;
+    height: 100%;
     overflow: scroll !important;
+    margin: 0;
+}
+.modal-body:last-child {
+    max-height: calc(100vh - 100px) !important;
 }
 .disabled {
    pointer-events: none;
@@ -158,4 +168,15 @@ table.dataTable td.reorder {
 }
 .modal-shown {
     overflow: hidden;
+}
+.outline {
+    border: 1px solid #c3cbd4;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    padding: 10px;
+}
+#exampleBulkResults {
+    max-height: 400px;
+    overflow-y: scroll;
 }

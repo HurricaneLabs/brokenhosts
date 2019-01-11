@@ -29,7 +29,7 @@
                 <p class="help-block">Use dropdown to ensure sourcetype exists.</p>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="hostFormGroup">
                 <label for="hostSelector">Select a Host</label>
                 <span id="inputWrapper_hostSelector">
                     <!-- default disabled field before loading in DropdownView component --->
@@ -38,6 +38,26 @@
                 <input type="text" id="host" name="host" value="<%- host %>" autocomplete="false"/>
                 <p class="help-block">Use dropdown to ensure host exists.</p>
             </div>
+
+            <div class="form-group">
+                <p class="help-block"><a id="showBulkHostLink" href="#">Bulk Host Add</a></p>
+                <p class="help-block"><a id="hideBulkHostLink" href="#" style="display: none;">Hide Bulk Host Add</a></p>
+            </div>
+
+            <% if(mode!=='Edit') { %>
+            <fieldset id="bulkHostWrapper" class="outline" style="display: none;">
+                <div class="form-group">
+                    <label for="bulkHosts">Add a List of Hosts</label>
+                    <textarea name="bulkHosts" id="bulkHosts" rows="10" cols="5" style="width: 96%; display: block;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="lateSecs">Delimiter</label>
+                    <input type="text" id="delimiter" name="delimiter" value="<%- delimiter %>" autocomplete="false"/>
+                    <p class="help-block">Optionally provide a delimiter for each host. Default is a newline.</p>
+                </div>
+                <div id="exampleBulkResults"></div>
+            </fieldset>
+            <% } %>
 
             <div class="form-group">
                 <label for="lateSecs">Late Seconds</label>
@@ -65,7 +85,9 @@
 
             <div class="form-group">
                 <input type="submit" id="submitData" class="btn btn-primary"
-                       value="Submit" style="display: block; margin: 0 11px;" />
+                       value="Submit" style="display: block; margin: 0 11px; display: inline-block;" />
+                <input type="submit" id="viewBulkHostData" class="btn btn-secondary"
+                       value="View Bulk Data Sample" style="display: none;" />
             </div>
 
         </form>

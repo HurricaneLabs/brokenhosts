@@ -15,6 +15,7 @@ define([
             lateSecs: "",
             sourcetype: "",
             suppressUntil: "",
+            delimiter: "",
             mode: "Edit"
         }
 

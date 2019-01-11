@@ -68,6 +68,7 @@ define([
             this.eventBus.on("row:edit", this.showEditModal, this);
             this.eventBus.on("row:update", this.runUpdateSearch, this); //triggered from modal view
             this.eventBus.on("row:new", this.runAddNewSearch, this); //triggered from modal view
+            this.eventBus.on("row:new:bulk", this.runAddNewBulkSearch, this); //triggered from modal view
 
             this.on("updating", this.updateStatus, this);
             this.searches = [];
@@ -219,6 +220,110 @@ define([
 
             // Build search string
             let host_array = this.tokens.get("host_add_tok");
+
+            var search_str = "| inputlookup  expectedTime | eval key=_key";
+
+            search_str += "      | append [| stats count" +
+                "      | eval index=lower(\"" + this.tokens.get("index_add_tok") + "\")" +
+                "      | eval sourcetype=lower(\"" + this.tokens.get("sourcetype_add_tok") + "\")" +
+                "      | eval host=lower(\"" + this.tokens.get("host_add_tok") + "\")" +
+                "      | eval lateSecs=\"" + this.tokens.get("late_secs_add_tok") + "\"" +
+                "      | eval suppressUntil=\"" + this.tokens.get("suppress_until_add_tok") + "\"" +
+                "      | eval contact=\"" + this.tokens.get("contact_add_tok") + "\"" +
+                "      | eval comments=\"" + this.tokens.get("comments_add_tok") + "\"]";
+
+            search_str += "      | table key,index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime"
+            that.newRowCount = 1;
+            this.addRow = new SearchManager({
+                id: "addRow",
+                autostart: false,
+                search: search_str
+            });
+
+            //Run addRow search created in dashboard simple XML
+            this.addRow.startSearch();
+
+            this.addRow.on("search:done", function () {
+
+                var service = mvc.createService({owner: "nobody"});
+                var auth = "";
+
+                //Get all updated KVStore data
+                service.get('/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime',
+                    auth, function (err, res) {
+
+                        if (err) {
+                            return;
+                        }
+
+                        var cleaned_data = [];
+
+                        function fix_key(key) {
+                            return key.replace(/^_key/, "key");
+                        }
+
+                        _.each(res.data, function (row_obj, row_k) {
+
+                            var row = _.object(
+                                _.map(_.keys(row_obj), fix_key),
+                                _.values(row_obj)
+                            );
+                            cleaned_data.push(row);
+
+                        });
+
+                        var new_row_idx = cleaned_data.length - that.newRowCount;
+
+                        //Add new row content
+                        for (i=0; i < that.newRowCount; i++){
+                          var new_row_data = cleaned_data[new_row_idx + i];
+                          var new_row = that.data_table.row.add([
+                              new_row_data["key"],
+                              new_row_data["comments"],
+                              new_row_data["contact"],
+                              new_row_data["index"],
+                              new_row_data["sourcetype"],
+                              new_row_data["host"],
+                              new_row_data["lateSecs"],
+                              new_row_data["suppressUntil"],
+                              "<a class=\"edit\" href=\"#\">Edit</a>",
+                              "<a class=\"remove\" href=\"#\">Remove</a>",
+                              "<a class=\"clipboard\" data-clipboard-target=\"#row-" + (new_row_idx + i) + "\" href=\"#\">Copy</a>"
+                          ]).draw(false).node();
+
+                          $(new_row).find("td").each(function () {
+                              $(this).addClass("disabled");
+                          });
+                          $(new_row).find("td > a").each(function () {
+                              $(this).addClass("disabled");
+                          });
+
+                          var arr = [];
+                          that.results = arr.push(that.data_table.rows().data());
+                          if (that.data_table.rows().count() === 1) {
+                              $("#emptyKVNotice").fadeOut();
+                              $("#backupNotice").fadeOut();
+                          }
+                        }
+                        that.processDataForUpdate();
+
+                    });
+
+            });
+
+        },
+
+        runAddNewBulkSearch: function (row_data) {
+
+            this.trigger("updating", true);
+
+            var that = this;
+
+            //this.addRow = mvc.Components.get("addRow");
+
+            // Build search string
+            let host_array = this.tokens.get("host_add_tok");
+            console.log("host_array ", host_array);
             host_array = host_array.map(str => str.trim());
 
             var search_str = "| inputlookup  expectedTime | eval key=_key"
