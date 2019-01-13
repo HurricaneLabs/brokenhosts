@@ -66,22 +66,15 @@ define([
             bulkHostShow: function(e) {
                 e.preventDefault();
                 this.bulk_host_add = true;
-                $(document.body).find('#bulkHostWrapper').show();
-                $(document.body).find('#hostFormGroup').hide();
-                $(document.body).find('#showBulkHostLink').hide();
-                $(document.body).find('#hideBulkHostLink').show();
-                $(document.body).find('#viewBulkHostData').show();
-
+                $(document.body).find('.bulk_host_component').show();
+                $(document.body).find('.single_host_component').hide();
             },
 
             bulkHostHide: function(e) {
                 e.preventDefault();
                 this.bulk_host_add = false;
-                $(document.body).find('#bulkHostWrapper').hide();
-                $(document.body).find('#hostFormGroup').show();
-                $(document.body).find('#showBulkHostLink').show();
-                $(document.body).find('#hideBulkHostLink').hide();
-                $(document.body).find('#viewBulkHostData').hide();
+                $(document.body).find('.bulk_host_component').hide();
+                $(document.body).find('.single_host_component').show();
             },
 
             viewBulkHostData: function(e) {

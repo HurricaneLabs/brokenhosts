@@ -490,7 +490,7 @@ define([
         },
 
         removeRow: function (e) {
-
+            e.preventDefault();
             var service = mvc.createService({owner: "nobody"});
             this.trigger("updating", true);
             var that = this;

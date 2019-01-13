@@ -7,7 +7,6 @@
         <% } %>
     </div>
     <div class="modal-body">
-
         <form id="brokenHostForm">
             <div class="form-group">
                 <label for="indexSelector">Select an Index</label>
@@ -29,7 +28,7 @@
                 <p class="help-block">Use dropdown to ensure sourcetype exists.</p>
             </div>
 
-            <div class="form-group" id="hostFormGroup">
+            <div class="form-group single_host_component" id="hostFormGroup">
                 <label for="hostSelector">Select a Host</label>
                 <span id="inputWrapper_hostSelector">
                     <!-- default disabled field before loading in DropdownView component --->
@@ -40,12 +39,12 @@
             </div>
 
             <div class="form-group">
-                <p class="help-block"><a id="showBulkHostLink" href="#">Bulk Host Add</a></p>
-                <p class="help-block"><a id="hideBulkHostLink" href="#" style="display: none;">Hide Bulk Host Add</a></p>
+                <p class="help-block single_host_component"><a id="showBulkHostLink" href="#">Add Hosts In Bulk</a></p>
+                <p class="help-block bulk_host_component" style="display: none;"><a id="hideBulkHostLink" href="#">Add Only One Host</a></p>
             </div>
 
             <% if(mode!=='Edit') { %>
-            <fieldset id="bulkHostWrapper" class="outline" style="display: none;">
+            <fieldset id="bulkHostWrapper" class="outline bulk_host_component" style="display: none;">
                 <div class="form-group">
                     <label for="bulkHosts">Add a List of Hosts</label>
                     <textarea name="bulkHosts" id="bulkHosts" rows="10" cols="5" style="width: 96%; display: block;"></textarea>
@@ -86,7 +85,7 @@
             <div class="form-group">
                 <input type="submit" id="submitData" class="btn btn-primary"
                        value="Submit" style="display: block; margin: 0 11px; display: inline-block;" />
-                <input type="submit" id="viewBulkHostData" class="btn btn-secondary"
+                <input type="submit" id="viewBulkHostData" class="btn btn-secondary bulk_host_component"
                        value="View Bulk Data Sample" style="display: none;" />
             </div>
 
