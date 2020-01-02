@@ -48,7 +48,9 @@ define([
             this.tokens = options.tokens;
             this.eventBus = this.options.eventBus;
             this.childComponents = [];
-            this.sourcetypeDropdown = "";
+            this.indexInputSearch = {};
+            this.sourcetypeInputSearch = {};
+            this.hostInputSearch = {};
             this.data_table = null;
             this.current_row = "";
             //this.initial_load = this.options.initial_load;
@@ -64,31 +66,11 @@ define([
             this.newRowCount = 1;
             this.tokens = mvc.Components.get("submitted");
             this.eventBus.on("row:update:done", this.getUpdatedData, this);
-            //this.eventBus.on("populated:kvstore", this.renderList, this);
             this.eventBus.on("row:edit", this.showEditModal, this);
             this.eventBus.on("row:update", this.runUpdateSearch, this); //triggered from modal view
             this.eventBus.on("row:new", this.runAddNewSearch, this); //triggered from modal view
-            this.eventBus.on("row:new:bulk", this.runAddNewBulkSearch, this); //triggered from modal view
-
             this.on("updating", this.updateStatus, this);
-            this.searches = [];
-            var indexInputSearch = new SearchManager({
-                id: "index-input-search",
-                search: "| tstats count WHERE index=* by index"
-            });
-            var sourcetypeInputSearch = new SearchManager({
-                id: "sourcetype-input-search",
-                search: "| metadata type=sourcetypes index=* | table sourcetype"
-            });
-            var hostInputSearch = new SearchManager({
-                id: "host-input-search",
-                search: "| metadata type=hosts index=* | table host"
-            });
 
-            this.searches.push(indexInputSearch);
-            this.searches.push(sourcetypeInputSearch);
-            this.searches.push(hostInputSearch);
-            //_.bindAll(this, "changed");
         },
 
         events: {
@@ -98,7 +80,7 @@ define([
             'click .per-page': 'pageCountChanged',
             'click #populateDefault': 'populateTable',
             'click #populateBackup': 'populateFromBackup',
-            'click #addNewRow': 'addNewRow'
+            'click #addNewRow': 'addNewRow',
         },
 
         updateStatus: function (updating) {
@@ -138,12 +120,10 @@ define([
         },
 
         editRow: function (e) {
-
             e.preventDefault();
             this.current_row = this.data_table.row($(e.target).parents('tr'));
             var current_row_data = this.current_row.data();
             this.eventBus.trigger("row:edit", current_row_data);
-
         },
 
         addNewRow: function () {
@@ -179,8 +159,6 @@ define([
         },
 
         showEditModal: function (row_data) {
-
-            //this.unsetModal();
 
             var that = this;
 
@@ -323,7 +301,6 @@ define([
 
             // Build search string
             let host_array = this.tokens.get("host_add_tok");
-            console.log("host_array ", host_array);
             host_array = host_array.map(str => str.trim());
 
             var search_str = "| inputlookup  expectedTime | eval key=_key"
@@ -508,7 +485,6 @@ define([
                 .done(function () {
                     that.trigger("updating", false);
                     that.data_table.rowReorder.enable();
-                    //splunkjs.mvc.Components.revokeInstance("addRow");
                 });
 
         },
@@ -700,8 +676,6 @@ define([
 
                     _.each(mappedHeaders, function (mapping, k) {
 
-                        console.log('mapping header ', mapping['header']);
-
                         headers.push(mapping['mapped']);
 
                     });
@@ -747,8 +721,6 @@ define([
 
         updateKVStore: function (data) {
 
-            console.log('updateKVStore ', data);
-
             var that = this;
             var rand = Math.random();
             var service = mvc.createService({owner: "nobody"});
@@ -775,20 +747,14 @@ define([
 
             //once backup is complete, empty out the kvstore
             backupExpectedTime.on("search:done", function (prop) {
-                console.log('backupExpectedTime finished! ', prop);
                 emptyExpectedTime.startSearch()
             });
 
             backupExpectedTime.on("search:failed", function (prop) {
-                console.log('backupExpectedTime error: ', prop);
-            });
-
-            backupExpectedTime.on("search:progress", function (prop) {
-                console.log('backupExpectedTime progress: ', prop);
+                console.error('backupExpectedTime error: ', prop);
             });
 
             emptyExpectedTime.on("search:done", function () {
-                console.log('emtpyExpectedTime is done ', data);
 
                 service.request(
                     "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/batch_save",
@@ -800,7 +766,6 @@ define([
                         if(err) {
                             console.err('error updating expectedTime: ', err);
                         } else {
-                            console.log('updated expectedTime: ', response);
                             that.data_table.rowReorder.enable();
                             splunkjs.mvc.Components.revokeInstance("addRow");
                         }

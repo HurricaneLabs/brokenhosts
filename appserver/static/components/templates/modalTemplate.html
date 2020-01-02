@@ -8,6 +8,14 @@
     </div>
     <div class="modal-body">
         <form id="brokenHostForm">
+
+            <div class="form-group" id="dropdownCancelWrapper">
+                <p>
+                    <a id="stopDropdownLoading" href="#">Remove Dropdowns</a>
+                    <span class="help-block">Useful if data is taking too long to populate.</span>
+                </p>
+            </div>
+
             <div class="form-group">
                 <label for="indexSelector">Select an Index</label>
                 <span id="inputWrapper_indexSelector">
@@ -39,26 +47,6 @@
             </div>
 
             <div class="form-group">
-                <p class="help-block single_host_component"><a id="showBulkHostLink" href="#">Add Hosts In Bulk</a></p>
-                <p class="help-block bulk_host_component" style="display: none;"><a id="hideBulkHostLink" href="#">Add Only One Host</a></p>
-            </div>
-
-            <% if(mode!=='Edit') { %>
-            <fieldset id="bulkHostWrapper" class="outline bulk_host_component" style="display: none;">
-                <div class="form-group">
-                    <label for="bulkHosts">Add a List of Hosts</label>
-                    <textarea name="bulkHosts" id="bulkHosts" rows="10" cols="5" style="width: 96%; display: block;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="lateSecs">Delimiter</label>
-                    <input type="text" id="delimiter" name="delimiter" value="<%- delimiter %>" autocomplete="false"/>
-                    <p class="help-block">Optionally provide a delimiter for each host. Default is a newline.</p>
-                </div>
-                <div id="exampleBulkResults"></div>
-            </fieldset>
-            <% } %>
-
-            <div class="form-group">
                 <label for="lateSecs">Late Seconds</label>
                 <input type="text" id="lateSecs" name="lateSecs" value="<%- lateSecs %>" autocomplete="false"/>
                 <p class="help-block">Use seconds or SPL relative time format. 0 means Always Suppress.</p>
@@ -85,8 +73,6 @@
             <div class="form-group">
                 <input type="submit" id="submitData" class="btn btn-primary"
                        value="Submit" style="display: block; margin: 0 11px; display: inline-block;" />
-                <input type="submit" id="viewBulkHostData" class="btn btn-secondary bulk_host_component"
-                       value="View Bulk Data Sample" style="display: none;" />
             </div>
 
         </form>

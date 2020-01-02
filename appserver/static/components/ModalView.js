@@ -29,15 +29,26 @@ define([
                 this.model = options.model;
                 this.tokens = options.tokens;
                 this.validate_ticket_number = true;
-                this.bulk_host_add = false;
                 this.parsed_hosts = [];
-                this.indexInputSearch = options.searches.indexInputSearch;
-                this.sourcetypeInputSearch = options.searches.sourcetypeInputSearch;
-                this.hostInputSearch = options.searches.hostInputSearch;
                 this.options = _.extend({}, this.defaults, this.options);
 				this.eventBus = this.options.eventBus;
 				this.childViews = [];
 				this.sourcetypeDropdown = "";
+				this.indexInputSearch = new SearchManager({
+                    id: "index-input-search",
+                    search: "| tstats count WHERE index=* by index",
+                    autoStart: false
+                });
+                this.sourcetypeInputSearch = new SearchManager({
+                    id: "sourcetype-input-search",
+                    search: "| tstats count WHERE index=* sourcetype=* by sourcetype",
+                    autoStart: false
+                });
+                this.hostInputSearch = new SearchManager({
+                    id: "host-input-search",
+                    search: "| tstats count WHERE index=* host=* by host",
+                    autoStart: false
+                });
 
                 _.bindAll(this, "changed");
             },
@@ -46,9 +57,8 @@ define([
                 "click .close": "close",
                 "click .modal-backdrop": "close",
                 "click #submitData": "validateData",
-                "click #showBulkHostLink": "bulkHostShow",
-                "click #hideBulkHostLink": "bulkHostHide",
-                "click #viewBulkHostData": "viewBulkHostData",
+                "click #stopDropdownLoading": "stopDropdownLoading",
+                "click #showDropdowns": "showDropdowns",
                 "change input" : "changed",
                 "change select" : "changed",
                 "change textarea" : "changed"
@@ -63,70 +73,38 @@ define([
                 this.model.set(obj);
             },
 
-            bulkHostShow: function(e) {
-                e.preventDefault();
-                this.bulk_host_add = true;
-                $(document.body).find('.bulk_host_component').show();
-                $(document.body).find('.single_host_component').hide();
+            stopDropdownLoading() {
+                this.sourcetypeInputSearch.cancel();
+                this.hostInputSearch.cancel();
+                this.indexInputSearch.cancel();
+                $('#inputWrapper_indexSelector').hide();
+                $('#inputWrapper_sourcetypeSelector').hide();
+                $('#inputWrapper_hostSelector').hide();
+                $('#dropdownCancelWrapper').empty().html(`
+                    <p>
+                        <a id="showDropdowns" href="#">Show Dropdowns</a>
+                        <span class="help-block">Will re-run underlying dropdown searches.</span>
+                    </p>
+                `);
             },
 
-            bulkHostHide: function(e) {
-                e.preventDefault();
-                this.bulk_host_add = false;
-                $(document.body).find('.bulk_host_component').hide();
-                $(document.body).find('.single_host_component').show();
+            startDropdownSearches: function() {
+                this.indexInputSearch.startSearch();
+                this.sourcetypeInputSearch.startSearch();
+                this.hostInputSearch.startSearch();
             },
 
-            viewBulkHostData: function(e) {
-                e.preventDefault();
-                let bulkHostData = $('#bulkHosts').val();
-                let delimiter = $('#delimiter').val();
-                console.log('Model state: ', this.model.attributes);
-                let index = this.model.attributes.index;
-                let sourcetype = this.model.attributes.sourcetype;
-                let lateSecs = this.model.attributes.lateSecs;
-                let suppressUntil = this.model.attributes.suppressUntil;
-                let comments = this.model.attributes.comments;
-                if(delimiter === '') {
-                    //if the delimiter is empty we will attempt to parse by checking newline characters
-                    this.parsed_hosts = bulkHostData.split("\n");
-                } else {
-                    bulkHostData = bulkHostData.replace(/[\n\r]/g, '');
-                    this.parsed_hosts = bulkHostData.split(delimiter);
-                }
-                console.log('parsed host data ', this.parsed_hosts);
-                console.log('delimiter ', delimiter);
-                this.model.set({ "host" : this.parsed_hosts });
-                let test_data = [];
-                let rows = '';
-                this.parsed_hosts.forEach((host, idx) => {
-                    rows += `<tr>
-                                <td>${host}</td>
-                                <td>${index}</td>
-                                <td>${sourcetype}</td>
-                                <td>${lateSecs}</td>
-                                <td>${suppressUntil}</td>
-                                <td>${comments}</td>
-                            </tr>`;
-                });
-                let test_table = `
-                <h3>Bulk Output</h3>
-                <p class="help-block">Confirm the bulk data looks correct before submitting.</p>
-                <table class="table table-chrome table-striped display dataTable no-footer">
-                    <thead>
-                        <th>Host</th>
-                        <th>Index</th>
-                        <th>Sourcetype</th>
-                        <th>Late Seconds</th>
-                        <th>Suppress Until</th>
-                        <th>Comments</th>
-                    </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
-                </table>`;
-                $(document.body).find('#exampleBulkResults').empty().append(test_table);
-                console.log('Test Data ', test_data);
+            showDropdowns: function() {
+                this.startDropdownSearches();
+                $('#inputWrapper_indexSelector').show();
+                $('#inputWrapper_sourcetypeSelector').show();
+                $('#inputWrapper_hostSelector').show();
+                $('#dropdownCancelWrapper').empty().html(`
+                    <p>
+                        <a id="stopDropdownLoading" href="#">Remove Dropdowns</a>
+                        <span class="help-block">Useful if data is taking too long to populate.</span>
+                    </p>
+                `);
             },
 
             splunkComponentsInit: function() {
@@ -268,9 +246,7 @@ define([
                         time_24hr: "true"
                     });
 
-                    splunkjs.mvc.Components.revokeInstance("index");
-                    splunkjs.mvc.Components.revokeInstance("sourcetype");
-                    splunkjs.mvc.Components.revokeInstance("host");
+                    this.startDropdownSearches();
 
                     this.splunkComponentsInit();
 
@@ -341,17 +317,12 @@ define([
                         return hasNumber.test(value);
                     }, "You must include a ticket number for reference (e.g. #12345)");
 
-                console.log('just checking: ', that.validate_ticket_number);
-
                 $("#brokenHostForm", this.el).validate({
 
                     rules: {
                         index: 'required',
                         sourcetype: 'required',
                         host: 'required',
-                        bulkHosts: {
-                            required: true
-                        },
                         lateSecs: {
                             required: true,
                             //number: true
@@ -405,6 +376,7 @@ define([
             },
 
             submitData: function() {
+
 				if(this.mode === "New") {
 
 					this.tokens.set("index_add_tok", this.model.get("index"));
@@ -414,13 +386,7 @@ define([
 					this.tokens.set("suppress_until_add_tok", this.model.get("suppressUntil"));
 					this.tokens.set("contact_add_tok", this.model.get("contact"));
 					this.tokens.set("comments_add_tok", this.model.get("comments"));
-                    console.log('Submitted info: ', this.model.attributes);
-                    if(this.bulk_host_add) {
-                        this.eventBus.trigger("row:new:bulk", this.model.attributes);
-                    } else {
-                        this.eventBus.trigger("row:new", this.model.attributes);
-                    }
-
+                    this.eventBus.trigger("row:new", this.model.attributes);
 
 				} else if(this.mode === "Edit") {
 
@@ -441,6 +407,10 @@ define([
             },
 
             close: function() {
+
+                splunkjs.mvc.Components.revokeInstance("index-input-search");
+                splunkjs.mvc.Components.revokeInstance("sourcetype-input-search");
+                splunkjs.mvc.Components.revokeInstance("host-input-search");
 
                 $(document.body).removeClass("modal-shown");
                 this.unsetSplunkComponents();
