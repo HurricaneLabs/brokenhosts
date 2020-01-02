@@ -64,12 +64,12 @@ Documentation
 Changelog
 ---------
 
-Version 4.0.6 (RELEASE PENDING)
+Version 4.0.5 (RELEASE PENDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - update bh_stats_gen to use a more meaningful time for the summary events
 - update the alert searches to no longer look into the future for summary events, since that's not possible
-- include winevnetlog aggregation
+- include wineventlog aggregation
 - make pfsense aggregation work with splunk web validation
 - make pfsense aggregation more generic to apply more broadly
 
