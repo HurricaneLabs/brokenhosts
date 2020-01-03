@@ -7,38 +7,6 @@ require.config({
     }
 });
 
-
-/*
-
-// For testing large amounts of data to be sent to the select components
-
-function shuffle(str) {
-  return str
-    .split('')
-    .sort(function() {
-      return 0.5 - Math.random();
-    })
-    .join('');
-}
-
-const range = (start, end) => Array.from(
-  Array(Math.abs(end - start) + 1),
-  (_, i) => start + i
-);
-
-// For demonstration purposes we first make
-// a huge array of demo data (20 000 items)
-// HEADS UP; for the _.map function i use underscore (actually lo-dash) here
-function mockData() {
-  return range(1, 20000).map(i => {
-      return {
-          id: i,
-          text: shuffle('te ststr ing to shuffle') + ' ' + i,
-      };
-  });
-}
- */
-
 define([
 	"underscore",
 	"backbone",
