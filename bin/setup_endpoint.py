@@ -44,8 +44,8 @@ class BrokenHostsSetup(admin.MConfigHandler):
             "default",
             "data",
             "expectedTime.csv.default")
-        with open(default_file, "r") as file:
-            reader = csv.DictReader(file)
+        with open(default_file, "r") as opened_file:
+            reader = csv.DictReader(opened_file)
             for line in reader:
                 self.write_line(session_key, line)
 
