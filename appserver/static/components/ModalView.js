@@ -121,17 +121,22 @@ define([
                 $(this.dropdownID).prop('disabled', true);
                 $(this.dropdownID).parent().children('.loading').show().css({ 'display' : 'block' });
                 let int = 0;
-                let results = this.inputSearch.data('results');
-                results.on('data', () => {
-                    results.data().rows.forEach((row, idx) => {
-                        let obj = {};
-                        obj['id'] = int;
-                        obj['text'] = row[0];
-                        this.final_results.push(obj);
-                        int++;
-                    });
-                    $(this.dropdownID).prop('disabled', false);
-                    $(this.dropdownID).parent().children('.loading').hide();
+                let results = this.inputSearch.data('results', {count:0});
+                let final_results = this.final_results;
+                let dropdownID = this.dropdownID;
+                results.on('data', function() {
+                    if (results.hasData()) {
+                        let search_results = results.data().rows;
+                        search_results.forEach((row) => {
+                            let obj = {};
+                            obj['id'] = int;
+                            obj['text'] = row[0];
+                            final_results.push(obj);
+                            int++;
+                        });
+                        $(dropdownID).prop('disabled', false);
+                        $(dropdownID).parent().children('.loading').hide();
+                    }
                 });
 
                 this.bind(this.dropdownID, this.final_results);
