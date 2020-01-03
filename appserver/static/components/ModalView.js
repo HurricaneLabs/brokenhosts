@@ -36,17 +36,20 @@ define([
 				this.indexInputSearch = new SearchManager({
                     id: "index-input-search",
                     search: "| tstats count WHERE index=* by index",
-                    autoStart: false
+                    autoStart: false,
+                    earliest_time: '-7d@d'
                 });
                 this.sourcetypeInputSearch = new SearchManager({
                     id: "sourcetype-input-search",
                     search: "| tstats count WHERE index=* sourcetype=* by sourcetype",
-                    autoStart: false
+                    autoStart: false,
+                    earliest_time: '-7d@d'
                 });
                 this.hostInputSearch = new SearchManager({
                     id: "host-input-search",
                     search: "| tstats count WHERE index=* host=* by host",
-                    autoStart: false
+                    autoStart: false,
+                    earliest_time: '-7d@d'
                 });
                 _.bindAll(this, "changed");
             },
