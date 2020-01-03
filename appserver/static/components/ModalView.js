@@ -3,9 +3,41 @@ require.config({
         text: "../app/broken_hosts/components/lib/text",
         "modalTemplate" : "../app/broken_hosts/components/templates/modalTemplate.html",
         "flatPickr" : "../app/broken_hosts/components/lib/flatpickr/dist/flatpickr.min",
-        "validate" : "../app/broken_hosts/components/lib/jquery-validation/jquery.validate.min"
+        "validate" : "../app/broken_hosts/components/lib/jquery-validation/jquery.validate.min",
     }
 });
+
+
+/*
+
+// For testing large amounts of data to be sent to the select components
+
+function shuffle(str) {
+  return str
+    .split('')
+    .sort(function() {
+      return 0.5 - Math.random();
+    })
+    .join('');
+}
+
+const range = (start, end) => Array.from(
+  Array(Math.abs(end - start) + 1),
+  (_, i) => start + i
+);
+
+// For demonstration purposes we first make
+// a huge array of demo data (20 000 items)
+// HEADS UP; for the _.map function i use underscore (actually lo-dash) here
+function mockData() {
+  return range(1, 20000).map(i => {
+      return {
+          id: i,
+          text: shuffle('te ststr ing to shuffle') + ' ' + i,
+      };
+  });
+}
+ */
 
 define([
 	"underscore",
@@ -16,10 +48,8 @@ define([
     "flatPickr",
     "validate",
     "splunkjs/mvc/searchmanager",
-    "splunkjs/mvc/dropdownview",
-    "splunkjs/mvc/timerangeview",
-    "splunkjs/mvc/multidropdownview"
-    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager, DropdownView, TimeRangeView, MultiDropdownView) {
+    'select2/select2',
+    ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager) {
 
         var ModalView = Backbone.View.extend({
 
@@ -34,6 +64,7 @@ define([
 				this.eventBus = this.options.eventBus;
 				this.childViews = [];
 				this.sourcetypeDropdown = "";
+				this.hosts_results = [];
 				this.indexInputSearch = new SearchManager({
                     id: "index-input-search",
                     search: "| tstats count WHERE index=* by index",
@@ -49,7 +80,6 @@ define([
                     search: "| tstats count WHERE index=* host=* by host",
                     autoStart: false
                 });
-
                 _.bindAll(this, "changed");
             },
 
@@ -57,8 +87,6 @@ define([
                 "click .close": "close",
                 "click .modal-backdrop": "close",
                 "click #submitData": "validateData",
-                "click #stopDropdownLoading": "stopDropdownLoading",
-                "click #showDropdowns": "showDropdowns",
                 "change input" : "changed",
                 "change select" : "changed",
                 "change textarea" : "changed"
@@ -73,96 +101,111 @@ define([
                 this.model.set(obj);
             },
 
-            stopDropdownLoading() {
-                this.sourcetypeInputSearch.cancel();
-                this.hostInputSearch.cancel();
-                this.indexInputSearch.cancel();
-                $('#inputWrapper_indexSelector').hide();
-                $('#inputWrapper_sourcetypeSelector').hide();
-                $('#inputWrapper_hostSelector').hide();
-                $('#dropdownCancelWrapper').empty().html(`
-                    <p>
-                        <a id="showDropdowns" href="#">Show Dropdowns</a>
-                        <span class="help-block">Will re-run underlying dropdown searches.</span>
-                    </p>
-                `);
-            },
-
             startDropdownSearches: function() {
                 this.indexInputSearch.startSearch();
                 this.sourcetypeInputSearch.startSearch();
                 this.hostInputSearch.startSearch();
+                //this.getHostDropdownResults();
+
+                let indexDropdown = {
+                    inputSearch: this.indexInputSearch,
+                    final_results: [],
+                    wrapperID: '#indexSelect_wrapper',
+                    dropdownID: '#indexInput',
+                    getResults: this.getResults,
+                    bind: this.select2Binding,
+                    associatedTextInputID: '#index',
+                    associatedModelAttr: 'index',
+                    model: this.model,
+                };
+
+                let sourcetypeDropdown = {
+                    inputSearch: this.sourcetypeInputSearch,
+                    final_results: [],
+                    wrapperID: '#sourcetypeSelect_wrapper',
+                    dropdownID: '#sourcetypeInput',
+                    getResults: this.getResults,
+                    bind: this.select2Binding,
+                    associatedTextInputID: '#sourcetype',
+                    associatedModelAttr: 'sourcetype',
+                    model: this.model,
+                };
+
+                let hostDropdown = {
+                    inputSearch: this.hostInputSearch,
+                    final_results: [],
+                    wrapperID: '#hostSelect_wrapper',
+                    dropdownID: '#hostInput',
+                    getResults: this.getResults,
+                    bind: this.select2Binding,
+                    associatedTextInputID: '#host',
+                    associatedModelAttr: 'host',
+                    model: this.model,
+                };
+
+                indexDropdown.getResults();
+                hostDropdown.getResults();
+                sourcetypeDropdown.getResults();
+
             },
 
-            showDropdowns: function() {
-                this.startDropdownSearches();
-                $('#inputWrapper_indexSelector').show();
-                $('#inputWrapper_sourcetypeSelector').show();
-                $('#inputWrapper_hostSelector').show();
-                $('#dropdownCancelWrapper').empty().html(`
-                    <p>
-                        <a id="stopDropdownLoading" href="#">Remove Dropdowns</a>
-                        <span class="help-block">Useful if data is taking too long to populate.</span>
-                    </p>
-                `);
+            getResults: function() {
+                $(this.dropdownID).prop('disabled', true);
+                $(this.dropdownID).parent().children('.loading').show().css({ 'display' : 'block' });
+                let int = 0;
+                let results = this.inputSearch.data('results', {count:0});
+                results.on('data', () => {
+                    results.data().rows.forEach((row, idx) => {
+                        let obj = {};
+                        obj['id'] = int;
+                        obj['text'] = row[0];
+                        this.final_results.push(obj);
+                        int++;
+                    });
+                    $(this.dropdownID).prop('disabled', false);
+                    $(this.dropdownID).parent().children('.loading').hide();
+                });
+
+                this.bind(this.dropdownID, this.final_results);
+
             },
 
-            splunkComponentsInit: function() {
-                // Instantiate components
+            select2Binding: function(div_id_str, data){
 
-                var that = this;
-
-                this.indexDropdown = new DropdownView({
-                    id: "index",
-                    managerid: "index-input-search",
-                    default: "",
-                    labelField: "index",
-                    valueField: "index",
-                    el: $("#inputWrapper_indexSelector")
-                }).render();
-
-                this.sourcetypeDropdown = new DropdownView({
-                    id: "sourcetype",
-                    managerid: "sourcetype-input-search",
-                    default: "",
-                    labelField: "sourcetype",
-                    valueField: "sourcetype",
-                    el: $("#inputWrapper_sourcetypeSelector")
-                }).render();
-
-                this.hostDropdown = new DropdownView({
-                    id: "host",
-                    managerid: "host-input-search",
-                    default: "",
-                    labelField: "host",
-                    valueField: "host",
-                    el: $("#inputWrapper_hostSelector")
-                }).render();
-
-                this.indexDropdown.on('change', function(val) {
-                    if(val) {
-                        $("#index").val(val);
-                        that.model.set({ "index" : val });
-                    }
+                $(div_id_str).select2({
+                    data: data,
+                    query: function(q) {
+                      var pageSize,
+                        results,
+                        that = this;
+                      pageSize = 20; // or whatever pagesize
+                      results = [];
+                      if (q.term && q.term !== '') {
+                        // HEADS UP; for the _.filter function i use underscore (actually lo-dash) here
+                        results = _.filter(that.data, function(e) {
+                          return e.text.toUpperCase().indexOf(q.term.toUpperCase()) >= 0;
+                        });
+                      } else if (q.term === '') {
+                        results = that.data;
+                      }
+                      q.callback({
+                        results: results.slice((q.page - 1) * pageSize, q.page * pageSize),
+                        more: results.length >= q.page * pageSize,
+                      });
+                    },
                 });
 
-                this.sourcetypeDropdown.on('change', function(val) {
-                    if(val) {
-                        $("#sourcetype").val(val);
-                        that.model.set({ "sourcetype" : val });
-                    }
-                });
 
-                this.hostDropdown.on('change', function(val) {
-                    if(val) {
-                        $("#host").val(val);
-                        that.model.set({ "host" : val });
-                    }
+                $(div_id_str).on('select2-selecting', (e) => {
+                    var model_value = e.object.text;
+                    let model_key = this.associatedModelAttr;
+                    let tmp_model = {};
+                    tmp_model[model_key] = model_value;
+                    console.log('selected data:', model_value);
+                    this.model.set(tmp_model);
+                    console.log('this.model ', this.model);
+                    $(this.associatedTextInputID).val(model_value);
                 });
-
-                this.childViews.push(this.indexDropdown);
-                this.childViews.push(this.sourcetypeDropdown);
-                this.childViews.push(this.hostDropdown);
 
             },
 
@@ -247,8 +290,6 @@ define([
                     });
 
                     this.startDropdownSearches();
-
-                    this.splunkComponentsInit();
 
                 });
 

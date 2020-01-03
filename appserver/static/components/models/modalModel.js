@@ -16,7 +16,8 @@ define([
             sourcetype: "",
             suppressUntil: "",
             delimiter: "",
-            mode: "Edit"
+            mode: "Edit",
+            loading_indexes: true,
         }
 
     });

@@ -9,40 +9,27 @@
     <div class="modal-body">
         <form id="brokenHostForm">
 
-            <div class="form-group" id="dropdownCancelWrapper">
-                <p>
-                    <a id="stopDropdownLoading" href="#">Remove Dropdowns</a>
-                    <span class="help-block">Useful if data is taking too long to populate.</span>
-                </p>
-            </div>
-
             <div class="form-group">
                 <label for="indexSelector">Select an Index</label>
-                <span id="inputWrapper_indexSelector">
-                    <!-- default disabled field before loading in DropdownView component --->
-                     <select class="form-control" id="indexSelector" disabled></select>
-                </span>
+                <input type="text" class="form-control" id="indexInput"></input>
                 <input type="text" id="index" name="index" value="<%- index %>" autocomplete="false"/>
+                <span class="loading" style="display:none;">Loading...</span>
                 <p class="help-block">Use dropdown to ensure index exists.</p>
             </div>
 
             <div class="form-group">
                 <label for="sourcetypeSelector">Select a Sourcetype</label>
-                <span id="inputWrapper_sourcetypeSelector">
-                    <!-- default disabled field before loading in DropdownView component --->
-                     <select class="form-control" id="sourcetypeSelector" disabled></select>
-                </span>
+                <input type="text" class="form-control" id="sourcetypeInput"></input>
                 <input type="text" id="sourcetype" name="sourcetype" value="<%- sourcetype %>" autocomplete="false"/>
+                <span class="loading" style="display:none;">Loading...</span>
                 <p class="help-block">Use dropdown to ensure sourcetype exists.</p>
             </div>
 
             <div class="form-group single_host_component" id="hostFormGroup">
                 <label for="hostSelector">Select a Host</label>
-                <span id="inputWrapper_hostSelector">
-                    <!-- default disabled field before loading in DropdownView component --->
-                     <select class="form-control" id="hostSelector" disabled></select>
-                </span>
+                <input type="text" class="form-control" id="hostInput"></input>
                 <input type="text" id="host" name="host" value="<%- host %>" autocomplete="false"/>
+                <span class="loading" style="display:none;">Loading...</span>
                 <p class="help-block">Use dropdown to ensure host exists.</p>
             </div>
 

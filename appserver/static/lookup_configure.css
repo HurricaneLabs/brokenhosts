@@ -180,3 +180,11 @@ table.dataTable td.reorder {
     max-height: 400px;
     overflow-y: scroll;
 }
+.select2-container {
+    width: 210px;
+    top: -5px;
+}
+.select2-container .select2-choice {
+    height: 29px;
+    padding: 1px 0 0 8px;
+}
