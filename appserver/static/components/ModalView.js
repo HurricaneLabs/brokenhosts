@@ -121,7 +121,7 @@ define([
                 $(this.dropdownID).prop('disabled', true);
                 $(this.dropdownID).parent().children('.loading').show().css({ 'display' : 'block' });
                 let int = 0;
-                let results = this.inputSearch.data('results', {count:0});
+                let results = this.inputSearch.data('results');
                 results.on('data', () => {
                     results.data().rows.forEach((row, idx) => {
                         let obj = {};
@@ -163,15 +163,12 @@ define([
                     },
                 });
 
-
                 $(div_id_str).on('select2-selecting', (e) => {
                     var model_value = e.object.text;
                     let model_key = this.associatedModelAttr;
                     let tmp_model = {};
                     tmp_model[model_key] = model_value;
-                    console.log('selected data:', model_value);
                     this.model.set(tmp_model);
-                    console.log('this.model ', this.model);
                     $(this.associatedTextInputID).val(model_value);
                 });
 
