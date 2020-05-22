@@ -3,5 +3,4 @@
   <view name="investigation" />
   <view name="configure_lookup" />
   <view name="search" />
-  <a href="setup">Setup</a>
 </nav>

@@ -1,4 +1,9 @@
-# Broken Hosts App for Splunk
+# Broken Hosts App for Splunk (Cloud Version)
+
+NOTE: This is for a Cloud Only version of the app. It should be kept up-to-date with the master branch.
+The major difference is that this Cloud version does not have a setup.xml page. All configurations must occur
+directly in the Macro section of the Splunk UI.
+
 The Broken Hosts App for Splunk is a useful tool for monitoring data going into Splunk. It has the ability to alert when hosts stop sending data into Splunk, as well as inspect the last time the final combination of data was received by Splunk.
 
 If the arrival of the final log for the index/sourcetype/host combination is later than expected, the Broken Hosts App will send an alert. This allows for quick status detection of the hosts and fast issue resolution.
@@ -29,4 +34,15 @@ The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk
 
 ## Documentation
 https://brokenhosts.hurricanelabs.com
+
+## Cloud Configuration
+- No `setup.xml` is allowed on cloud - therefore the app comes enabled by default. All configuration is
+related to macros that come with this app. The following macros are available to configure:
+- `default_contact`
+- `default_expected_time`
+- `ignore_after`		
+- `linuxoslog_index`		
+- `min_count`		
+- `search_additions`	
+- `wineventlog_index`
 
