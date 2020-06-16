@@ -1,8 +1,4 @@
-# Broken Hosts App for Splunk (Cloud Version)
-
-NOTE: This is for a Cloud Only version of the app. It should be kept up-to-date with the master branch.
-The major difference is that this Cloud version does not have a setup.xml page. All configurations must occur
-directly in the Macro section of the Splunk UI.
+# Broken Hosts App for Splunk
 
 The Broken Hosts App for Splunk is a useful tool for monitoring data going into Splunk. It has the ability to alert when hosts stop sending data into Splunk, as well as inspect the last time the final combination of data was received by Splunk.
 
