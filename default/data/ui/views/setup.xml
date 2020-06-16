@@ -1,6 +1,0 @@
-<dashboard script="setup.js" isDashboard="false" isVisible="false">
-  <label>setup</label>
-<row>
-    <html><p>Setup will load shortly. Please be patient.</p></html>
-</row>
-</dashboard>
