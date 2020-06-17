@@ -32,7 +32,7 @@ The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk
 https://brokenhosts.hurricanelabs.com
 
 ## Cloud Configuration
-- No `setup.xml` is allowed on cloud - therefore the app comes enabled by default. All configuration is
+- No `setup.xml` is allowed on cloud, and therefore has been removed from this app. All configuration is
 related to macros that come with this app. The following macros are available to configure:
 - `default_contact`
 - `default_expected_time`
