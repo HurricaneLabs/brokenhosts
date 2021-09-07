@@ -1,4 +1,4 @@
-<dashboard script="log_host_monitoring.js" stylesheet="tableAlert.css">
+<dashboard version="1.1" script="log_host_monitoring.js" stylesheet="tableAlert.css">
   <label>Broken Hosts</label>
   <row>
     <panel>

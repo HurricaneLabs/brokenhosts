@@ -1,4 +1,4 @@
-<form>
+<form version="1.1">
   <label>Investigation</label>
   <description>Broken Hosts Investigation Dashboard</description>
   <fieldset submitButton="false" autoRun="true">
