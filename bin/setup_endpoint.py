@@ -7,7 +7,7 @@ import os
 import csv
 
 # pylint: disable=import-error
-import splunk.admin as admin
+from splunk import admin
 import splunk.rest
 
 
@@ -20,13 +20,11 @@ class BrokenHostsSetup(admin.MConfigHandler):
         """
         super() method - not used
         """
-        pass
 
     def handleList(self, _):  # pylint: disable=invalid-name
         """
         super() method - not used
         """
-        pass
 
     def handleEdit(self, _):  # pylint: disable=invalid-name
         """

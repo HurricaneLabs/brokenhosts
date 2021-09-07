@@ -1,52 +1,53 @@
 {
-  "schemaVersion": "2.0.0", 
+  "schemaVersion": "2.0.0",
   "info": {
-    "title": "Broken Hosts App for Splunk", 
+    "title": "Broken Hosts App for Splunk",
     "id": {
-      "group": null, 
-      "name": "broken_hosts", 
+      "group": null,
+      "name": "broken_hosts",
       "version": "4.0.6"
-    }, 
+    },
     "author": [
       {
-        "name": "Hurricane Labs", 
-        "email": "splunk@hurricanelabs.com", 
-        "company": "Hurricane Labs"
+        "name": "Hurricane Labs",
+        "email": null,
+        "company": null
       }
-    ], 
-    "releaseDate": null, 
-    "description": "Broken Hosts App for Splunk collects data that can be used to generate alerts when hosts stop sending data", 
+    ],
+    "releaseDate": null,
+    "description": "Broken Hosts App for Splunk collects data that can be used to generate alerts when hosts stop sending data",
     "classification": {
-      "intendedAudience": "Splunk Administrators", 
-      "categories": [], 
-      "developmentStatus": "Production/Stable"
-    }, 
-    "commonInformationModels": null, 
+      "intendedAudience": null,
+      "categories": [],
+      "developmentStatus": null
+    },
+    "commonInformationModels": null,
     "license": {
-      "name": "MIT License", 
-      "text": null, 
-      "uri": "http://opensource.org/licenses/MIT"
-    }, 
-    "privacyPolicy": {
-      "name": null, 
-      "text": null, 
+      "name": null,
+      "text": null,
       "uri": null
-    }, 
+    },
+    "privacyPolicy": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
     "releaseNotes": {
-      "name": "Broken Hosts Release notes and README", 
-      "text": "./README.md", 
+      "name": null,
+      "text": "./README.md",
       "uri": null
     }
-  }, 
-  "dependencies": null, 
-  "tasks": null, 
-  "inputGroups": null, 
-  "incompatibleApps": null, 
+  },
+  "dependencies": null,
+  "tasks": null,
+  "inputGroups": null,
+  "incompatibleApps": null,
   "platformRequirements": null,
   "supportedDeployments": [
-    "*" 
-  ], 
-  "targetWorkloads": ["_search_heads"]
+    "_standalone",
+    "_distributed"
+  ],
+  "targetWorkloads": null
 }
 # The following sections can be customized and added to the manifest. For detailed information,
 # see the documentation at http://dev.splunk.com/view/packaging-toolkit/SP-CAAAE9V
@@ -55,7 +56,7 @@
 # "dependencies": {
 #     "<app-group>:<app-name>": {
 #         "version": "*",
-#         "package": "<source-package-location>",
+#         "package": "<source-package-name>",
 #         "optional": [true|false]
 #     }
 # }
