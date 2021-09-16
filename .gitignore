@@ -4,3 +4,4 @@ local/
 metadata/local.meta
 lookups/expectedTime.csv
 docs/_build
+**/node_modules
