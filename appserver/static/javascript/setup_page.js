@@ -10,7 +10,7 @@ require.config({
         react: "../app/" + app_name + "/javascript/vendor/react.production.min",
         ReactDOM: "../app/" + app_name + "/javascript/vendor/react-dom.production.min",
     },
-    scriptType: "module",
+    scriptType: "module"
 });
 
 require([

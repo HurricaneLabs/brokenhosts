@@ -39,6 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
  */
 import * as Setup from "./setup_page.js";
 import * as Validation from "./validation.js";
+import "../../components/lib/regenerator-runtime/runtime.js";
 
 require.config({
   paths: {
@@ -218,7 +219,7 @@ define(["React", "splunkjs/splunk"], function (React, splunk_js_sdk) {
             className: "grey"
           }, /*#__PURE__*/React.createElement("p", null, "This app is configured.")) : /*#__PURE__*/React.createElement("div", {
             className: "warn"
-          }, /*#__PURE__*/React.createElement("p", null, "This app is not currently configured. Click the 'Save Configuration' button below to configure.")), /*#__PURE__*/React.createElement("h2", null, "Optional Configuration"), /*#__PURE__*/React.createElement("form", {
+          }, /*#__PURE__*/React.createElement("p", null, "This app is not currently configured.")), /*#__PURE__*/React.createElement("h2", null, "Optional Configuration"), /*#__PURE__*/React.createElement("form", {
             onSubmit: this.handleSubmit
           }, /*#__PURE__*/React.createElement("div", {
             className: "control-group"
@@ -243,7 +244,7 @@ define(["React", "splunkjs/splunk"], function (React, splunk_js_sdk) {
             className: "help"
           }, "The ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen_constraints"), " macro is used to control what data is examined by the ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen"), " search when generating the metrics used by the alerting searches. The default behavior is to exclude all data in the ", /*#__PURE__*/React.createElement("pre", null, "summary"), " index, and all data from the ", /*#__PURE__*/React.createElement("pre", null, "stash"), " sourcetype, but include all other data.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "NOTE:"), " This macro is used within a ", /*#__PURE__*/React.createElement("pre", null, "tstats"), " command, and therefore the macro\u2019s must be valid ", /*#__PURE__*/React.createElement("pre", null, "tstats"), " syntax."))), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("h3", null, "bh_stats_gen_additions"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("small", {
             className: "help"
-          }, "The ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen_additions"), " macro is used to insert arbitrary SPL into the ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen"), " search in order to transform data before it is written to the summary index.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "Example:"), " Use ", /*#__PURE__*/React.createElement("pre", null, "eventstats"), " and ", /*#__PURE__*/React.createElement("pre", null, "eval"), " statements to calculate custom metrics to be stored in the summary data."))), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("h3", null, "bh_alert_additions"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("small", {
+          }, "The ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen_additions"), " macro is used to insert arbitrary SPL into the ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen"), " search in order to transform data before it is written to the summary index.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "Example:"), " use ", /*#__PURE__*/React.createElement("pre", null, "eventstats"), " and ", /*#__PURE__*/React.createElement("pre", null, "eval"), " statements to calculate custom metrics to be stored in the summary data."))), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("h3", null, "bh_alert_additions"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("small", {
             className: "help"
           }, "The ", /*#__PURE__*/React.createElement("pre", null, "bh_alert_additions"), " macro is used to insert arbitrary SPL into the alerting searches, in order to transform data before it is written to the summary index.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "Example:"), " Apply subsearch logic from a monitoring system to automatically exclude hosts that are known to be offline."))), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("h3", null, "default_contact"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("small", {
             className: "help"

@@ -27,8 +27,6 @@ export async function perform(splunk_js_sdk, setup_options) {
 
         let { comments_must_have_ticket_number } = setup_options;
 
-        console.log('update it with ::: ', + comments_must_have_ticket_number);
-
         // // Get conf and do stuff to it
         await Splunk.update_configuration_file(
              splunk_js_sdk_service,
@@ -128,8 +126,6 @@ export async function get_initial_state(splunk_js_sdk) {
         'validation',
         'comments_must_have_ticket_number'
     );
-
-    console.log('comments_must_have_ticket_number ::: ',comments_must_have_ticket_number);
 
     return {
         'is_configured' : is_configured,

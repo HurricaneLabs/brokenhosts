@@ -9,6 +9,7 @@
 
 import * as Setup from "./setup_page.js";
 import * as Validation from "./validation.js";
+import "../../components/lib/regenerator-runtime/runtime.js";
 
 require.config({
   paths: {
@@ -125,7 +126,7 @@ require.config({
             <div className="error"><p>Could not save.<br/>An error occurred.</p></div> : '' }
             {  this.state.is_configured == 1 ? 
               <div className="grey"><p>This app is configured.</p></div> : 
-              <div className="warn"><p>This app is not currently configured. Click the 'Save Configuration' button below to configure.</p></div>
+              <div className="warn"><p>This app is not currently configured.</p></div>
             }
           <h2>Optional Configuration</h2>
           <form onSubmit={this.handleSubmit}> 
@@ -168,7 +169,7 @@ require.config({
                     <h3>bh_stats_gen_additions</h3>
                     <p><small className="help">The <pre>bh_stats_gen_additions</pre> macro is used to insert arbitrary SPL into the <pre>bh_stats_gen</pre> search in order to transform data before it is written to the summary index.
                     <br/>
-                    <strong>Example:</strong> Use <pre>eventstats</pre> and <pre>eval</pre> statements to calculate custom metrics to be stored in the summary data.</small></p>
+                    <strong>Example:</strong> use <pre>eventstats</pre> and <pre>eval</pre> statements to calculate custom metrics to be stored in the summary data.</small></p>
                   </li>
                   <li>
                     <h3>bh_alert_additions</h3>
@@ -178,10 +179,12 @@ require.config({
                   </li>
                   <li>
                     <h3>default_contact</h3>
+
                     <p><small className="help">The <pre>default_contact</pre> macro is used only for the <pre>Broken Hosts Alert - by contact</pre> search. It is used to set the default email address for items that don’t have a separate contact listed in the contact column of the lookup table.</small></p>
                   </li>
                   <li>
                     <h3>default_expected_time</h3>
+
                     <p><small className="help">The <pre>default_expected_time</pre> macro is used to set a default <pre>lateSecs</pre> value for things not defined in the lookup. The <pre>lateSecs</pre> value tells Broken Hosts how long a specific source of data is allowed to go without sending data before an alert should be triggered. This setting is in seconds, and defaults to 14400 (4 hours).</small></p>
                   </li>
                 </ul>
