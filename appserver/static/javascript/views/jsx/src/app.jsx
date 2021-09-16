@@ -1,12 +1,3 @@
-
-/**
- * This is an example using pure React, with no JSX
- * If you would like to use JSX, you will need to use Babel to transpile your code
- * from JSK to JS. You will also need to use a task runner/module bundler to
- * help build your app before it can be used in the browser.
- * Some task runners/module bundlers are : gulp, grunt, webpack, and Parcel
- */
-
 import * as Setup from "./setup_page.js";
 import * as Validation from "./validation.js";
 import "../../components/lib/regenerator-runtime/runtime.js";
