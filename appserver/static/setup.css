@@ -1,0 +1,76 @@
+.dashboard-panel {
+    background: none !important;
+}
+h1 {
+    margin: 1em 50px;
+}
+ul li {
+    list-style-type: none;
+}
+.dashboard-header h2.dashboard-title {
+    font-size: 24px;
+    text-align: center;
+}
+#setupView {
+    margin: 0 auto;
+    background: white;
+    padding: 20px 40px 20px 20px;
+    width: 800px;
+}
+#reset-api-key {
+    margin-top: -10px;
+    display: block;
+    font-size: 12px;
+    text-decoration: underline;
+}
+#api-key-input {
+    width: 205px;
+}
+.input-error {
+    color: #bd3232;
+    display: block;
+    padding: 0 0 10px;
+}
+.red-border {
+    border: 1px solid #bd3232 !Important;
+}
+.success p, .error p {
+    color: white;
+}
+.note {
+    line-height: 1em;
+    margin-top: -7px;
+    margin-bottom: 20px;
+}
+.checkbox {
+    margin: .25em .25em .25em 0;
+}
+pre {
+    display: inline-block;
+    padding: 0em .25em; 
+    margin: 0;
+}
+.success, .warn, .grey, .error {
+    margin-left: -20px;
+    width: 100%;
+    padding: 13px 10px 5px 20px;
+    margin-bottom: 20px;
+    display: inline-block;
+    padding-right: 40px;
+}
+.help {
+    color: rgb(107, 119, 133);
+    margin-top: .25em;
+}
+.error {
+    background: darkred;
+}
+.success {
+    background: #32da81;
+}
+.warn {
+    background: #edaf07;
+}
+.grey {
+    background: #CCC;
+}

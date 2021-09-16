@@ -1,0 +1,22 @@
+{
+  "name": "broken-hosts",
+  "version": "4.0.7",
+  "description": "",
+  "main": "app.jsx",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.15.4",
+    "@babel/core": "^7.15.4",
+    "babel-preset-stage-0": "^6.24.1"
+  },
+  "dependencies": {
+    "@babel/plugin-transform-classes": "^7.15.4",
+    "@babel/plugin-transform-react-jsx": "^7.14.9",
+    "@babel/preset-env": "^7.15.4",
+    "@babel/preset-react": "^7.14.5"
+  }
+}

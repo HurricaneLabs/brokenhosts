@@ -32,8 +32,7 @@ The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk
 https://brokenhosts.hurricanelabs.com
 
 ## Cloud Configuration
-- No `setup.xml` is allowed on cloud, and therefore has been removed from this app. All configuration is
-related to macros that come with this app. The following macros are available to configure:
+- By default this app is configured and all configuration options are optional. The following macros are available to configure:
 - `default_contact`
 - `default_expected_time`
 - `ignore_after`		
@@ -41,4 +40,4 @@ related to macros that come with this app. The following macros are available to
 - `min_count`		
 - `search_additions`	
 - `wineventlog_index`
-
+- You can also configure the requirement of a ticket number being in comments when updating the table on the Configure Broken Hosts Lookup page. This configuration is availabe on the Setup page in the app.
