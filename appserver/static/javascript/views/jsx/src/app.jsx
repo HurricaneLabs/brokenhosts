@@ -142,7 +142,7 @@ require.config({
         <hr></hr>
            <div>
              <h2>Other Optional Configuration Options</h2>
-             <p>Broken Hosts ships with multiple macros for further configuration of the app. <a target="_blank" href="/manager/broken_hosts/data/macros?ns=broken_hosts&pwnr=-&app_only=1&search=&count=25">
+             <p>Broken Hosts ships with multiple macros for further configuration of the app. <a target="_blank" href="/manager/launcher/admin/macros?ns=broken_hosts&pwnr=-&app_only=1&search=&count=25">
                View Macros
                </a></p>
              <p>

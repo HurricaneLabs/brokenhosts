@@ -2,7 +2,8 @@
     background: none !important;
 }
 h1 {
-    margin: 1em 50px;
+    margin: 1em auto .5em;
+    width: 861px;
 }
 ul li {
     list-style-type: none;

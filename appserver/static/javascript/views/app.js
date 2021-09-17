@@ -30,25 +30,18 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-/**
- * This is an example using pure React, with no JSX
- * If you would like to use JSX, you will need to use Babel to transpile your code
- * from JSK to JS. You will also need to use a task runner/module bundler to
- * help build your app before it can be used in the browser.
- * Some task runners/module bundlers are : gulp, grunt, webpack, and Parcel
- */
 import * as Setup from "./setup_page.js";
 import * as Validation from "./validation.js";
 import "../../components/lib/regenerator-runtime/runtime.js";
 
 require.config({
   paths: {
-    React: "../app/" + app_name + "/javascript/vendor/React.production.min"
+    react: "../app/" + app_name + "/javascript/vendor/react.production.min"
   },
   scriptType: "module"
 });
 
-define(["React", "splunkjs/splunk"], function (React, splunk_js_sdk) {
+define(["react", "splunkjs/splunk"], function (React, splunk_js_sdk) {
   var e = React.createElement;
 
   var SetupPage = /*#__PURE__*/function (_React$Component) {
@@ -239,7 +232,7 @@ define(["React", "splunkjs/splunk"], function (React, splunk_js_sdk) {
             className: "btn btn-primary"
           }, "Save Configuration")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", null, "Other Optional Configuration Options"), /*#__PURE__*/React.createElement("p", null, "Broken Hosts ships with multiple macros for further configuration of the app. ", /*#__PURE__*/React.createElement("a", {
             target: "_blank",
-            href: "/manager/broken_hosts/data/macros?ns=broken_hosts&pwnr=-&app_only=1&search=&count=25"
+            href: "/manager/launcher/admin/macros?ns=broken_hosts&pwnr=-&app_only=1&search=&count=25"
           }, "View Macros")), /*#__PURE__*/React.createElement("p", null, "The following are descriptions for the available macros:", /*#__PURE__*/React.createElement("ul", null, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("h3", null, "bh_stats_gen_constraints"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("small", {
             className: "help"
           }, "The ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen_constraints"), " macro is used to control what data is examined by the ", /*#__PURE__*/React.createElement("pre", null, "bh_stats_gen"), " search when generating the metrics used by the alerting searches. The default behavior is to exclude all data in the ", /*#__PURE__*/React.createElement("pre", null, "summary"), " index, and all data from the ", /*#__PURE__*/React.createElement("pre", null, "stash"), " sourcetype, but include all other data.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "NOTE:"), " This macro is used within a ", /*#__PURE__*/React.createElement("pre", null, "tstats"), " command, and therefore the macro\u2019s must be valid ", /*#__PURE__*/React.createElement("pre", null, "tstats"), " syntax."))), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("h3", null, "bh_stats_gen_additions"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("small", {
