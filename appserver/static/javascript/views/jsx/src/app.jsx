@@ -4,12 +4,12 @@ import "../../components/lib/regenerator-runtime/runtime.js";
 
 require.config({
   paths: {
-      React: "../app/" + app_name + "/javascript/vendor/React.production.min",
+      react: "../app/" + app_name + "/javascript/vendor/react.production.min",
   },
   scriptType: "module",
 });
 
- define(["React", "splunkjs/splunk"], function(React, splunk_js_sdk){
+ define(["react", "splunkjs/splunk"], function(React, splunk_js_sdk){
    const e = React.createElement;
  
    class SetupPage extends React.Component {
