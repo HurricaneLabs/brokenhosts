@@ -118,6 +118,18 @@ define([
                 hostDropdown.getResults();
                 sourcetypeDropdown.getResults();
 
+                this.indexInputSearch.on('search:done', ()  => {
+                    $('#indexInput').parent().children('.loading').hide();
+                });
+
+                this.sourcetypeInputSearch.on('search:done', ()  => {
+                    $('#sourcetypeInput').parent().children('.loading').hide();
+                });
+
+                this.hostInputSearch.on('search:done', ()  => {
+                    $('#hostInput').parent().children('.loading').hide();
+                });
+
             },
 
             getResults: function() {
@@ -138,8 +150,8 @@ define([
                             int++;
                         });
                         $(dropdownID).prop('disabled', false);
-                        $(dropdownID).parent().children('.loading').hide();
                     }
+                    $(dropdownID).parent().children('.loading').hide();
                 });
 
                 this.bind(this.dropdownID, this.final_results);

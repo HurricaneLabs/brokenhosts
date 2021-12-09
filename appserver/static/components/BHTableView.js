@@ -35,7 +35,7 @@ define([
     "modalModel",
     "splunkjs/mvc/searchmanager",
     "bootstrap.dropdown",
-], function (_, Backbone, $, mvc, dataTable, rowReorder, selects, Clipboard,
+], function (_, Backbone, $, mvc, _dataTable, _rowReorder, _selects, Clipboard,
              BHTableTemplate, ModalView, ModalModel, SearchManager) {
 
     var BHTableView = Backbone.View.extend({
@@ -92,7 +92,7 @@ define([
                 $("#addNewRow").prop("disabled", true);
                 $(".pageDropDown").addClass("disabled");
                 $(".dataTables_paginate a").addClass("disabled");
-                that.data_table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                that.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                     var rowNode = this.node();
                     $(rowNode).find("td").each(function () {
                         $(this).addClass("disabled");
@@ -107,7 +107,7 @@ define([
                 $("#addNewRow").prop("disabled", false);
                 $(".pageDropDown").removeClass("disabled");
                 $(".dataTables_paginate a").removeClass("disabled");
-                that.data_table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                that.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                     var rowNode = this.node();
                     $(rowNode).find("td").each(function () {
                         $(this).removeClass("disabled");
@@ -188,7 +188,7 @@ define([
 
         },
 
-        runAddNewSearch: function (row_data) {
+        runAddNewSearch: function (_row_data) {
 
             this.trigger("updating", true);
 
@@ -240,7 +240,7 @@ define([
                             return key.replace(/^_key/, "key");
                         }
 
-                        _.each(res.data, function (row_obj, row_k) {
+                        _.each(res.data, function (row_obj, _row_k) {
 
                             var row = _.object(
                                 _.map(_.keys(row_obj), fix_key),
@@ -291,7 +291,7 @@ define([
 
         },
 
-        runAddNewBulkSearch: function (row_data) {
+        runAddNewBulkSearch: function (_row_data) {
 
             this.trigger("updating", true);
 
@@ -350,7 +350,7 @@ define([
                             return key.replace(/^_key/, "key");
                         }
 
-                        _.each(res.data, function (row_obj, row_k) {
+                        _.each(res.data, function (row_obj, _row_k) {
 
                             var row = _.object(
                                 _.map(_.keys(row_obj), fix_key),
@@ -426,14 +426,14 @@ define([
 
         },
 
-        copyRow: function (e) {
+        copyRow: function (_e) {
 
             new Clipboard('.clipboard', {
                 text: function (trigger) {
 
                     var comments, contact, index, sourcetype, host, lateSecs, suppressUntil = "";
 
-                    $(trigger).parents('tr').each(function (i, el) {
+                    $(trigger).parents('tr').each(function (_i, _el) {
 
                         var td = $(this).find('td');
                         comments = td.eq(0).text();
@@ -509,7 +509,6 @@ define([
             //var done = false;
             //var res = "";
 
-
             service.get('/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime', auth,
                 function (err, res) {
 
@@ -523,7 +522,7 @@ define([
                         return key.replace(/^_key/, "key");
                     }
 
-                    _.each(res.data, function (row_obj, row_k) {
+                    _.each(res.data, function (row_obj, _row_k) {
                         var row = _.object(
                             _.map(_.keys(row_obj), fix_key),
                             _.values(row_obj)
@@ -581,7 +580,7 @@ define([
                 //"oLanguage": { "sSearch": "" },
                 "aLengthMenu": [[5, 10, 15, -1], [5, 10, 15, "All"]],
                 //"ordering" : false,
-                "fnStateLoadParams": function (oSettings, oData) {
+                "fnStateLoadParams": function (_oSettings, _oData) {
                     return retain_datatables_state;
                 }
             });
@@ -589,7 +588,7 @@ define([
             $('div.dataTables_filter input').addClass('search-query');
             $('div.dataTables_filter input[type="search"]').attr('placeholder', 'Filter');
 
-            this.data_table.on('row-reorder', function (e, details, changes) {
+            this.data_table.on('row-reorder', function (_e, _details, _changes) {
 
                 that.trigger("updating", true);
 
@@ -618,7 +617,7 @@ define([
 
             backupSearch.startSearch();
 
-            backupSearch.on("search:done", function (props) {
+            backupSearch.on("search:done", function (_props) {
                 that.backup_available = false;
                 splunkjs.mvc.Components.revokeInstance("backupSearch");
                 that.getUpdatedData();
@@ -640,7 +639,7 @@ define([
                 null,
                 null,
                 {"Content-Type": "application/json"}, null)
-                .done(function (response) {
+                .done(function (_response) {
 
                     //that.results = null;
 
@@ -670,11 +669,11 @@ define([
                 ];
                 //var updatedData = that.data_table.columns().data(0);
 
-                _.each(headers_data, function (header, k) {
+                _.each(headers_data, function (header, _k) {
 
                     var header_val = header.innerText;
 
-                    _.each(mappedHeaders, function (mapping, k) {
+                    _.each(mappedHeaders, function (mapping, _k) {
 
                         headers.push(mapping['mapped']);
 
@@ -692,7 +691,7 @@ define([
 
             var results = [];
 
-            _.each(updatedData, function (row, row_k) {
+            _.each(updatedData, function (row, _row_k) {
 
                 var row_arr = [];
                 var row_obj = {};
@@ -713,7 +712,7 @@ define([
 
             });
 
-            var data = JSON.stringify(results);
+            var data = results;
 
             this.updateKVStore(data);
 
@@ -723,7 +722,6 @@ define([
 
             var that = this;
             var rand = Math.random();
-            var service = mvc.createService({owner: "nobody"});
 
             //Back it up
             var backupExpectedTime = new SearchManager({
@@ -746,7 +744,7 @@ define([
             });
 
             //once backup is complete, empty out the kvstore
-            backupExpectedTime.on("search:done", function (prop) {
+            backupExpectedTime.on("search:done", function (_prop) {
                 emptyExpectedTime.startSearch()
             });
 
@@ -755,25 +753,48 @@ define([
             });
 
             emptyExpectedTime.on("search:done", function () {
-
-                service.request(
-                    "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/batch_save",
-                    "POST",
-                    null,
-                    null,
-                    data,
-                    {"Content-Type": "application/json"}, function(err, response) {
-                        if(err) {
-                            console.err('error updating expectedTime: ', err);
-                        } else {
-                            that.data_table.rowReorder.enable();
-                            splunkjs.mvc.Components.revokeInstance("addRow");
-                        }
-                    }).done(function() {
-                        that.trigger("updating", false);
-                });
+                that.batchUpdate(data);
             });
 
+        },
+
+        batchUpdate: function(data, start, end) {
+
+            var service = mvc.createService({owner: "nobody"});
+
+            let total = data.length;
+
+            if (start == null && end == null) {
+                start = 0;
+                end = 500;
+            }
+
+            let dataChunk = JSON.stringify(data.slice(start, end+1)); // non-inclusive so +1
+
+            service.request(
+                "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/batch_save",
+                "POST",
+                null,
+                null,
+                dataChunk,
+                {"Content-Type": "application/json"}, function(err, _response) {
+                    if(err) {
+                        console.err('error updating expectedTime: ', err);
+                    } else {
+
+                        if (end >= total) {
+                            this.data_table.rowReorder.enable();
+                            splunkjs.mvc.Components.revokeInstance("addRow");
+                        } else {
+                            start = end;
+                            end = end + end;
+                            console.log(`Moving on to next chunk ::: start ${start}, end ${end}`);
+                            return this.batchUpdate(data, start, end);
+                        }
+                    }
+                }.bind(this)).done(function() {
+                    this.trigger("updating", false);
+                }.bind(this));
 
         },
 
