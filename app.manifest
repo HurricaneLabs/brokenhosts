@@ -5,7 +5,7 @@
     "id": {
       "group": null,
       "name": "broken_hosts",
-      "version": "4.1.0"
+      "version": "4.1.1"
     },
     "author": [
       {
@@ -47,7 +47,7 @@
     "_standalone",
     "_distributed"
   ],
-  "targetWorkloads": null
+  "targetWorkloads": ["_search_heads"]
 }
 # The following sections can be customized and added to the manifest. For detailed information,
 # see the documentation at http://dev.splunk.com/view/packaging-toolkit/SP-CAAAE9V
