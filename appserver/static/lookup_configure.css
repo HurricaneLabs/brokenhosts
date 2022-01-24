@@ -20,20 +20,32 @@
     background: #fff;
     border-bottom: 1px solid #d5d5d5;
 }
-span[id^="inputWrapper"] {
-    float: left;
-    margin-right: 10px;
-}
 label[class$="error"] {
     color: red;
 }
 input.error, textarea.error {
     border: 1px solid red;
 }
-span[id^="inputWrapper"] .select2-container {
-    width: 240px !important;
+.fixed-error {
+    background: red;
+    z-index: 9999;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 1em 1em .25em;
 }
-span[id^="inputWrapper"] .select2-container .select2-choice {
+.fixed-error p {
+    color: white;
+    font-weight: bold;
+}
+.select2-container {
+    width: 200px !important;
+    display: block !important;
+}
+.select2-drop-active {
+    width: 220px !important;
+}
+.select2-container .select2-choice {
     width: 210px !important;
 }
 .splunk-choice-input {
