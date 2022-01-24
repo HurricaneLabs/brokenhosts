@@ -19,7 +19,7 @@ define([
     'select2/select2',
     ], function(_, Backbone, $, mvc, modalTemplate, flatpickr, validate, SearchManager) {
 
-        var ModalView = Backbone.View.extend({
+        return Backbone.View.extend({
 
             initialize: function(options) {
                 this.options = options;
@@ -139,21 +139,25 @@ define([
                 let results = this.inputSearch.data('results', {count:0});
                 let final_results = this.final_results;
                 let dropdownID = this.dropdownID;
-                results.on('data', function() {
-                    if (results.hasData()) {
-                        let search_results = results.data().rows;
-                        search_results.forEach((row) => {
-                            let obj = {};
-                            obj['id'] = int;
-                            obj['text'] = row[0];
-                            final_results.push(obj);
-                            int++;
-                        });
-                        $(dropdownID).prop('disabled', false);
-                    }
+ 
+                if (results.hasData()) {
+                    results.on('data', function() {
+                        
+                            let search_results = results.data().rows;
+                            search_results.forEach((row) => {
+                                let obj = {};
+                                obj['id'] = int;
+                                obj['text'] = row[0];
+                                final_results.push(obj);
+                                int++;
+                            });
+                            $(dropdownID).prop('disabled', false);
+                            $(dropdownID).parent().children('.loading').hide();
+                    });
+                } else {
+                    $(dropdownID).prop('disabled', false);
                     $(dropdownID).parent().children('.loading').hide();
-                });
-
+                }
                 this.bind(this.dropdownID, this.final_results);
 
             },
@@ -294,8 +298,8 @@ define([
                         var valid = true;
                         var regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-                        for (var i = 0; i < emails.length; i++) {
-                             if( emails[i] == "" || ! regex.test(emails[i])){
+                        for (let emailValue of emails) {
+                             if( emailValue == "" || ! regex.test(emailValue.trim())){
                                  valid = false;
                              }
                         }
@@ -446,7 +450,5 @@ define([
             }
 
         });
-
-        return ModalView;
 
 });

@@ -1,9 +1,13 @@
 <script type="text/x-template" id="bhTable-template">
             <button id="addNewRow" class="btn btn-primary">Add New Suppression</button>
 
+            <div id="bhError" style="opacity:0;" class="fixed-error">
+                <p></p>
+            </div>
+
             <div class="select-page-count">
                 <div class="control btn-group shared-dataenrichment-preview-components-selectpagecount control-default pull-right">
-                <a  class="dropdown-toggle btn-pill pageDropDown" data-toggle="dropdown" href="#">
+                <a class="dropdown-toggle btn-pill pageDropDown" data-toggle="dropdown">
                     <%- per_page %> per page
                     <span class="caret"></span>
                 </a>
