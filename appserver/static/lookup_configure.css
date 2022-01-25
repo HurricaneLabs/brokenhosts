@@ -29,15 +29,15 @@ label[class$="error"] {
 input.error, textarea.error {
     border: 1px solid red;
 }
-.fixed-error {
+#bhError, #backupNotice {
     background: red;
     z-index: 9999;
     position: fixed;
-    top: 0;
+    top: -50px;
     width: 100%;
     padding: 1em 1em .25em;
 }
-.fixed-error p {
+#bhError p, #backupNotice p {
     color: white;
     font-weight: bold;
 }
@@ -121,14 +121,6 @@ p.loading {
     padding: 0 10px;
     position: absolute;
     margin-top: -45px;
-}
-#backupNotice {
-    padding: 5px 10px 0;
-    position: absolute;
-    margin-top: -45px;
-    width: 100%;
-    background: orangered;
-    color: #FFF;
 }
 #populateBackup {
     background: rgb(44, 168, 136) !important;

@@ -76,7 +76,7 @@ define([
             'click .remove': 'removeRow',
             'click .clipboard': 'copyRow',
             'click .per-page': 'pageCountChanged',
-            'click #populateDefault': 'populateTable',
+            'click #populateDefault': 'populateTableWithDefaultData',
             'click #populateBackup': 'populateFromBackup',
             'click #addNewRow': 'addNewRow',
         },
@@ -126,13 +126,15 @@ define([
 
         toggleError: function(error, errorMsg) {
             const that = this;
-            if (!this.error && error) {
-                this.error = error;
-                this.errorMsg = errorMsg;
-                $("#bhError p").append(this.errorMsg);
-                $("#bhError").animate({ opacity : 1 }, 1000, () => {
+            that.trigger("updating", false);
+            if (error) {
+                that.error = error;
+                that.errorMsg = errorMsg;
+                $("#bhError p").empty();
+                $("#bhError p").append(that.errorMsg);
+                $("#bhError").animate({ opacity : 1, top: 0 }, 1000, () => {
                     setTimeout(() => {
-                        $("#bhError").animate({ opacity : 0 }, 1000, () => {
+                        $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000, () => {
                             // once its done displaying, empty it out
                             that.toggleError(false, '');
                         });
@@ -141,8 +143,8 @@ define([
             } else {
                 this.error = false;
                 this.errorMsg = "";
+                $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000);
                 $("#bhError p").empty();
-                that.trigger("updating", false);
             }
         },
 
@@ -415,6 +417,7 @@ define([
 
         addUpdatedDataToTable: function(data) {
             var cleaned_data = [];
+            var that = this;
 
             function fix_key(key) {
                 return key.replace(/^_key/, "key");
@@ -494,26 +497,28 @@ define([
 
         },
 
-        populateFromBackup: function () {
+        populateFromBackup: function (e) {
 
+            e.preventDefault();
+            this.trigger("updating", false);
             var that = this;
-
-            $("#populateDefault").text("Populating...");
+            $("#populateBackup").prop('disabled', true).text("Populating...");
 
             that.getData('expectedTime_tmp').then(data => {
-                that.batchUpdate(data, null, null, 'expectedTime');
-                that.backup_available = false;
-                that.getData();
+                that.batchUpdate(data, null, null, 'expectedTime').then(() => {
+                    that.backup_available = false;
+                    that.getData();
+                });
             });
 
         },
 
-        populateTable: function () {
+        populateTableWithDefaultData: function () {
 
             var service = mvc.createService({owner: "nobody"});
             var that = this;
 
-            $("#populateDefault").text("Populating...");
+            $("#populateDefault").prop('disabled', true).text("Populating...");
 
             service.request(
                 "/servicesNS/nobody/broken_hosts/bhosts/bhosts_setup/setup",
@@ -599,14 +604,19 @@ define([
             var that = this;
 
             // Get data before any new modifications
-            that.getData().then(backupData => {
-                return backupData;
-            }).then(backupData => {
+            that.getData().then(_data => {
+                return _data;
+            }).then(_data => {
                 // Update the backup with original data
-                that.batchUpdate(backupData, null, null, 'expectedTime_tmp');
+                that.batchUpdate(_data, null, null, 'expectedTime_tmp')
+                    .catch(err => {
+                        console.error('OH NOES expectedTime_tmp failure ::: ', err);
+                    })
             }).then(() => {
                 // Update the main collection with the updated data
-                that.batchUpdate(data);
+                that.batchUpdate(data).catch(err => {
+                    console.error('OH NOES expectedTime failure ::: ', err);
+                });
             });
 
         },
@@ -624,29 +634,35 @@ define([
 
             let dataChunk = JSON.stringify(data.slice(start, end+1)); // non-inclusive so +1
 
-            service.request(
-                `/servicesNS/nobody/broken_hosts/storage/collections/data/${currentCollection}/batch_save`,
-                "POST",
-                null,
-                null,
-                dataChunk,
-                {"Content-Type": "application/json"}, function(err, _response) {
-                    if(err) {
-                        console.error('error updating expectedTime: ', err);
-                    } else {
-
-                        if (end >= total) {
-                            this.data_table.rowReorder.enable();
-                            splunkjs.mvc.Components.revokeInstance("addRow");
+            return new Promise((resolve, reject) => {
+                service.request(
+                    `/servicesNS/nobody/broken_hosts/storage/collections/data/${currentCollection}/batch_save`,
+                    "POST",
+                    null,
+                    null,
+                    dataChunk,
+                    {"Content-Type": "application/json"}, function(err, _response) {
+                        if(err) {
+                            console.error('error updating expectedTime: ', err);
+                            reject(new Error("An Error occurred. Could not update."));
                         } else {
-                            start = end;
-                            end = end + 500;
-                            return this.batchUpdate(data, start, end, currentCollection);
+                            if (end >= total) {
+                                this.data_table.rowReorder.enable();
+                                splunkjs.mvc.Components.revokeInstance("addRow");
+                                resolve();
+                            } else {
+                                start = end;
+                                end = end + 500;
+                                resolve(this.batchUpdate(data, start, end, currentCollection));
+                            }
                         }
-                    }
-                }.bind(this)).done(function() {
-                    this.trigger("updating", false);
-                }.bind(this));
+                    }.bind(this))
+                    .done(() => {
+                        this.trigger("updating", false);
+                    })
+            }).catch(err => {
+                this.toggleError(true, err);
+            });
 
         },
 
