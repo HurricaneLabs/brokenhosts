@@ -45,7 +45,7 @@ require([
 
         getResults("expectedTimeSearch").done(function(results, backup_available) {
 
-            var bhTable = new BHTableView({
+            new BHTableView({
                 id: "BHTableView",
                 results: results,
                 el: $("#BHTableWrapper"),
@@ -54,36 +54,6 @@ require([
             }).render();
 
         });
-
-    };
-
-	function checkBackup() {
-	    var deferred = new $.Deferred();
-
-	    expectedTimeBackupSearch.startSearch();
-
-	    expectedTimeBackupSearch.on("search:done", function(state, job) {
-
-	        var backup_available = false;
-
-	        if(state.content.resultCount === 0) {
-
-	            deferred.resolve(backup_available);
-
-            } else {
-
-	            getResults("expectedTimeSearch_tmp").done(function() {
-
-	                backup_available = true;
-	                deferred.resolve(backup_available);
-
-                });
-
-            }
-
-        });
-
-	    return deferred.promise();
 
     };
 
@@ -115,7 +85,6 @@ require([
                         _.each(row, function (v, k) {
 
                             var header = headers[k];
-                            var obj = {};
 
                             if (v === null) {
                                 v = "";
@@ -163,7 +132,7 @@ require([
 
         return deferred.promise();
 
-    };
+    }
 
     initialRun();
 

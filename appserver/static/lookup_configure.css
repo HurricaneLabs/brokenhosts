@@ -29,6 +29,15 @@ label[class$="error"] {
 input.error, textarea.error {
     border: 1px solid red;
 }
+#BHTableWrapper {
+    margin-bottom: 2em;
+}
+#closeNotificationBtn {
+    float: right;
+    color: white;
+    margin: .45em 3em;
+    font-size: 1em;
+}
 #backupNotice {
     background: red;
     z-index: 9999;
@@ -77,6 +86,9 @@ input.error, textarea.error {
     background-color: orange !Important;
     color: white !Important;
 }
+#pageSelection .btn-group {
+    margin: 33px 0 0;
+}
 #alwaysSuppress {
     display: inline-block;
     width: 10px;
@@ -91,7 +103,7 @@ input.error, textarea.error {
 }
 #addNewRow {
     float: right;
-    margin: 0 10px;
+    margin: 33px 10px 0;
 }
 input.search-query {
     width: 200px;
@@ -101,28 +113,28 @@ p.loading {
     text-align: center !Important;
 }
 #bhTable_info {
-    padding: 10px 25px;
+    padding: 10px 14px;
 }
-#bhTable_paginate {
-    padding: 0 25px;
+.dataTables_paginate {
+    padding: .5em 1em .5em;
 }
-#bhTable_paginate a.disabled {
+.dataTables_paginate a.disabled {
     cursor: default !important;
     color: #ccc !important;
 }
-#bhTable_paginate a.disabled:hover {
+.dataTables_paginate a.disabled:hover {
     text-decoration: none !important;
 }
-#bhTable_paginate a.previous {
+.dataTables_paginate a.previous {
     margin-right: 5px;
 }
-#bhTable_paginate a.next {
+.dataTables_paginate a.next {
     margin-left: 5px;
 }
-#bhTable_paginate a.current {
+.dataTables_paginate a.current {
     text-decoration: underline !important;
 }
-#bhTable_paginate span a.paginate_button {
+.dataTables_paginate span a.paginate_button {
     margin: 0 5px;
 }
 #emptyKVNotice {
@@ -143,8 +155,8 @@ table.dataTable td.reorder {
     background-color: #d8d8d8;
 }
 .notice {
-    margin: 0 15%;
     position: absolute;
+    right: -164px;
 }
 .notice-error {
     margin: 0 35%;

@@ -5,20 +5,21 @@
                 <p></p>
             </div>
 
-            <div class="select-page-count">
+            <div id="pageSelection" class="select-page-count">
                 <div class="control btn-group shared-dataenrichment-preview-components-selectpagecount control-default pull-right">
-                <a class="dropdown-toggle btn-pill pageDropDown" data-toggle="dropdown">
-                    <%- per_page %> per page
-                    <span class="caret"></span>
-                </a>
-                <div class="dropdown-menu" style="width: 120px;margin-left: -38px;margin-top: 2px;">
-                    <div class="arrow"></div>
-                    <ul>
-                        <li><a href="#" class="per-page" data-page-count="10">10 per page</a></li>
-                        <li><a href="#" class="per-page" data-page-count="20">20 per page</a></li>
-                        <li><a href="#" class="per-page" data-page-count="50">50 per page</a></li>
-                        <li><a href="#" class="per-page" data-page-count="100">100 per page</a></li>
-                    </ul>
+                    <a class="dropdown-toggle btn-pill pageDropDown" data-toggle="dropdown">
+                        <%- per_page %> per page
+                        <span class="caret"></span>
+                    </a>
+                    <div class="dropdown-menu" style="width: 120px;margin-left: -38px;margin-top: 2px;">
+                        <div class="arrow"></div>
+                        <ul>
+                            <li><a href="#" class="per-page" data-page-count="10">10 per page</a></li>
+                            <li><a href="#" class="per-page" data-page-count="20">20 per page</a></li>
+                            <li><a href="#" class="per-page" data-page-count="50">50 per page</a></li>
+                            <li><a href="#" class="per-page" data-page-count="100">100 per page</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="notice-error">
@@ -45,6 +46,9 @@
                         <button id="populateBackup" class="btn btn-primary">
                             Use Backup
                         </button>
+                        <a id="closeNotificationBtn" class="pull-right" href="#">
+                            x
+                        </a>
                     </p>
                 </div>
             <% } %>

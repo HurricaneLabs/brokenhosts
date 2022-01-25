@@ -46,6 +46,7 @@ define([
             this.mode = options.mode;
             this.tokens = options.tokens;
             this.eventBus = this.options.eventBus;
+            this.pageScrollPos = 0;
             this.childComponents = [];
             this.indexInputSearch = {};
             this.sourcetypeInputSearch = {};
@@ -60,14 +61,11 @@ define([
             this.per_page = 50;
             this.modal = null;
             this.modalModel = ModalModel;
-            this.updateRow = mvc.Components.get("updateRow");
-            this.addRow = "";
-            this.newRowCount = 1;
             this.tokens = mvc.Components.get("submitted");
             this.eventBus.on("row:update:done", this.getData, this);
             this.eventBus.on("row:edit", this.showEditModal, this);
             this.eventBus.on("row:update", this.runUpdateSearch, this); //triggered from modal view
-            this.eventBus.on("row:new", this.runAddNewSearch, this); //triggered from modal view
+            this.eventBus.on("row:new", this.runAddNewRow, this); //triggered from modal view
             this.on("updating", this.updateStatus, this);
         },
 
@@ -79,18 +77,18 @@ define([
             'click #populateDefault': 'populateTableWithDefaultData',
             'click #populateBackup': 'populateFromBackup',
             'click #addNewRow': 'addNewRow',
+            'click #closeNotificationBtn': 'closeBackupNotification'
         },
 
         updateStatus: function (updating) {
-            var that = this;
             this.updating = updating;
             if (this.updating === true) {
-                that.data_table.rowReorder.disable();
+                this.data_table.rowReorder.disable();
                 $(".updating").fadeIn();
                 $("#addNewRow").prop("disabled", true);
                 $(".pageDropDown").addClass("disabled");
                 $(".dataTables_paginate a").addClass("disabled");
-                that.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
+                this.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                     var rowNode = this.node();
                     $(rowNode).find("td").each(function () {
                         $(this).addClass("disabled");
@@ -100,12 +98,12 @@ define([
                     });
                 });
             } else {
-                that.data_table.rowReorder.enable();
+                this.data_table.rowReorder.enable();
                 $(".updating").fadeOut();
                 $("#addNewRow").prop("disabled", false);
                 $(".pageDropDown").removeClass("disabled");
                 $(".dataTables_paginate a").removeClass("disabled");
-                that.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
+                this.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                     var rowNode = this.node();
                     $(rowNode).find("td").each(function () {
                         $(this).removeClass("disabled");
@@ -124,19 +122,38 @@ define([
             this.eventBus.trigger("row:edit", current_row_data);
         },
 
-        toggleError: function(error, errorMsg) {
-            const that = this;
-            that.trigger("updating", false);
+        isJSON: function(string) {
+            try {
+                JSON.parse(string);
+            } catch (e) {
+                console.error('Parse error :: ', e);
+                return false;
+            }
+            return true;
+        },
+
+        toggleError: function(error, errorObj) {
+
+            const errorMsgIsObject = errorObj.error && errorObj.status;
+            let errorMsg = '';
+
+            if (errorMsgIsObject) {
+                errorMsg = `${errorObj.status} ${errorObj.error}`;
+            } else {
+                errorMsg = errorObj;
+            }
+
+            this.trigger("updating", false);
             if (error) {
-                that.error = error;
-                that.errorMsg = errorMsg;
+                this.error = error;
+                this.errorMsg = errorMsg;
                 $("#bhError p").empty();
-                $("#bhError p").append(that.errorMsg);
+                $("#bhError p").append(this.errorMsg);
                 $("#bhError").animate({ opacity : 1, top: 0 }, 1000, () => {
                     setTimeout(() => {
                         $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000, () => {
                             // once its done displaying, empty it out
-                            that.toggleError(false, '');
+                            this.toggleError(false, '');
                         });
                     }, 3000);
                 });
@@ -149,8 +166,6 @@ define([
         },
 
         addNewRow: function () {
-
-            var that = this;
 
             this.unsetModal();
 
@@ -167,11 +182,11 @@ define([
             });
 
             this.modal = new ModalView({
-                model: that.modalModel,
-                eventBus: that.eventBus,
+                model: this.modalModel,
+                eventBus: this.eventBus,
                 mode: 'New',
-                searches: that.searches,
-                tokens: that.tokens
+                searches: this.searches,
+                tokens: this.tokens
             });
 
             this.childComponents.push(this.modal);
@@ -181,8 +196,6 @@ define([
         },
 
         showEditModal: function (row_data) {
-
-            var that = this;
 
             this.modalModel.set({
                 _key: row_data[0],
@@ -197,11 +210,11 @@ define([
             });
 
             this.modal = new ModalView({
-                model: that.modalModel,
-                eventBus: that.eventBus,
+                model: this.modalModel,
+                eventBus: this.eventBus,
                 mode: 'Edit',
-                searches: that.searches,
-                tokens: that.tokens
+                searches: this.searches,
+                tokens: this.tokens
             });
 
             this.childComponents.push(this.modal);
@@ -210,11 +223,9 @@ define([
 
         },
 
-        runAddNewSearch: function (_row_data) {
+        runAddNewRow: function (_row_data) {
 
             this.trigger("updating", true);
-
-            var that = this;
             
             let data = {
                 'comments' : this.tokens.get("comments_add_tok"),
@@ -226,7 +237,6 @@ define([
                 'suppressUntil' : this.tokens.get("suppress_until_add_tok")
             };
 
-
             var service = mvc.createService({owner: "nobody"});
             const jsonData = JSON.stringify(data);
 
@@ -236,10 +246,15 @@ define([
                 null,
                 null,
                 jsonData,
-                {"Content-Type": "application/json"}, null)
-                .done(function (responseData) {
-                    const responseObj = JSON.parse(responseData);
-                    that.trigger("updating", false);
+                {"Content-Type": "application/json"}, (err) => {
+                    if (err) {
+                        this.toggleError(true, "Could not create new suppression.");
+                    } 
+                })
+                .done(response => {
+                    console.log('response ::: ', response);
+                    const responseObj = JSON.parse(response);
+                    this.trigger("updating", false);
                     const rowData = [
                         responseObj["_key"],
                         data["comments"],
@@ -253,15 +268,14 @@ define([
                         "<a class=\"remove\" href=\"#\">Remove</a>",
                         "<a class=\"clipboard\" data-clipboard-target=\"#row-0\" href=\"#\">Copy</a>"
                     ];
-                    that.data_table.row.add(rowData).draw();
-                    that.data_table.rowReorder.enable();
-                });
+                    this.data_table.row.add(rowData).draw();
+                    this.data_table.rowReorder.enable();
+                })
         },
 
         runUpdateSearch: function (row_data) {
-            var that = this;
-
-            that.trigger("updating", true);
+            
+            this.trigger("updating", true);
 
             let data = {
                 'comments' : row_data["comments"],
@@ -294,22 +308,15 @@ define([
                 null,
                 null,
                 jsonData,
-                {"Content-Type": "application/json"}, null)
-                .done(function () {
-                    that.trigger("updating", false);
-                    that.data_table.rowReorder.enable();
-                })
-                .catch(function (err) {
-                    that.trigger("updating", false);
-                    console.error("Error updating ::: ", err);
-                    if (err.messages) {
-                        if(err.messages[0].text && err.messages[0].type === 'ERROR') {
-                            that.toggleError(true, err.messages[0].text);
-                        }
-                    } else {
-                        that.toggleError(true, "Could not update. An unexpected error occurred.");
+                {"Content-Type": "application/json"}, (err) => {
+                    if (err) {
+                        this.toggleError(true, err);
                     }
                 })
+                .done(() => {
+                    this.trigger("updating", false);
+                    this.data_table.rowReorder.enable();
+                });
 
         },
 
@@ -351,11 +358,42 @@ define([
 
         },
 
+        emptyKVStore: function(collection = 'expectedTime') {
+            var service = mvc.createService({owner: "nobody"});
+            this.trigger("updating", true);
+        
+            return new Promise((resolve, reject) => {
+                service.request(
+                    `/servicesNS/nobody/broken_hosts/storage/collections/data/${collection}/`,
+                    "DELETE",
+                    null,
+                    null,
+                    null,
+                    { 
+                        "Content-Type" : "application/json", 
+                        "Accept" : "application/json" 
+                    }, 
+                    (err) => {
+                        if(err) {
+                            console.error('error updating expectedTime: ', err);
+                            reject(new Error("An Error occurred when attempting to backup the KV store."));
+                        } else {
+                            resolve();
+                        }
+                    })
+                    
+            })
+            .catch(err => {
+                this.toggleError(true, err);
+            });
+
+        },
+
         removeRow: function (e) {
             e.preventDefault();
             var service = mvc.createService({owner: "nobody"});
             this.trigger("updating", true);
-            var that = this;
+            
             var _key = this.data_table.row($(e.currentTarget).parents('tr')).data()[0];
 
             service.request(
@@ -368,32 +406,24 @@ define([
                     "Content-Type" : "application/json", 
                     "Accept" : "application/json" 
                 }, 
-                null)
-                .done(function () {
-                    that.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
-                    that.trigger("updating", false);
-                    that.data_table.rowReorder.enable();
-                })
-                .catch(err => {
-                    console.error('ERROR ::: ', err);
-                    if (err.messages) {
-                        if(err.messages[0].text && err.messages[0].type === 'ERROR') {
-                            that.toggleError(true, err.messages[0].text);
-                        }
+                (err) => {
+                    if (err) {
+                        console.error('ERROR ::: ', err);
+                        this.toggleError(true, err);
                     } else {
-                        that.toggleError(true, "Could not remove item. An unexpected error occurred.");
+                        this.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
+                        this.trigger("updating", false);
+                        this.data_table.rowReorder.enable();
                     }
-                });
-
+                })
         },
 
         reDraw: function (data) {
 
-            var that = this;
             this.results = data;
 
             setTimeout(function () {
-                that.renderList(true);
+                this.renderList(true);
             }.bind(this), 100);
 
         },
@@ -417,14 +447,14 @@ define([
 
         addUpdatedDataToTable: function(data) {
             var cleaned_data = [];
-            var that = this;
+            
 
             function fix_key(key) {
                 return key.replace(/^_key/, "key");
             }
 
-            _.each(data, function (row_obj, _row_k) {
-                var row = _.object(
+            _.each(data, (row_obj, _row_k) => {
+                const row = _.object(
                     _.map(_.keys(row_obj), fix_key),
                     _.values(row_obj)
                 );
@@ -436,13 +466,13 @@ define([
 
             });
 
-            that.reDraw(cleaned_data);
+            this.reDraw(cleaned_data);
         },
 
         renderList: function (retain_datatables_state) {
 
             var bh_template = $('#bhTable-template', this.$el).text();
-            var that = this;
+            
 
             if (this.results === null) {
                 return;
@@ -458,6 +488,7 @@ define([
             }));
 
             this.data_table = $('#bhTable', this.$el).DataTable({
+                dom: '<"H"lfrp>t<"F"ip>',
                 rowReorder: true,
                 bSort: false,
                 columnDefs: [
@@ -481,45 +512,44 @@ define([
                 "aLengthMenu": [[5, 10, 15, -1], [5, 10, 15, "All"]],
                 "fnStateLoadParams": function (_oSettings, _oData) {
                     return retain_datatables_state;
-                }
+                },
+                "preDrawCallback": () => { this.pageScrollPos = $('body').scrollTop();},
+                "drawCallback": () => { $('body').scrollTop(this.pageScrollPos);},
             });
 
             $('div.dataTables_filter input').addClass('search-query');
             $('div.dataTables_filter input[type="search"]').attr('placeholder', 'Filter');
 
-            this.data_table.on('row-reorder', function (_e, _details, _changes) {
-
-                that.trigger("updating", true);
-
-                that.processDataForUpdate();
-
+            this.data_table.on('row-reorder', (_e, _details, _changes) => {
+                this.trigger("updating", true);
+                this.processDataForUpdate();
             });
-
         },
 
-        populateFromBackup: function (e) {
+        closeBackupNotification: function () {
+            $("#backupNotice").animate({ opacity : 0, top: '-50px' }, 1000);
+        },
+
+        populateFromBackup: async function (e) {
 
             e.preventDefault();
-            this.trigger("updating", false);
-            var that = this;
             $("#populateBackup").prop('disabled', true).text("Populating...");
 
-            that.getData('expectedTime_tmp').then(data => {
-                that.batchUpdate(data, null, null, 'expectedTime').then(() => {
-                    console.log('batchUpdate THEN');
-                    that.backup_available = false;
-                    that.getData().then(_data => {
-                        that.addUpdatedDataToTable(_data);
-                    });
-                })
-            });
+            try {
+                const data = await this.getData('expectedTime_tmp');
+                await this.batchUpdate(data, null, null, 'expectedTime');
+                this.backup_available = false;
+                this.addUpdatedDataToTable(data);
+                this.trigger("updating", false);
+            } catch (error) {
+                this.toggleError(true, error);
+            }
 
         },
 
         populateTableWithDefaultData: function () {
 
             var service = mvc.createService({owner: "nobody"});
-            var that = this;
 
             $("#populateDefault").prop('disabled', true).text("Populating...");
 
@@ -529,23 +559,24 @@ define([
                 null,
                 null,
                 null,
-                {"Content-Type": "application/json"}, null)
-                .done(function (_response) {
-                    that.getData().then(data => {
-                        that.addUpdatedDataToTable(data);
-                    });
+                {"Content-Type": "application/json"}, async (err) => {
+                    if (err) {
+                        console.error('error updating expectedTime: ', err);
+                        reject(new Error("An Error occurred. Could not update."));
+                    } else {
+                        const currentData = await this.getData();
+                        await this.addUpdatedDataToTable(currentData);
+                    }
                 });
         },
 
         processDataForUpdate: function () {
 
-            var that = this;
-
-            setTimeout(function () {
-                var headers_data = that.data_table.columns().header();
-                var updatedData = that.data_table.rows({order: 'applied'}).data();
-                var headers = [];
-                var mappedHeaders = [
+            setTimeout(() => {
+                const headers_data = this.data_table.columns().header();
+                const updatedData = this.data_table.rows({order: 'applied'}).data();
+                let headers = [];
+                const mappedHeaders = [
                     {header: "Key", mapped: "_key"},
                     {header: "Comments", mapped: "comments"},
                     {header: "Contact", mapped: "contact"},
@@ -566,7 +597,7 @@ define([
 
                 });
 
-                that.mapData(updatedData, _.uniq(headers));
+                this.mapData(updatedData, _.uniq(headers));
 
             }, 1000);
 
@@ -574,17 +605,17 @@ define([
 
         mapData: function (updatedData, headers) {
 
-            var results = [];
+            let mappedData = [];
 
-            _.each(updatedData, function (row, _row_k) {
+            _.each(updatedData, (row, _row_k) => {
 
-                var row_obj = {};
+                let row_obj = {};
 
-                _.each(row, function (col, col_k) {
+                _.each(row, (col, col_k) => {
 
                     if (headers[col_k]) {
 
-                        var header = headers[col_k];
+                        const header = headers[col_k];
 
                         row_obj[header] = col;
 
@@ -592,36 +623,27 @@ define([
 
                 });
 
-                results.push(row_obj);
+                mappedData.push(row_obj);
 
             });
 
-            var data = results;
-
-            this.updateKVStore(data);
+            this.updateKVStore(mappedData);
 
         },
 
-        updateKVStore: function (data) {
+        updateKVStore: async function(updatedData) {
 
-            var that = this;
-            console.log('updateKVStore ::: data ::: ', data.length);
-
-            // Get data before any new modifications
-            that.getData().then(_data => {
-                return _data;
-            }).then(_data => {
-                // Update the backup with original data
-                that.batchUpdate(_data, null, null, 'expectedTime_tmp')
-                    .catch(err => {
-                        console.error('OH NOES expectedTime_tmp failure ::: ', err);
-                    })
-            }).then(() => {
-                // Update the main collection with the updated data
-                that.batchUpdate(data).catch(err => {
-                    console.error('OH NOES expectedTime failure ::: ', err);
-                });
-            });
+            try {
+                const currentData = await this.getData();
+                await this.emptyKVStore('expectedTime_tmp');
+                await this.batchUpdate(currentData, null, null, 'expectedTime_tmp');
+                await this.emptyKVStore('expectedTime');
+                await this.batchUpdate(updatedData);
+                this.data_table.rowReorder.enable();
+                this.trigger("updating", false);
+            } catch (err) {
+                this.toggleError(true, err);
+            }
 
         },
 
@@ -645,7 +667,7 @@ define([
                     null,
                     null,
                     dataChunk,
-                    {"Content-Type": "application/json"}, function(err, _response) {
+                    {"Content-Type": "application/json"}, (err, _response) => {
                         if(err) {
                             console.error('error updating expectedTime: ', err);
                             reject(new Error("An Error occurred. Could not update."));
@@ -660,9 +682,6 @@ define([
                                 resolve(this.batchUpdate(data, start, end, currentCollection));
                             }
                         }
-                    }.bind(this))
-                    .done(() => {
-                        this.trigger("updating", false);
                     })
             }).catch(err => {
                 this.toggleError(true, err);
@@ -672,15 +691,14 @@ define([
 
         render: function () {
 
-            var that = this;
             var retain_datatables_state = (typeof retain_datatables_state === "undefined") ? false : true;
             this.$el.html(BHTableTemplate);
             this.renderList(retain_datatables_state);
 
             if (this.restored) {
-                setTimeout(function () {
+                setTimeout(() => {
                     $(".restored").fadeOut();
-                    that.restored = false;
+                    this.restored = false;
                 }, 4000);
             }
             return this;
