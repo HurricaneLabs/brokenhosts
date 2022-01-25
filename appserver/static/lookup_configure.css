@@ -1,6 +1,9 @@
 .dashboard-body {
     padding: 0 !important;
 }
+h1 {
+    margin: 1em .5em 0;
+}
 .dashboard-row .dashboard-panel {
     background: none !important;
     margin-top: 45px !important;

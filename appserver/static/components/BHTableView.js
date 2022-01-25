@@ -362,7 +362,11 @@ define([
                 null,
                 null,
                 null,
-                {"Content-Type": "application/json"}, null)
+                { 
+                    "Content-Type" : "application/json", 
+                    "Accept" : "application/json" 
+                }, 
+                null)
                 .done(function () {
                     that.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
                     that.trigger("updating", false);
@@ -501,25 +505,6 @@ define([
                 that.backup_available = false;
                 that.getData();
             });
-
-            /*
-            var backupSearch = new SearchManager({
-                id: "backupSearch",
-                search: "| inputlookup expectedTime_tmp\n" +
-                    "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
-                    "| table * Edit, Remove | outputlookup expectedTime",
-                earliest_time: "-1m",
-                latest_time: "now",
-                autostart: false
-            });
-
-            backupSearch.startSearch();
-
-            backupSearch.on("search:done", function (_props) {
-                that.backup_available = false;
-                splunkjs.mvc.Components.revokeInstance("backupSearch");
-                that.getData();
-            });*/
 
         },
 
