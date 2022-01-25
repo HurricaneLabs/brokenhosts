@@ -59,7 +59,6 @@ require([
 
 	function checkBackup() {
 	    var deferred = new $.Deferred();
-	    var results = [];
 
 	    expectedTimeBackupSearch.startSearch();
 
@@ -73,7 +72,7 @@ require([
 
             } else {
 
-	            getResults("expectedTimeSearch_tmp").done(function(results) {
+	            getResults("expectedTimeSearch_tmp").done(function() {
 
 	                backup_available = true;
 	                deferred.resolve(backup_available);
@@ -92,7 +91,6 @@ require([
         var deferred = new $.Deferred();
 	    var results_obj = [];
         var backup_available = false;
-        //var results = expectedTimeBackupSearch.data("results", { output_mode : "json_rows", count: 0 });
 
         expectedTimeSearch.startSearch();
 

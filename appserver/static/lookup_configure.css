@@ -29,7 +29,15 @@ label[class$="error"] {
 input.error, textarea.error {
     border: 1px solid red;
 }
-#bhError, #backupNotice {
+#backupNotice {
+    background: red;
+    z-index: 9999;
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    padding: 1em 1em .25em;
+}
+#bhError {
     background: red;
     z-index: 9999;
     position: fixed;

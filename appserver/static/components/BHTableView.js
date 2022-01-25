@@ -506,9 +506,12 @@ define([
 
             that.getData('expectedTime_tmp').then(data => {
                 that.batchUpdate(data, null, null, 'expectedTime').then(() => {
+                    console.log('batchUpdate THEN');
                     that.backup_available = false;
-                    that.getData();
-                });
+                    that.getData().then(_data => {
+                        that.addUpdatedDataToTable(_data);
+                    });
+                })
             });
 
         },
@@ -602,6 +605,7 @@ define([
         updateKVStore: function (data) {
 
             var that = this;
+            console.log('updateKVStore ::: data ::: ', data.length);
 
             // Get data before any new modifications
             that.getData().then(_data => {
@@ -669,11 +673,8 @@ define([
         render: function () {
 
             var that = this;
-
             var retain_datatables_state = (typeof retain_datatables_state === "undefined") ? false : true;
-
             this.$el.html(BHTableTemplate);
-
             this.renderList(retain_datatables_state);
 
             if (this.restored) {
@@ -682,19 +683,14 @@ define([
                     that.restored = false;
                 }, 4000);
             }
-
             return this;
-
         },
 
         unsetModal: function () {
             _.each(this.childComponents, function (c) {
-
                 c.unbind();
                 c.remove();
             });
-
-
         }
 
     });
