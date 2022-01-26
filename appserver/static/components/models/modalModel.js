@@ -17,6 +17,8 @@ define([
             suppressUntil: "",
             delimiter: "",
             mode: "Edit",
+            error: false,
+            errorMsg: "",
             loading_indexes: true,
         }
 

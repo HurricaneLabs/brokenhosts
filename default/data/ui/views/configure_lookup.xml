@@ -1,35 +1,5 @@
 <dashboard version="1.1" script="lookup_configure_table.js" stylesheet="lookup_configure.css,flatpickr.min.css,select.bootstrap.css,rowReorder.bootstrap.css" hideEdit="true">
   <label>Configure Broken Hosts Lookup</label>
-    <search id="addRow">
-    <!-- <query>| inputlookup  expectedTime | eval key=_key
-      | append [| stats count
-      | eval index=lower("$index_add_tok$")
-      | eval sourcetype=lower("$sourcetype_add_tok$")
-      | eval host=lower("$host_add_tok$")
-      | eval lateSecs="$late_secs_add_tok$"
-      | eval suppressUntil="$suppress_until_add_tok$"
-      | eval contact="$contact_add_tok$"
-      | eval comments="$comments_add_tok$"]
-      | table key,index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime</query>-->
-  </search>
-  <search id="removeRow">
-    <query>| inputlookup  expectedTime | eval key=_key
-      | WHERE NOT key="$key_remove_tok$"
-      | outputlookup expectedTime
-    </query>
-  </search>
-  <search id="updateRow">
-    <query>| inputlookup expectedTime | eval key=_key
-      | WHERE key="$key_update_tok$"
-      | eval index=lower("$index_update_tok$")
-      | eval sourcetype=lower("$sourcetype_update_tok$")
-      | eval host=lower("$host_update_tok$")
-      | eval lateSecs="$late_secs_update_tok$"
-      | eval suppressUntil="$suppress_until_update_tok$"
-      | eval contact="$contact_update_tok$"
-      | eval comments="$comments_update_tok$"
-      | outputlookup expectedTime append=t</query>
-  </search>
   <row>
     <panel>
       <html>

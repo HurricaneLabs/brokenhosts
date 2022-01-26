@@ -2,7 +2,6 @@
 
 import * as Splunk from './splunk_helpers.js'
 import * as Config from './setup_configuration.js'
-import * as SplunkHelpers from './splunk_helpers.js'
 import { promisify } from './util.js'
 
 const CUSTOM_CONF = 'bh'
@@ -102,12 +101,12 @@ export async function get_initial_state(splunk_js_sdk) {
     splunk_js_sdk_service_configurations = await promisify(splunk_js_sdk_service_configurations.fetch)();
 
     // Retrieves the configuration file accessor
-    var app_config_accessor = SplunkHelpers.get_configuration_file(
+    var app_config_accessor = Splunk.get_configuration_file(
         splunk_js_sdk_service_configurations,
         'app',
     );
 
-    var bh_config_accessor = SplunkHelpers.get_configuration_file(
+    var bh_config_accessor = Splunk.get_configuration_file(
         splunk_js_sdk_service_configurations,
         'bh',
     );

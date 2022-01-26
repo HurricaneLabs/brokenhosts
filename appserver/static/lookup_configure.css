@@ -1,6 +1,9 @@
 .dashboard-body {
     padding: 0 !important;
 }
+h1 {
+    margin: 1em .5em 0;
+}
 .dashboard-row .dashboard-panel {
     background: none !important;
     margin-top: 45px !important;
@@ -20,20 +23,49 @@
     background: #fff;
     border-bottom: 1px solid #d5d5d5;
 }
-span[id^="inputWrapper"] {
-    float: left;
-    margin-right: 10px;
-}
 label[class$="error"] {
     color: red;
 }
 input.error, textarea.error {
     border: 1px solid red;
 }
-span[id^="inputWrapper"] .select2-container {
-    width: 240px !important;
+#BHTableWrapper {
+    margin-bottom: 2em;
 }
-span[id^="inputWrapper"] .select2-container .select2-choice {
+#closeNotificationBtn {
+    float: right;
+    color: white;
+    margin: .45em 3em;
+    font-size: 1em;
+}
+#backupNotice {
+    background: red;
+    z-index: 9999;
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    padding: 1em 1em .25em;
+}
+#bhError {
+    background: red;
+    z-index: 9999;
+    position: fixed;
+    top: -50px;
+    width: 100%;
+    padding: 1em 1em .25em;
+}
+#bhError p, #backupNotice p {
+    color: white;
+    font-weight: bold;
+}
+.select2-container {
+    width: 200px !important;
+    display: block !important;
+}
+.select2-drop-active {
+    width: 220px !important;
+}
+.select2-container .select2-choice {
     width: 210px !important;
 }
 .splunk-choice-input {
@@ -54,6 +86,9 @@ span[id^="inputWrapper"] .select2-container .select2-choice {
     background-color: orange !Important;
     color: white !Important;
 }
+#pageSelection .btn-group {
+    margin: 33px 0 0;
+}
 #alwaysSuppress {
     display: inline-block;
     width: 10px;
@@ -68,7 +103,7 @@ span[id^="inputWrapper"] .select2-container .select2-choice {
 }
 #addNewRow {
     float: right;
-    margin: 0 10px;
+    margin: 33px 10px 0;
 }
 input.search-query {
     width: 200px;
@@ -78,42 +113,34 @@ p.loading {
     text-align: center !Important;
 }
 #bhTable_info {
-    padding: 10px 25px;
+    padding: 10px 14px;
 }
-#bhTable_paginate {
-    padding: 0 25px;
+.dataTables_paginate {
+    padding: .5em 1em .5em;
 }
-#bhTable_paginate a.disabled {
+.dataTables_paginate a.disabled {
     cursor: default !important;
     color: #ccc !important;
 }
-#bhTable_paginate a.disabled:hover {
+.dataTables_paginate a.disabled:hover {
     text-decoration: none !important;
 }
-#bhTable_paginate a.previous {
+.dataTables_paginate a.previous {
     margin-right: 5px;
 }
-#bhTable_paginate a.next {
+.dataTables_paginate a.next {
     margin-left: 5px;
 }
-#bhTable_paginate a.current {
+.dataTables_paginate a.current {
     text-decoration: underline !important;
 }
-#bhTable_paginate span a.paginate_button {
+.dataTables_paginate span a.paginate_button {
     margin: 0 5px;
 }
 #emptyKVNotice {
     padding: 0 10px;
     position: absolute;
     margin-top: -45px;
-}
-#backupNotice {
-    padding: 5px 10px 0;
-    position: absolute;
-    margin-top: -45px;
-    width: 100%;
-    background: orangered;
-    color: #FFF;
 }
 #populateBackup {
     background: rgb(44, 168, 136) !important;
@@ -128,8 +155,8 @@ table.dataTable td.reorder {
     background-color: #d8d8d8;
 }
 .notice {
-    margin: 0 15%;
     position: absolute;
+    right: -164px;
 }
 .notice-error {
     margin: 0 35%;

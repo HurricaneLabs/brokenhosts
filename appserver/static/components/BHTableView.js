@@ -8,6 +8,7 @@ require.config({
         clipboard: "../app/broken_hosts/components/lib/clipboard/clipboard.min",
         text: "../app/broken_hosts/components/lib/text",
         'BHTableTemplate': '../app/broken_hosts/components/templates/bhTableTemplate.html',
+        "mainModel": '../app/broken_hosts/components/models/mainModel',
         "modalModel": '../app/broken_hosts/components/models/modalModel'
 
     },
@@ -33,44 +34,39 @@ define([
     "text!BHTableTemplate",
     '../app/broken_hosts/components/ModalView',
     "modalModel",
-    "splunkjs/mvc/searchmanager",
     "bootstrap.dropdown",
-], function (_, Backbone, $, mvc, dataTable, rowReorder, selects, Clipboard,
-             BHTableTemplate, ModalView, ModalModel, SearchManager) {
+], function (_, Backbone, $, mvc, _dataTable, _rowReorder, _selects, Clipboard,
+             BHTableTemplate, ModalView, ModalModel) {
 
-    var BHTableView = Backbone.View.extend({
+    return Backbone.View.extend({
 
         initialize: function (options) {
             this.options = options;
             this.options = _.extend({}, this.defaults, this.options);
             this.mode = options.mode;
-            this.model = options.model;
             this.tokens = options.tokens;
             this.eventBus = this.options.eventBus;
+            this.pageScrollPos = 0;
             this.childComponents = [];
             this.indexInputSearch = {};
             this.sourcetypeInputSearch = {};
             this.hostInputSearch = {};
             this.data_table = null;
+            this.error = false;
+            this.errorMsg = "";
             this.current_row = "";
-            //this.initial_load = this.options.initial_load;
             this.results = this.options.results;
-            //this.restored = this.options.restored; //restored from backup?
             this.backup_available = this.options.backup_available;
             this.updating = false;
             this.per_page = 50;
             this.modal = null;
             this.modalModel = ModalModel;
-            this.updateRow = mvc.Components.get("updateRow");
-            this.addRow = "";
-            this.newRowCount = 1;
             this.tokens = mvc.Components.get("submitted");
-            this.eventBus.on("row:update:done", this.getUpdatedData, this);
+            this.eventBus.on("row:update:done", this.getData, this);
             this.eventBus.on("row:edit", this.showEditModal, this);
             this.eventBus.on("row:update", this.runUpdateSearch, this); //triggered from modal view
-            this.eventBus.on("row:new", this.runAddNewSearch, this); //triggered from modal view
+            this.eventBus.on("row:new", this.runAddNewRow, this); //triggered from modal view
             this.on("updating", this.updateStatus, this);
-
         },
 
         events: {
@@ -78,21 +74,21 @@ define([
             'click .remove': 'removeRow',
             'click .clipboard': 'copyRow',
             'click .per-page': 'pageCountChanged',
-            'click #populateDefault': 'populateTable',
+            'click #populateDefault': 'populateTableWithDefaultData',
             'click #populateBackup': 'populateFromBackup',
             'click #addNewRow': 'addNewRow',
+            'click #closeNotificationBtn': 'closeBackupNotification'
         },
 
         updateStatus: function (updating) {
-            var that = this;
             this.updating = updating;
             if (this.updating === true) {
-                that.data_table.rowReorder.disable();
+                this.data_table.rowReorder.disable();
                 $(".updating").fadeIn();
                 $("#addNewRow").prop("disabled", true);
                 $(".pageDropDown").addClass("disabled");
                 $(".dataTables_paginate a").addClass("disabled");
-                that.data_table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                this.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                     var rowNode = this.node();
                     $(rowNode).find("td").each(function () {
                         $(this).addClass("disabled");
@@ -102,12 +98,12 @@ define([
                     });
                 });
             } else {
-                that.data_table.rowReorder.enable();
+                this.data_table.rowReorder.enable();
                 $(".updating").fadeOut();
                 $("#addNewRow").prop("disabled", false);
                 $(".pageDropDown").removeClass("disabled");
                 $(".dataTables_paginate a").removeClass("disabled");
-                that.data_table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                this.data_table.rows().every(function (_rowIdx, _tableLoop, _rowLoop) {
                     var rowNode = this.node();
                     $(rowNode).find("td").each(function () {
                         $(this).removeClass("disabled");
@@ -126,9 +122,50 @@ define([
             this.eventBus.trigger("row:edit", current_row_data);
         },
 
-        addNewRow: function () {
+        isJSON: function(string) {
+            try {
+                JSON.parse(string);
+            } catch (e) {
+                console.error('Parse error :: ', e);
+                return false;
+            }
+            return true;
+        },
 
-            var that = this;
+        toggleError: function(error, errorObj) {
+
+            const errorMsgIsObject = errorObj.error && errorObj.status;
+            let errorMsg = '';
+
+            if (errorMsgIsObject) {
+                errorMsg = `${errorObj.status} ${errorObj.error}`;
+            } else {
+                errorMsg = errorObj;
+            }
+
+            this.trigger("updating", false);
+            if (error) {
+                this.error = error;
+                this.errorMsg = errorMsg;
+                $("#bhError p").empty();
+                $("#bhError p").append(this.errorMsg);
+                $("#bhError").animate({ opacity : 1, top: 0 }, 1000, () => {
+                    setTimeout(() => {
+                        $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000, () => {
+                            // once its done displaying, empty it out
+                            this.toggleError(false, '');
+                        });
+                    }, 3000);
+                });
+            } else {
+                this.error = false;
+                this.errorMsg = "";
+                $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000);
+                $("#bhError p").empty();
+            }
+        },
+
+        addNewRow: function () {
 
             this.unsetModal();
 
@@ -145,11 +182,11 @@ define([
             });
 
             this.modal = new ModalView({
-                model: that.modalModel,
-                eventBus: that.eventBus,
+                model: this.modalModel,
+                eventBus: this.eventBus,
                 mode: 'New',
-                searches: that.searches,
-                tokens: that.tokens
+                searches: this.searches,
+                tokens: this.tokens
             });
 
             this.childComponents.push(this.modal);
@@ -159,8 +196,6 @@ define([
         },
 
         showEditModal: function (row_data) {
-
-            var that = this;
 
             this.modalModel.set({
                 _key: row_data[0],
@@ -175,11 +210,11 @@ define([
             });
 
             this.modal = new ModalView({
-                model: that.modalModel,
-                eventBus: that.eventBus,
+                model: this.modalModel,
+                eventBus: this.eventBus,
                 mode: 'Edit',
-                searches: that.searches,
-                tokens: that.tokens
+                searches: this.searches,
+                tokens: this.tokens
             });
 
             this.childComponents.push(this.modal);
@@ -188,228 +223,71 @@ define([
 
         },
 
-        runAddNewSearch: function (row_data) {
+        runAddNewRow: function (_row_data) {
 
             this.trigger("updating", true);
+            
+            let data = {
+                'comments' : this.tokens.get("comments_add_tok"),
+                'contact' : this.tokens.get("contact_add_tok"),
+                'index' : this.tokens.get("index_add_tok"),
+                'sourcetype' : this.tokens.get("sourcetype_add_tok"),
+                'host' : this.tokens.get("host_add_tok"),
+                'lateSecs' : this.tokens.get("late_secs_add_tok"),
+                'suppressUntil' : this.tokens.get("suppress_until_add_tok")
+            };
 
-            var that = this;
+            var service = mvc.createService({owner: "nobody"});
+            const jsonData = JSON.stringify(data);
 
-            //this.addRow = mvc.Components.get("addRow");
-
-            // Build search string
-            let host_array = this.tokens.get("host_add_tok");
-
-            var search_str = "| inputlookup  expectedTime | eval key=_key";
-
-            search_str += "      | append [| stats count" +
-                "      | eval index=lower(\"" + this.tokens.get("index_add_tok") + "\")" +
-                "      | eval sourcetype=lower(\"" + this.tokens.get("sourcetype_add_tok") + "\")" +
-                "      | eval host=lower(\"" + this.tokens.get("host_add_tok") + "\")" +
-                "      | eval lateSecs=\"" + this.tokens.get("late_secs_add_tok") + "\"" +
-                "      | eval suppressUntil=\"" + this.tokens.get("suppress_until_add_tok") + "\"" +
-                "      | eval contact=\"" + this.tokens.get("contact_add_tok") + "\"" +
-                "      | eval comments=\"" + this.tokens.get("comments_add_tok") + "\"]";
-
-            search_str += "      | table key,index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime"
-            that.newRowCount = 1;
-            this.addRow = new SearchManager({
-                id: "addRow",
-                autostart: false,
-                search: search_str
-            });
-
-            //Run addRow search created in dashboard simple XML
-            this.addRow.startSearch();
-
-            this.addRow.on("search:done", function () {
-
-                var service = mvc.createService({owner: "nobody"});
-                var auth = "";
-
-                //Get all updated KVStore data
-                service.get('/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime',
-                    auth, function (err, res) {
-
-                        if (err) {
-                            return;
-                        }
-
-                        var cleaned_data = [];
-
-                        function fix_key(key) {
-                            return key.replace(/^_key/, "key");
-                        }
-
-                        _.each(res.data, function (row_obj, row_k) {
-
-                            var row = _.object(
-                                _.map(_.keys(row_obj), fix_key),
-                                _.values(row_obj)
-                            );
-                            cleaned_data.push(row);
-
-                        });
-
-                        var new_row_idx = cleaned_data.length - that.newRowCount;
-
-                        //Add new row content
-                        for (i=0; i < that.newRowCount; i++){
-                          var new_row_data = cleaned_data[new_row_idx + i];
-                          var new_row = that.data_table.row.add([
-                              new_row_data["key"],
-                              new_row_data["comments"],
-                              new_row_data["contact"],
-                              new_row_data["index"],
-                              new_row_data["sourcetype"],
-                              new_row_data["host"],
-                              new_row_data["lateSecs"],
-                              new_row_data["suppressUntil"],
-                              "<a class=\"edit\" href=\"#\">Edit</a>",
-                              "<a class=\"remove\" href=\"#\">Remove</a>",
-                              "<a class=\"clipboard\" data-clipboard-target=\"#row-" + (new_row_idx + i) + "\" href=\"#\">Copy</a>"
-                          ]).draw(false).node();
-
-                          $(new_row).find("td").each(function () {
-                              $(this).addClass("disabled");
-                          });
-                          $(new_row).find("td > a").each(function () {
-                              $(this).addClass("disabled");
-                          });
-
-                          var arr = [];
-                          that.results = arr.push(that.data_table.rows().data());
-                          if (that.data_table.rows().count() === 1) {
-                              $("#emptyKVNotice").fadeOut();
-                              $("#backupNotice").fadeOut();
-                          }
-                        }
-                        that.processDataForUpdate();
-
-                    });
-
-            });
-
-        },
-
-        runAddNewBulkSearch: function (row_data) {
-
-            this.trigger("updating", true);
-
-            var that = this;
-
-            //this.addRow = mvc.Components.get("addRow");
-
-            // Build search string
-            let host_array = this.tokens.get("host_add_tok");
-            host_array = host_array.map(str => str.trim());
-
-            var search_str = "| inputlookup  expectedTime | eval key=_key"
-            var newRowCount = 0;
-            for (var i=0; i < host_array.length; i++) {
-                if (host_array[i] == "") {
-                    continue;
-                }
-                search_str += "      | append [| stats count" +
-                    "      | eval index=lower(\"" + this.tokens.get("index_add_tok") + "\")" +
-                    "      | eval sourcetype=lower(\"" + this.tokens.get("sourcetype_add_tok") + "\")" +
-                    "      | eval host=lower(\"" + host_array[i] + "\")" +
-                    "      | eval lateSecs=\"" + this.tokens.get("late_secs_add_tok") + "\"" +
-                    "      | eval suppressUntil=\"" + this.tokens.get("suppress_until_add_tok") + "\"" +
-                    "      | eval contact=\"" + this.tokens.get("contact_add_tok") + "\"" +
-                    "      | eval comments=\"" + this.tokens.get("comments_add_tok") + "\"]"
-                newRowCount += 1;
-            }
-
-            search_str += "      | table key,index,sourcetype,host,lateSecs,suppressUntil,contact,comments | outputlookup expectedTime"
-            that.newRowCount = newRowCount;
-            this.addRow = new SearchManager({
-                id: "addRow",
-                autostart: false,
-                search: search_str
-            });
-
-            //Run addRow search created in dashboard simple XML
-            this.addRow.startSearch();
-
-            this.addRow.on("search:done", function () {
-
-                var service = mvc.createService({owner: "nobody"});
-                var auth = "";
-
-                //Get all updated KVStore data
-                service.get('/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime',
-                    auth, function (err, res) {
-
-                        if (err) {
-                            return;
-                        }
-
-                        var cleaned_data = [];
-
-                        function fix_key(key) {
-                            return key.replace(/^_key/, "key");
-                        }
-
-                        _.each(res.data, function (row_obj, row_k) {
-
-                            var row = _.object(
-                                _.map(_.keys(row_obj), fix_key),
-                                _.values(row_obj)
-                            );
-                            cleaned_data.push(row);
-
-                        });
-
-                        var new_row_idx = cleaned_data.length - that.newRowCount;
-
-                        //Add new row content
-                        for (i=0; i < that.newRowCount; i++){
-                          var new_row_data = cleaned_data[new_row_idx + i];
-                          var new_row = that.data_table.row.add([
-                              new_row_data["key"],
-                              new_row_data["comments"],
-                              new_row_data["contact"],
-                              new_row_data["index"],
-                              new_row_data["sourcetype"],
-                              new_row_data["host"],
-                              new_row_data["lateSecs"],
-                              new_row_data["suppressUntil"],
-                              "<a class=\"edit\" href=\"#\">Edit</a>",
-                              "<a class=\"remove\" href=\"#\">Remove</a>",
-                              "<a class=\"clipboard\" data-clipboard-target=\"#row-" + (new_row_idx + i) + "\" href=\"#\">Copy</a>"
-                          ]).draw(false).node();
-
-                          $(new_row).find("td").each(function () {
-                              $(this).addClass("disabled");
-                          });
-                          $(new_row).find("td > a").each(function () {
-                              $(this).addClass("disabled");
-                          });
-
-                          var arr = [];
-                          that.results = arr.push(that.data_table.rows().data());
-                          if (that.data_table.rows().count() === 1) {
-                              $("#emptyKVNotice").fadeOut();
-                              $("#backupNotice").fadeOut();
-                          }
-                        }
-                        that.processDataForUpdate();
-
-                    });
-
-            });
-
+            service.request(
+                "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/",
+                "POST",
+                null,
+                null,
+                jsonData,
+                {"Content-Type": "application/json"}, (err) => {
+                    if (err) {
+                        this.toggleError(true, "Could not create new suppression.");
+                    } 
+                })
+                .done(response => {
+                    console.log('response ::: ', response);
+                    const responseObj = JSON.parse(response);
+                    this.trigger("updating", false);
+                    const rowData = [
+                        responseObj["_key"],
+                        data["comments"],
+                        data["contact"],
+                        data["index"],
+                        data["sourcetype"],
+                        data["host"],
+                        data["lateSecs"],
+                        data["suppressUntil"],
+                        "<a class=\"edit\" href=\"#\">Edit</a>",
+                        "<a class=\"remove\" href=\"#\">Remove</a>",
+                        "<a class=\"clipboard\" data-clipboard-target=\"#row-0\" href=\"#\">Copy</a>"
+                    ];
+                    this.data_table.row.add(rowData).draw();
+                    this.data_table.rowReorder.enable();
+                })
         },
 
         runUpdateSearch: function (row_data) {
-            var that = this;
+            
+            this.trigger("updating", true);
 
-            that.trigger("updating", true);
-
-            this.updateRow.startSearch();
+            let data = {
+                'comments' : row_data["comments"],
+                'contact' : row_data["contact"],
+                'index' : row_data["index"],
+                'sourcetype' : row_data["sourcetype"],
+                'host' : row_data["host"],
+                'lateSecs' : row_data["lateSecs"],
+                'suppressUntil' :row_data["suppressUntil"]
+            };
 
             var temp = this.current_row.data();
-
             temp[1] = row_data["comments"];
             temp[2] = row_data["contact"];
             temp[3] = row_data["index"];
@@ -418,22 +296,38 @@ define([
             temp[6] = row_data["lateSecs"];
             temp[7] = row_data["suppressUntil"];
 
-            this.current_row.data(temp).invalidate();
+            this.current_row.data(temp).draw();
 
-            this.updateRow.on("search:done", function () {
-                that.trigger("updating", false);
-            });
+            var _key = row_data["_key"];
+            var service = mvc.createService({owner: "nobody"});
+            let jsonData = JSON.stringify(data);
+
+            service.request(
+                "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/" + _key,
+                "POST",
+                null,
+                null,
+                jsonData,
+                {"Content-Type": "application/json"}, (err) => {
+                    if (err) {
+                        this.toggleError(true, err);
+                    }
+                })
+                .done(() => {
+                    this.trigger("updating", false);
+                    this.data_table.rowReorder.enable();
+                });
 
         },
 
-        copyRow: function (e) {
+        copyRow: function (_e) {
 
             new Clipboard('.clipboard', {
                 text: function (trigger) {
 
                     var comments, contact, index, sourcetype, host, lateSecs, suppressUntil = "";
 
-                    $(trigger).parents('tr').each(function (i, el) {
+                    $(trigger).parents('tr').each(function (_i, _el) {
 
                         var td = $(this).find('td');
                         comments = td.eq(0).text();
@@ -446,11 +340,9 @@ define([
 
                     });
 
-                    var final_output = "Comments: " + comments + "\n" +
+                    return "Comments: " + comments + "\n" +
                         "Contact: " + contact + "\n" + "\n" + "Index: " + index + "\n" + "Sourcetype: " + sourcetype +
                         "Host: " + host + "\n" + "Late Seconds: " + lateSecs + "\n" + "Suppress Until: " + suppressUntil;
-
-                    return final_output;
 
                 }
             });
@@ -466,86 +358,121 @@ define([
 
         },
 
+        emptyKVStore: function(collection = 'expectedTime') {
+            var service = mvc.createService({owner: "nobody"});
+            this.trigger("updating", true);
+        
+            return new Promise((resolve, reject) => {
+                service.request(
+                    `/servicesNS/nobody/broken_hosts/storage/collections/data/${collection}/`,
+                    "DELETE",
+                    null,
+                    null,
+                    null,
+                    { 
+                        "Content-Type" : "application/json", 
+                        "Accept" : "application/json" 
+                    }, 
+                    (err) => {
+                        if(err) {
+                            console.error('error updating expectedTime: ', err);
+                            reject(new Error("An Error occurred when attempting to backup the KV store."));
+                        } else {
+                            resolve();
+                        }
+                    })
+                    
+            })
+            .catch(err => {
+                this.toggleError(true, err);
+            });
+
+        },
+
         removeRow: function (e) {
             e.preventDefault();
             var service = mvc.createService({owner: "nobody"});
             this.trigger("updating", true);
-            var that = this;
+            
             var _key = this.data_table.row($(e.currentTarget).parents('tr')).data()[0];
-            this.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
 
-            //this.processDataForUpdate();
             service.request(
                 "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/" + _key,
                 "DELETE",
                 null,
                 null,
                 null,
-                {"Content-Type": "application/json"}, null)
-                .done(function () {
-                    that.trigger("updating", false);
-                    that.data_table.rowReorder.enable();
-                });
-
+                { 
+                    "Content-Type" : "application/json", 
+                    "Accept" : "application/json" 
+                }, 
+                (err) => {
+                    if (err) {
+                        console.error('ERROR ::: ', err);
+                        this.toggleError(true, err);
+                    } else {
+                        this.data_table.row($(e.currentTarget).parents('tr')).remove().draw(false);
+                        this.trigger("updating", false);
+                        this.data_table.rowReorder.enable();
+                    }
+                })
         },
 
         reDraw: function (data) {
 
-            var that = this;
             this.results = data;
 
             setTimeout(function () {
-                that.renderList(true);
+                this.renderList(true);
             }.bind(this), 100);
 
-            return;
         },
 
-        getUpdatedData: function () {
-
+        getData: function (collection = 'expectedTime') {
             var service = mvc.createService({owner: "nobody"});
-            var that = this;
             var auth = "";
-            //var done = false;
-            //var res = "";
-
-
-            service.get('/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime', auth,
+            return new Promise((resolve, reject) => {
+                service.get(`/servicesNS/nobody/broken_hosts/storage/collections/data/${collection}`, auth,
                 function (err, res) {
 
                     if (err) {
-                        return;
+                        reject(err);
                     }
 
-                    var cleaned_data = [];
-
-                    function fix_key(key) {
-                        return key.replace(/^_key/, "key");
-                    }
-
-                    _.each(res.data, function (row_obj, row_k) {
-                        var row = _.object(
-                            _.map(_.keys(row_obj), fix_key),
-                            _.values(row_obj)
-                        );
-
-                        row['Edit'] = 'Edit';
-                        row['Remove'] = 'Remove';
-
-                        cleaned_data.push(row);
-
-                    });
-
-                    that.reDraw(cleaned_data);
+                    resolve(res.data);
 
                 });
+            });
+        },
 
+        addUpdatedDataToTable: function(data) {
+            var cleaned_data = [];
+            
+
+            function fix_key(key) {
+                return key.replace(/^_key/, "key");
+            }
+
+            _.each(data, (row_obj, _row_k) => {
+                const row = _.object(
+                    _.map(_.keys(row_obj), fix_key),
+                    _.values(row_obj)
+                );
+
+                row['Edit'] = 'Edit';
+                row['Remove'] = 'Remove';
+
+                cleaned_data.push(row);
+
+            });
+
+            this.reDraw(cleaned_data);
         },
 
         renderList: function (retain_datatables_state) {
 
             var bh_template = $('#bhTable-template', this.$el).text();
-            var that = this;
+            
 
             if (this.results === null) {
                 return;
@@ -555,11 +482,15 @@ define([
                 suppressions: this.results,
                 per_page: this.per_page,
                 restored: this.restored,
-                backup_available: this.backup_available
+                backup_available: this.backup_available,
+                error: this.error,
+                errorMsg : this.errorMsg
             }));
 
             this.data_table = $('#bhTable', this.$el).DataTable({
+                dom: '<"H"lfrp>t<"F"ip>',
                 rowReorder: true,
+                bSort: false,
                 columnDefs: [
                     {
                         "targets": [0],
@@ -578,60 +509,49 @@ define([
                 "stateSave": true,
                 "pagingType": "simple_numbers",
                 "language": {search: ""},
-                //"oLanguage": { "sSearch": "" },
                 "aLengthMenu": [[5, 10, 15, -1], [5, 10, 15, "All"]],
-                //"ordering" : false,
-                "fnStateLoadParams": function (oSettings, oData) {
+                "fnStateLoadParams": function (_oSettings, _oData) {
                     return retain_datatables_state;
-                }
+                },
+                "preDrawCallback": () => { this.pageScrollPos = $('body').scrollTop();},
+                "drawCallback": () => { $('body').scrollTop(this.pageScrollPos);},
             });
 
             $('div.dataTables_filter input').addClass('search-query');
             $('div.dataTables_filter input[type="search"]').attr('placeholder', 'Filter');
 
-            this.data_table.on('row-reorder', function (e, details, changes) {
-
-                that.trigger("updating", true);
-
-                that.processDataForUpdate();
-
+            this.data_table.on('row-reorder', (_e, _details, _changes) => {
+                this.trigger("updating", true);
+                this.processDataForUpdate();
             });
+        },
+
+        closeBackupNotification: function () {
+            $("#backupNotice").animate({ opacity : 0, top: '-50px' }, 1000);
+        },
+
+        populateFromBackup: async function (e) {
+
+            e.preventDefault();
+            $("#populateBackup").prop('disabled', true).text("Populating...");
+
+            try {
+                const data = await this.getData('expectedTime_tmp');
+                await this.batchUpdate(data, null, null, 'expectedTime');
+                this.backup_available = false;
+                this.addUpdatedDataToTable(data);
+                this.trigger("updating", false);
+            } catch (error) {
+                this.toggleError(true, error);
+            }
 
         },
 
-        populateFromBackup: function () {
+        populateTableWithDefaultData: function () {
 
             var service = mvc.createService({owner: "nobody"});
-            var that = this;
 
-            $("#populateDefault").text("Populating...");
-
-            var backupSearch = new SearchManager({
-                id: "backupSearch",
-                search: "| inputlookup expectedTime_tmp\n" +
-                    "| eval Remove=\"Remove\" | eval key=_key | eval Edit=\"Edit\"\n" +
-                    "| table * Edit, Remove | outputlookup expectedTime",
-                earliest_time: "-1m",
-                latest_time: "now",
-                autostart: false
-            });
-
-            backupSearch.startSearch();
-
-            backupSearch.on("search:done", function (props) {
-                that.backup_available = false;
-                splunkjs.mvc.Components.revokeInstance("backupSearch");
-                that.getUpdatedData();
-            });
-
-        },
-
-        populateTable: function () {
-
-            var service = mvc.createService({owner: "nobody"});
-            var that = this;
-
-            $("#populateDefault").text("Populating...");
+            $("#populateDefault").prop('disabled', true).text("Populating...");
 
             service.request(
                 "/servicesNS/nobody/broken_hosts/bhosts/bhosts_setup/setup",
@@ -639,26 +559,24 @@ define([
                 null,
                 null,
                 null,
-                {"Content-Type": "application/json"}, null)
-                .done(function (response) {
-
-                    //that.results = null;
-
-                    that.getUpdatedData();
-
+                {"Content-Type": "application/json"}, async (err) => {
+                    if (err) {
+                        console.error('error updating expectedTime: ', err);
+                        reject(new Error("An Error occurred. Could not update."));
+                    } else {
+                        const currentData = await this.getData();
+                        await this.addUpdatedDataToTable(currentData);
+                    }
                 });
-
         },
 
         processDataForUpdate: function () {
 
-            var that = this;
-
-            setTimeout(function () {
-                var headers_data = that.data_table.columns().header();
-                var updatedData = that.data_table.rows({order: 'applied'}).data();
-                var headers = [];
-                var mappedHeaders = [
+            setTimeout(() => {
+                const headers_data = this.data_table.columns().header();
+                const updatedData = this.data_table.rows({order: 'applied'}).data();
+                let headers = [];
+                const mappedHeaders = [
                     {header: "Key", mapped: "_key"},
                     {header: "Comments", mapped: "comments"},
                     {header: "Contact", mapped: "contact"},
@@ -668,13 +586,10 @@ define([
                     {header: "Late Seconds", mapped: "lateSecs"},
                     {header: "Suppress Until", mapped: "suppressUntil"}
                 ];
-                //var updatedData = that.data_table.columns().data(0);
 
-                _.each(headers_data, function (header, k) {
+                _.each(headers_data, function () {
 
-                    var header_val = header.innerText;
-
-                    _.each(mappedHeaders, function (mapping, k) {
+                    _.each(mappedHeaders, function (mapping) {
 
                         headers.push(mapping['mapped']);
 
@@ -682,7 +597,7 @@ define([
 
                 });
 
-                that.mapData(updatedData, _.uniq(headers));
+                this.mapData(updatedData, _.uniq(headers));
 
             }, 1000);
 
@@ -690,18 +605,17 @@ define([
 
         mapData: function (updatedData, headers) {
 
-            var results = [];
+            let mappedData = [];
 
-            _.each(updatedData, function (row, row_k) {
+            _.each(updatedData, (row, _row_k) => {
 
-                var row_arr = [];
-                var row_obj = {};
+                let row_obj = {};
 
-                _.each(row, function (col, col_k) {
+                _.each(row, (col, col_k) => {
 
                     if (headers[col_k]) {
 
-                        var header = headers[col_k];
+                        const header = headers[col_k];
 
                         row_obj[header] = col;
 
@@ -709,107 +623,94 @@ define([
 
                 });
 
-                results.push(row_obj);
+                mappedData.push(row_obj);
 
             });
 
-            var data = JSON.stringify(results);
-
-            this.updateKVStore(data);
+            this.updateKVStore(mappedData);
 
         },
 
-        updateKVStore: function (data) {
+        updateKVStore: async function(updatedData) {
 
-            var that = this;
-            var rand = Math.random();
+            try {
+                const currentData = await this.getData();
+                await this.emptyKVStore('expectedTime_tmp');
+                await this.batchUpdate(currentData, null, null, 'expectedTime_tmp');
+                await this.emptyKVStore('expectedTime');
+                await this.batchUpdate(updatedData);
+                this.data_table.rowReorder.enable();
+                this.trigger("updating", false);
+            } catch (err) {
+                this.toggleError(true, err);
+            }
+
+        },
+
+        batchUpdate: function(data, start, end, collection = 'expectedTime') {
+
             var service = mvc.createService({owner: "nobody"});
+            let total = data.length;
+            let currentCollection = collection;
 
-            //Back it up
-            var backupExpectedTime = new SearchManager({
-                id: "backupExpectedTime" + rand,
-                earliest_time: "-1m",
-                latest_time: "now",
-                preview: true,
-                cache: false,
-                search: "| inputlookup expectedTime | outputlookup expectedTime_tmp"
-            });
+            if (start == null && end == null) {
+                start = 0;
+                end = 500;
+            }
 
-            var emptyExpectedTime = new SearchManager({
-                id: "emptyExpectedTime" + rand,
-                earliest_time: "-1m",
-                latest_time: "now",
-                preview: true,
-                cache: false,
-                autostart: false,
-                search: "| outputlookup expectedTime"
-            });
+            let dataChunk = JSON.stringify(data.slice(start, end+1)); // non-inclusive so +1
 
-            //once backup is complete, empty out the kvstore
-            backupExpectedTime.on("search:done", function (prop) {
-                emptyExpectedTime.startSearch()
-            });
-
-            backupExpectedTime.on("search:failed", function (prop) {
-                console.error('backupExpectedTime error: ', prop);
-            });
-
-            emptyExpectedTime.on("search:done", function () {
-
+            return new Promise((resolve, reject) => {
                 service.request(
-                    "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/batch_save",
+                    `/servicesNS/nobody/broken_hosts/storage/collections/data/${currentCollection}/batch_save`,
                     "POST",
                     null,
                     null,
-                    data,
-                    {"Content-Type": "application/json"}, function(err, response) {
+                    dataChunk,
+                    {"Content-Type": "application/json"}, (err, _response) => {
                         if(err) {
-                            console.err('error updating expectedTime: ', err);
+                            console.error('error updating expectedTime: ', err);
+                            reject(new Error("An Error occurred. Could not update."));
                         } else {
-                            that.data_table.rowReorder.enable();
-                            splunkjs.mvc.Components.revokeInstance("addRow");
+                            if (end >= total) {
+                                this.data_table.rowReorder.enable();
+                                splunkjs.mvc.Components.revokeInstance("addRow");
+                                resolve();
+                            } else {
+                                start = end;
+                                end = end + 500;
+                                resolve(this.batchUpdate(data, start, end, currentCollection));
+                            }
                         }
-                    }).done(function() {
-                        that.trigger("updating", false);
-                });
+                    })
+            }).catch(err => {
+                this.toggleError(true, err);
             });
-
 
         },
 
         render: function () {
 
-            var that = this;
-
             var retain_datatables_state = (typeof retain_datatables_state === "undefined") ? false : true;
-
             this.$el.html(BHTableTemplate);
-
             this.renderList(retain_datatables_state);
 
             if (this.restored) {
-                setTimeout(function () {
+                setTimeout(() => {
                     $(".restored").fadeOut();
-                    that.restored = false;
+                    this.restored = false;
                 }, 4000);
             }
-
             return this;
-
         },
 
         unsetModal: function () {
             _.each(this.childComponents, function (c) {
-
                 c.unbind();
                 c.remove();
             });
-
-
         }
 
     });
-
-    return BHTableView;
 
 });
