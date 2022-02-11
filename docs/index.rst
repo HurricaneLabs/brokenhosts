@@ -64,16 +64,65 @@ Documentation
 Changelog
 ---------
 
-Version 4.0.5 (RELEASE PENDING)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Version 4.1.2 (2022-01-25)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- outputlookup removed from configure_lookup.xml dashboard
+- Removed all use of outputlookup command to meet Splunk Cloud requirements. Replaced with API requests.
+- Bug fix on batch update - incorrect increment could cause limit to be hit when updating causing loss of data in KV
+- Better error handling - shows errors in UI if failure to edit or delete
+
+Version 4.1.1 (2022-01-13)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Updated app manifest to specify installation only on search heads in Cloud
+
+Version 4.1.0 (2021-12-15)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Improvements to the "Configure Broken Hosts Lookup" page
+- Bug fix: when results hit over 1k entries, it hits the default 1k limit in limits.conf resulting
+  in the kv store being emptied out. The results are now batched to prevent this issue.
+
+Version 4.0.9 (2021-09-20)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix setup page not loading
+
+Version 4.0.8 (2021-09-17)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Setup page added for app configuration
+
+Version 4.0.6 (2021-09-07)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Updated dashboards to XML version 1.1 for jQuery 3.5 compatibility
+- trigger stanza added to app.conf for bh.conf file
+
+Version 4.0.5 (2020-06-19)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - update bh_stats_gen to use a more meaningful time for the summary events
-- update the alert searches to no longer look into the future for summary events, since that's not possible
+- update the alert searches to no longer look into the future for summary events, since that's not
+  possible
 - include wineventlog aggregation
 - make pfsense aggregation work with splunk web validation
 - make pfsense aggregation more generic to apply more broadly
-- dropdowns on Configure Broken Hosts lookup now paginate to help prevent against browser crashing when loading
+- dropdowns on Configure Broken Hosts lookup now paginate to help prevent against browser crashing
+  when loading
 extremely large data-sets
+- Python 3 support for Splunk 8.0
+- The app no longer has a setup.xml file to conform with Splunk Cloud's vetting process.
+- Since no setup.xml is allowed on cloud, all configuration is related to macros that come with
+  this app. The following macros are available to configure:
+  - default_contact
+  - default_expected_time
+  - ignore_after
+  - linuxoslog_index
+  - min_count
+  - search_additions
+  - wineventlog_index
 
 Version 4.0.4 (2018-12-12)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
