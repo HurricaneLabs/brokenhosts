@@ -73,6 +73,7 @@ define([
             },
 
             startDropdownSearches: function() {
+                console.log('startDropdownSearches called!')
                 this.indexInputSearch.startSearch();
                 this.sourcetypeInputSearch.startSearch();
                 this.hostInputSearch.startSearch();
@@ -139,10 +140,13 @@ define([
                 let results = this.inputSearch.data('results', {count:0});
                 let final_results = this.final_results;
                 let dropdownID = this.dropdownID;
- 
-                if (results.hasData()) {
+
+                console.log('results ::: ', results);
+                console.log('results hasData ::: ', results.hasData());
+
+                if (!results._pending) {
                     results.on('data', function() {
-                        
+
                             let search_results = results.data().rows;
                             search_results.forEach((row) => {
                                 let obj = {};

@@ -9,7 +9,8 @@ require.config({
         text: "../app/broken_hosts/components/lib/text",
         'BHTableTemplate': '../app/broken_hosts/components/templates/bhTableTemplate.html',
         "mainModel": '../app/broken_hosts/components/models/mainModel',
-        "modalModel": '../app/broken_hosts/components/models/modalModel'
+        "modalModel": '../app/broken_hosts/components/models/modalModel',
+        "bootstrap-dropdown": "../app/broken_hosts/components/lib/bootstrap/bootstrap-dropdown"
 
     },
     shim: {
@@ -18,6 +19,9 @@ require.config({
         },
         'bootstrapDataTables': {
             deps: ['datatables']
+        },
+        'bootstrap-dropdown': {
+            deps: ['jquery']
         }
     }
 });
@@ -34,7 +38,7 @@ define([
     "text!BHTableTemplate",
     '../app/broken_hosts/components/ModalView',
     "modalModel",
-    "bootstrap.dropdown",
+    "bootstrap-dropdown",
 ], function (_, Backbone, $, mvc, _dataTable, _rowReorder, _selects, Clipboard,
              BHTableTemplate, ModalView, ModalModel) {
 
@@ -226,7 +230,7 @@ define([
         runAddNewRow: function (_row_data) {
 
             this.trigger("updating", true);
-            
+
             let data = {
                 'comments' : this.tokens.get("comments_add_tok"),
                 'contact' : this.tokens.get("contact_add_tok"),
@@ -249,7 +253,7 @@ define([
                 {"Content-Type": "application/json"}, (err) => {
                     if (err) {
                         this.toggleError(true, "Could not create new suppression.");
-                    } 
+                    }
                 })
                 .done(response => {
                     console.log('response ::: ', response);
@@ -274,7 +278,7 @@ define([
         },
 
         runUpdateSearch: function (row_data) {
-            
+
             this.trigger("updating", true);
 
             let data = {
@@ -361,7 +365,7 @@ define([
         emptyKVStore: function(collection = 'expectedTime') {
             var service = mvc.createService({owner: "nobody"});
             this.trigger("updating", true);
-        
+
             return new Promise((resolve, reject) => {
                 service.request(
                     `/servicesNS/nobody/broken_hosts/storage/collections/data/${collection}/`,
@@ -369,10 +373,10 @@ define([
                     null,
                     null,
                     null,
-                    { 
-                        "Content-Type" : "application/json", 
-                        "Accept" : "application/json" 
-                    }, 
+                    {
+                        "Content-Type" : "application/json",
+                        "Accept" : "application/json"
+                    },
                     (err) => {
                         if(err) {
                             console.error('error updating expectedTime: ', err);
@@ -381,7 +385,7 @@ define([
                             resolve();
                         }
                     })
-                    
+
             })
             .catch(err => {
                 this.toggleError(true, err);
@@ -393,7 +397,7 @@ define([
             e.preventDefault();
             var service = mvc.createService({owner: "nobody"});
             this.trigger("updating", true);
-            
+
             var _key = this.data_table.row($(e.currentTarget).parents('tr')).data()[0];
 
             service.request(
@@ -402,10 +406,10 @@ define([
                 null,
                 null,
                 null,
-                { 
-                    "Content-Type" : "application/json", 
-                    "Accept" : "application/json" 
-                }, 
+                {
+                    "Content-Type" : "application/json",
+                    "Accept" : "application/json"
+                },
                 (err) => {
                     if (err) {
                         console.error('ERROR ::: ', err);
@@ -447,7 +451,7 @@ define([
 
         addUpdatedDataToTable: function(data) {
             var cleaned_data = [];
-            
+
 
             function fix_key(key) {
                 return key.replace(/^_key/, "key");
@@ -472,7 +476,7 @@ define([
         renderList: function (retain_datatables_state) {
 
             var bh_template = $('#bhTable-template', this.$el).text();
-            
+
 
             if (this.results === null) {
                 return;
