@@ -12,13 +12,20 @@ Beginning in Broken Hosts 4.0, the search has been broken into two pieces (for m
 the :ref:`searches` documentation). The ``bh_stats_gen`` search is enabled by default and does
 not require configuration. Alerting, however, is done through a separate search.
 
-Broken Hosts 4.0 ships with two example alerting searches, ``Broken Hosts Alert Search`` and
-``Broken Hosts Alert - by contact``. These searches are meant primarily to be examples of how to
-build alerting using the Broken Hosts data, and can easily be duplicated, tweaked, or replaced
-altogether depending on your requirements. If you're new to Broken Hosts, we suggest starting with
-``Broken Hosts Alert Search`` and customizing from there. If you're upgrading from an older version
-of Broken Hosts and want to continue getting the alerts you're used to, you can use ``Broken Hosts
-Alert - by contact``.
+Broken Hosts 4.2 ships with four example alerting searches, ``Broken Hosts Alert Search``,
+``Broken Hosts Alert - by contact``, ``Broken Hosts Alert - Volume Alerting``, 
+and ``Broken Hosts Alert - Volume Alerting with Seasonality``. These searches are meant 
+primarily to be examples of how to build alerting using the Broken Hosts data, and can easily 
+be duplicated, tweaked, or replaced altogether depending on your requirements. 
+If you're new to Broken Hosts, we suggest starting with ``Broken Hosts Alert Search`` and customizing from there.
+If you're upgrading from an older version of Broken Hosts and want to continue getting the alerts you're used to, 
+you can use ``Broken Hosts Alert - by contact``.
+
+``Broken Hosts Alert - Volume Alerting`` and ``Broken Hosts Alert - Volume Alerting with Seasonality``
+provide new options for alerting on indexes that may have ceased proper logging in a way that wouldn't be detected
+with traditional alerting. Both of these searches use stastical tests on the existing data from
+``bh_stats_gen``. The values set as thresholds for these statistical methods are meant to be a base to work off of,
+and may need to be adjusted to work correctly with your data.
 
 Modifying the macros
 --------------------
