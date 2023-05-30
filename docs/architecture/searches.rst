@@ -53,3 +53,20 @@ none is defined in the lookup table.
 If you're coming from an older version of Broken Hosts and choose to implement this search, we'd
 still recommend you review the new ``Broken Hosts Alert Search`` as you may find additional uses
 from it that were difficult or impossible in previous versions of the app.
+
+Broken Hosts Alert - Volume Alerting
+------------------------------------
+
+``Broken Hosts Alert - Volume Alerting`` and 
+``Broken Hosts Alert - Volume Alerting with Seasonality`` are two example searches that can be used
+to generate alerts on indexes that may have stopped ingesting data properly while still generating
+some amount of logs. Both searches use a combination of standard score (z-score), moving averages,
+and percentiles to determine whether or not log volume is anamalously low for that index. 
+``Broken Hosts Alert - Volume Alerting with Seasonality`` additionally factors in the time of day,
+day of the week, and whether the day is a holiday to determine normal logging activity for indexes
+whose volume may be sensitive to user activity.
+
+The macro ``bh_volume_alerting_indexes`` is used to designate which indexes should be alerted on.
+If both ``Broken Hosts Alert - Volume Alerting`` and 
+``Broken Hosts Alert - Volume Alerting with Seasonality`` are needed, a new macro can be created 
+and used to designate the indexes that should be used for each search.

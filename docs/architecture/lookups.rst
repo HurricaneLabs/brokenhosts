@@ -67,3 +67,4 @@ follows:
 23. Entries where index=\* AND sourcetype=\* AND lateSecs is permanently modified
 24. Entries where index=\* AND host=\* AND lateSecs is permanently modified
 25. Entries where sourcetype=\* AND host=\* AND lateSecs is permanently modified
+26. Default entries

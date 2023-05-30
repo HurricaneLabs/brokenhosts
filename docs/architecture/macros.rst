@@ -46,3 +46,11 @@ The ``default_expected_time`` macro is used to set a default ``lateSecs`` value 
 defined in the lookup. The ``lateSecs`` value tells Broken Hosts how long a specific source of data
 is allowed to go without sending data before an alert should be triggered. This setting is in
 seconds, and defaults to 14400 (4 hours).
+
+bh_volume_alerting_indexes
+--------------------------
+
+The ``bh_volume_alerting_indexes`` macro is used in the searches 
+``Broken Hosts Alert - Volume Alerting`` and 
+``Broken Hosts Alert - Volume Alerting with Seasonality``. It contains a comma separated list of
+indexes.
