@@ -35,9 +35,9 @@ https://brokenhosts.hurricanelabs.com
 - By default this app is configured and all configuration options are optional. The following macros are available to configure:
 - `default_contact`
 - `default_expected_time`
-- `ignore_after`
-- `linuxoslog_index`
-- `min_count`
-- `search_additions`
+- `ignore_after`		
+- `linuxoslog_index`		
+- `min_count`		
+- `search_additions`	
 - `wineventlog_index`
 - You can also configure the requirement of a ticket number being in comments when updating the table on the Configure Broken Hosts Lookup page. This configuration is availabe on the Setup page in the app.
