@@ -76,7 +76,6 @@ define([
         },
 
         startDropdownSearches: function () {
-            console.log('startDropdownSearches called!')
             this.indexInputSearch.startSearch();
             this.sourcetypeInputSearch.startSearch();
             this.hostInputSearch.startSearch();

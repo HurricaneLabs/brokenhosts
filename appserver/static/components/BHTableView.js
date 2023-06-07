@@ -258,7 +258,6 @@ define([
                     }
                 })
                 .done(response => {
-                    console.log('response ::: ', response);
                     const responseObj = JSON.parse(response);
                     this.trigger("updating", false);
                     const rowData = [
