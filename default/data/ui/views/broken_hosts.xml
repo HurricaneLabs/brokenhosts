@@ -96,7 +96,7 @@
       <table id="suppressed">
         <title>These items are suppressed by the Broken Hosts Lookup</title>
         <search id="suppressedSearch">
-          <query>| inputlookup expectedTime 
+          <query>| inputlookup expectedTime
 | eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
 | where lateSecs=0 OR suppressUntil_epoch&gt;now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil)
 | fields index, sourcetype, host, suppressUntil, suppressUntil, comments | rename index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host" suppressUntil AS "Suppressed Until" comments as Comments</query>

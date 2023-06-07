@@ -47,11 +47,11 @@ class BrokenHostsSetup(admin.MConfigHandler):
             for line in reader:
                 self.write_line(session_key, line)
 
-    @staticmethod
-    def write_line(session_key, line):
+    def write_line(self, session_key, line):
         """
         Writes line to KVStore, called in handleEdit()
         """
+
         splunk.rest.simpleRequest(
             '/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime',
             method='POST',
