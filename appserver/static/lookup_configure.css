@@ -1,0 +1,217 @@
+.dashboard-body {
+    padding: 0 !important;
+}
+h1 {
+    margin: 1em .5em 0;
+}
+.dashboard-row .dashboard-panel {
+    background: none !important;
+    margin-top: 45px !important;
+}
+.dashboard-row .dashboard-panel .panel-body {
+    overflow: visible !important;
+}
+.dashboard-row .dashboard-panel .panel-body.html {
+    padding: 0 !important;
+}
+.dashboard-header h2 {
+    margin: 0 10px;
+}
+.row {
+    margin-top: 12px;
+    margin-left: 0;
+    background: #fff;
+    border-bottom: 1px solid #d5d5d5;
+}
+label[class$="error"] {
+    color: red;
+}
+input.error, textarea.error {
+    border: 1px solid red;
+}
+#BHTableWrapper {
+    margin-bottom: 2em;
+}
+#closeNotificationBtn {
+    float: right;
+    color: white;
+    margin: .45em 3em;
+    font-size: 1em;
+}
+#backupNotice {
+    background: red;
+    z-index: 9999;
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    padding: 1em 1em .25em;
+}
+#bhError {
+    background: red;
+    z-index: 9999;
+    position: fixed;
+    top: -50px;
+    width: 100%;
+    padding: 1em 1em .25em;
+}
+#bhError p, #backupNotice p {
+    color: white;
+    font-weight: bold;
+}
+.select2-container {
+    width: 200px !important;
+    display: block !important;
+}
+.select2-drop-active {
+    width: 220px !important;
+}
+.select2-container .select2-choice {
+    width: 210px !important;
+}
+.splunk-choice-input {
+    padding-bottom: 0 !important;
+}
+.form-group {
+    clear: both;
+}
+#submitData {
+    margin: 0 !important;
+}
+/*Table*/
+#lookupTable tr.status-warning td {
+    background-color: orangered !Important;
+    color: white !Important;
+}
+#lookupTable tr.status-past td {
+    background-color: orange !Important;
+    color: white !Important;
+}
+#pageSelection .btn-group {
+    margin: 33px 0 0;
+}
+#alwaysSuppress {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orangered;
+}
+#inPast {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orange;
+}
+#addNewRow {
+    float: right;
+    margin: 33px 10px 0;
+}
+input.search-query {
+    width: 200px;
+    margin: 0 10px;
+}
+p.loading {
+    text-align: center !Important;
+}
+#bhTable_info {
+    padding: 10px 14px;
+}
+.dataTables_paginate {
+    padding: .5em 1em .5em;
+}
+.dataTables_paginate a.disabled {
+    cursor: default !important;
+    color: #ccc !important;
+}
+.dataTables_paginate a.disabled:hover {
+    text-decoration: none !important;
+}
+.dataTables_paginate a.previous {
+    margin-right: 5px;
+}
+.dataTables_paginate a.next {
+    margin-left: 5px;
+}
+.dataTables_paginate a.current {
+    text-decoration: underline !important;
+}
+.dataTables_paginate span a.paginate_button {
+    margin: 0 5px;
+}
+#emptyKVNotice {
+    padding: 0 10px;
+    position: absolute;
+    margin-top: -45px;
+}
+#populateBackup {
+    background: rgb(44, 168, 136) !important;
+}
+table.dataTable td.reorder {
+    text-align: left !Important;
+}
+.table-chrome.table-striped>tbody>tr.odd>td.reorder {
+    background-color: #f5f5f5;
+}
+.table-chrome.table-striped>tbody>tr.even>td.reorder {
+    background-color: #d8d8d8;
+}
+.notice {
+    position: absolute;
+    right: -164px;
+}
+.notice-error {
+    margin: 0 35%;
+    position: absolute;
+}
+.notice-error p.restored {
+    margin: 0;
+    padding: 5px 12px !important;
+    color: #fff;
+    background-color: #ca3b3b;
+}
+.updating {
+    padding: 5px 200px 0 !important;
+}
+.updating>i {
+    color: green;
+}
+.hide {
+    display: none;
+}
+.show {
+    display: block;
+}
+.modal .modal-body {
+    height: 100%;
+    overflow: scroll !important;
+    margin: 0;
+}
+.modal-body:last-child {
+    max-height: calc(100vh - 100px) !important;
+}
+.disabled {
+   pointer-events: none;
+   cursor: default;
+   color: #7a7a7a;
+}
+.modal-shown {
+    overflow: hidden;
+}
+.outline {
+    border: 1px solid #c3cbd4;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    padding: 10px;
+}
+#exampleBulkResults {
+    max-height: 400px;
+    overflow-y: scroll;
+}
+.select2-container {
+    width: 210px;
+    top: -5px;
+}
+.select2-container .select2-choice {
+    height: 29px;
+    padding: 1px 0 0 8px;
+}

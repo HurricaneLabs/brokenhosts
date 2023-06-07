@@ -1,0 +1,70 @@
+<div id="pivotModal" class="modal">
+    <div class="modal-header">
+        <% if(mode==='Edit') { %>
+            <h3>Edit Suppression</h3><button class="close">Close</button>
+        <% } else { %>
+            <h3>New Suppression</h3><button class="close">Close</button>
+        <% } %>
+    </div>
+    <div class="modal-body">
+        <form id="brokenHostForm">
+
+            <div class="form-group">
+                <label for="indexSelector">Select an Index</label>
+                <input type="text" class="form-control" id="indexInput"></input>
+                <input type="text" class="form-control" id="index" name="index" value="<%- index %>" autocomplete="false"/>
+                <span class="loading" style="display:none;">Loading...</span>
+                <p class="help-block">Use dropdown to ensure index exists.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="sourcetypeSelector">Select a Sourcetype</label>
+                <input type="text" class="form-control" id="sourcetypeInput"></input>
+                <input type="text" id="sourcetype" name="sourcetype" value="<%- sourcetype %>" autocomplete="false"/>
+                <span class="loading" style="display:none;">Loading...</span>
+                <p class="help-block">Use dropdown to ensure sourcetype exists.</p>
+            </div>
+
+            <div class="form-group single_host_component" id="hostFormGroup">
+                <label for="hostSelector">Select a Host</label>
+                <input type="text" class="form-control" id="hostInput"></input>
+                <input type="text" id="host" name="host" value="<%- host %>" autocomplete="false"/>
+                <span class="loading" style="display:none;">Loading...</span>
+                <p class="help-block">Use dropdown to ensure host exists.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="lateSecs">Late Seconds</label>
+                <input type="text" id="lateSecs" name="lateSecs" value="<%- lateSecs %>" autocomplete="false"/>
+                <p class="help-block">Use seconds or SPL relative time format. 0 means Always Suppress.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="suppressUntil">Suppress Until</label>
+                <input type="text" id="suppressUntil" name="suppressUntil" value="<%- suppressUntil %>" autocomplete="false"/>
+                <p class="help-block">0 means No Suppression</p>
+            </div>
+
+            <div class="form-group">
+                <label for="contacts">Add Contacts</label>
+                <input type="text" id="contact" name="contact" value="<%- contact %>" autocomplete="false"/>
+                <p class="help-block">May be a comma delimited list of emails.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="comments">Comments</label>
+                <textarea id="comments" name="comments" style="width: 96%; display: block; height: 50px;"><%- comments %></textarea>
+                <p class="help-block">Be sure to include a ticket number e.g. #12345</p>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" id="submitData" class="btn btn-primary"
+                       value="Submit" style="display: block; margin: 0 11px; display: inline-block;" />
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+<div class="modal-backdrop"></div>
