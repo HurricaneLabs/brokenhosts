@@ -28,10 +28,10 @@ export async function perform(splunk_js_sdk, setup_options) {
 
         // // Get conf and do stuff to it
         await Splunk.update_configuration_file(
-             splunk_js_sdk_service,
-             CUSTOM_CONF,
-             CUSTOM_CONF_STANZA,
-             { comments_must_have_ticket_number : + comments_must_have_ticket_number }
+            splunk_js_sdk_service,
+            CUSTOM_CONF,
+            CUSTOM_CONF_STANZA,
+            { comments_must_have_ticket_number: + comments_must_have_ticket_number }
         )
 
         // Completes the setup, by access the app.conf's [install]
@@ -80,11 +80,11 @@ export async function get_initial_state(splunk_js_sdk) {
         app_config_accessor,
         stanza_name,
         key_name
-      ) {
-      
+    ) {
+
         let stanzas_found = app_config_accessor.list();
         let value = false;
-        
+
         for (var index = 0; index < stanzas_found.length; index++) {
             var stanza_data = stanzas_found[index];
             var stanza_found = stanza_data.name;
@@ -93,10 +93,10 @@ export async function get_initial_state(splunk_js_sdk) {
                 break;
             }
         }
-      
+
         return value;
-        
-      };
+
+    };
 
     splunk_js_sdk_service_configurations = await promisify(splunk_js_sdk_service_configurations.fetch)();
 
@@ -115,20 +115,20 @@ export async function get_initial_state(splunk_js_sdk) {
     bh_config_accessor = await promisify(bh_config_accessor.fetch)();
 
     let is_configured = get_config_file_value(
-        app_config_accessor, 
+        app_config_accessor,
         'install',
         'is_configured'
     );
 
     let comments_must_have_ticket_number = get_config_file_value(
-        bh_config_accessor, 
+        bh_config_accessor,
         'validation',
         'comments_must_have_ticket_number'
     );
 
     return {
-        'is_configured' : is_configured,
-        'comments_must_have_ticket_number' : !!Number(comments_must_have_ticket_number)
+        'is_configured': is_configured,
+        'comments_must_have_ticket_number': !!Number(comments_must_have_ticket_number)
     };
 
 }

@@ -1,7 +1,7 @@
 require.config({
     paths: {
-        "BHTableView" : '../app/broken_hosts/components/BHTableView',
-        "modalModel" : '../app/broken_hosts/components/models/modalModel'
+        "BHTableView": '../app/broken_hosts/components/BHTableView',
+        "modalModel": '../app/broken_hosts/components/models/modalModel'
     }
 });
 
@@ -17,7 +17,7 @@ require([
     '../app/broken_hosts/components/ModalView',
     "modalModel",
     'splunkjs/mvc/simplexml/ready!'
-], function(_, Backbone, $, mvc, BHTableView, TableView, SearchManager, ModalView, ModalModel) {
+], function (_, Backbone, $, mvc, BHTableView, TableView, SearchManager, ModalView, ModalModel) {
 
     var eventBus = _.extend({}, Backbone.Events);
 
@@ -41,9 +41,9 @@ require([
         autostart: false
     });
 
-	var initialRun = function() {
+    var initialRun = function () {
 
-        getResults("expectedTimeSearch").done(function(results, backup_available) {
+        getResults("expectedTimeSearch").done(function (results, backup_available) {
 
             new BHTableView({
                 id: "BHTableView",
@@ -57,20 +57,20 @@ require([
 
     };
 
-	function getResults(search_name) {
+    function getResults(search_name) {
         var deferred = new $.Deferred();
-	    var results_obj = [];
+        var results_obj = [];
         var backup_available = false;
 
         expectedTimeSearch.startSearch();
 
-        expectedTimeSearch.on("search:done", function(state, job) {
+        expectedTimeSearch.on("search:done", function (state, job) {
 
             if (state.content.resultCount === 0) {
                 //check the backup search
                 expectedTimeBackupSearch.startSearch();
             } else {
-                var results = expectedTimeSearch.data("results", { output_mode : "json_rows", count: 0 });
+                var results = expectedTimeSearch.data("results", { output_mode: "json_rows", count: 0 });
 
                 results.on("data", function () {
 
@@ -106,7 +106,7 @@ require([
 
         });
 
-        expectedTimeBackupSearch.on("search:done", function(state, job) {
+        expectedTimeBackupSearch.on("search:done", function (state, job) {
 
             if (state.content.resultCount > 0) {
                 backup_available = true;
@@ -116,7 +116,7 @@ require([
 
         });
 
-        expectedTimeBackupSearch.on("search:done", function(state, job) {
+        expectedTimeBackupSearch.on("search:done", function (state, job) {
 
             if (state.content.resultCount === 0) {
                 backup_available = false;

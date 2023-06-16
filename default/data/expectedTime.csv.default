@@ -1,6 +1,5 @@
 index,sourcetype,host,lateSecs,suppressUntil,contact,comments
 _*,*,*,0,0,,default entry - don't alert on internal indexes
-*,*,*.splunkcloud.com,0,0,,default entry - don't alert on splunkcloud instances
 *,*,kickseed,0,0,,default entry - don't alert on initial images
 *,*,hdf-template,0,0,,default entry - don't alert on initial images
 *,*too_small,*,0,0,,default entry - don't alert on too_small sourcetypes

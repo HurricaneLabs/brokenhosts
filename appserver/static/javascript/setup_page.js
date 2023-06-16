@@ -19,6 +19,6 @@ require([
     "react", // this needs to be lowercase because ReactDOM refers to it as lowercase
     "ReactDOM",
     "myApp",
-], function(react, ReactDOM, myApp) {
+], function (react, ReactDOM, myApp) {
     ReactDOM.render(myApp, document.getElementById('setupView'));
 });

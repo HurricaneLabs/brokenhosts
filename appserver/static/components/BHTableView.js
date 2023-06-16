@@ -1,15 +1,18 @@
+var app_name = "broken_hosts";
+
 require.config({
     paths: {
-        "datatables.net": "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/jquery.dataTables.min",
-        datatables: "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/jquery.dataTables",
-        bootstrapDataTables: "../app/broken_hosts/components/lib/DataTables/DataTables-1.10.16/js/dataTables.bootstrap",
-        rowreorders: "../app/broken_hosts/components/lib/DataTables/RowReorder-1.2.3/js/dataTables.rowReorder",
-        selects: "../app/broken_hosts/components/lib/DataTables/Select-1.2.4/js/dataTables.select.min",
-        clipboard: "../app/broken_hosts/components/lib/clipboard/clipboard.min",
-        text: "../app/broken_hosts/components/lib/text",
-        'BHTableTemplate': '../app/broken_hosts/components/templates/bhTableTemplate.html',
-        "mainModel": '../app/broken_hosts/components/models/mainModel',
-        "modalModel": '../app/broken_hosts/components/models/modalModel'
+        "datatables.net": "../app/" + app_name + "/components/lib/DataTables/DataTables-1.10.16/js/jquery.dataTables.min",
+        datatables: "../app/" + app_name + "/components/lib/DataTables/DataTables-1.10.16/js/jquery.dataTables",
+        bootstrapDataTables: "../app/" + app_name + "/components/lib/DataTables/DataTables-1.10.16/js/dataTables.bootstrap",
+        rowreorders: "../app/" + app_name + "/components/lib/DataTables/RowReorder-1.2.3/js/dataTables.rowReorder",
+        selects: "../app/" + app_name + "/components/lib/DataTables/Select-1.2.4/js/dataTables.select.min",
+        clipboard: "../app/" + app_name + "/components/lib/clipboard/clipboard.min",
+        text: "../app/" + app_name + "/components/lib/text",
+        'BHTableTemplate': "../app/" + app_name + "/components/templates/bhTableTemplate.html",
+        "mainModel": "../app/" + app_name + "/components/models/mainModel",
+        "modalModel": "../app/" + app_name + "/components/models/modalModel",
+        "bootstrap-dropdown": "../app/" + app_name + "/components/lib/bootstrap/bootstrap-dropdown"
 
     },
     shim: {
@@ -18,6 +21,9 @@ require.config({
         },
         'bootstrapDataTables': {
             deps: ['datatables']
+        },
+        'bootstrap-dropdown': {
+            deps: ['jquery']
         }
     }
 });
@@ -32,11 +38,11 @@ define([
     "selects",
     "clipboard",
     "text!BHTableTemplate",
-    '../app/broken_hosts/components/ModalView',
+    `../app/${app_name}/components/ModalView`,
     "modalModel",
-    "bootstrap.dropdown",
+    "bootstrap-dropdown",
 ], function (_, Backbone, $, mvc, _dataTable, _rowReorder, _selects, Clipboard,
-             BHTableTemplate, ModalView, ModalModel) {
+    BHTableTemplate, ModalView, ModalModel) {
 
     return Backbone.View.extend({
 
@@ -122,7 +128,7 @@ define([
             this.eventBus.trigger("row:edit", current_row_data);
         },
 
-        isJSON: function(string) {
+        isJSON: function (string) {
             try {
                 JSON.parse(string);
             } catch (e) {
@@ -132,7 +138,7 @@ define([
             return true;
         },
 
-        toggleError: function(error, errorObj) {
+        toggleError: function (error, errorObj) {
 
             const errorMsgIsObject = errorObj.error && errorObj.status;
             let errorMsg = '';
@@ -149,9 +155,9 @@ define([
                 this.errorMsg = errorMsg;
                 $("#bhError p").empty();
                 $("#bhError p").append(this.errorMsg);
-                $("#bhError").animate({ opacity : 1, top: 0 }, 1000, () => {
+                $("#bhError").animate({ opacity: 1, top: 0 }, 1000, () => {
                     setTimeout(() => {
-                        $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000, () => {
+                        $("#bhError").animate({ opacity: 0, top: '-50px' }, 1000, () => {
                             // once its done displaying, empty it out
                             this.toggleError(false, '');
                         });
@@ -160,7 +166,7 @@ define([
             } else {
                 this.error = false;
                 this.errorMsg = "";
-                $("#bhError").animate({ opacity : 0, top: '-50px' }, 1000);
+                $("#bhError").animate({ opacity: 0, top: '-50px' }, 1000);
                 $("#bhError p").empty();
             }
         },
@@ -226,33 +232,32 @@ define([
         runAddNewRow: function (_row_data) {
 
             this.trigger("updating", true);
-            
+
             let data = {
-                'comments' : this.tokens.get("comments_add_tok"),
-                'contact' : this.tokens.get("contact_add_tok"),
-                'index' : this.tokens.get("index_add_tok"),
-                'sourcetype' : this.tokens.get("sourcetype_add_tok"),
-                'host' : this.tokens.get("host_add_tok"),
-                'lateSecs' : this.tokens.get("late_secs_add_tok"),
-                'suppressUntil' : this.tokens.get("suppress_until_add_tok")
+                'comments': this.tokens.get("comments_add_tok"),
+                'contact': this.tokens.get("contact_add_tok"),
+                'index': this.tokens.get("index_add_tok"),
+                'sourcetype': this.tokens.get("sourcetype_add_tok"),
+                'host': this.tokens.get("host_add_tok"),
+                'lateSecs': this.tokens.get("late_secs_add_tok"),
+                'suppressUntil': this.tokens.get("suppress_until_add_tok")
             };
 
-            var service = mvc.createService({owner: "nobody"});
+            var service = mvc.createService({ owner: "nobody" });
             const jsonData = JSON.stringify(data);
 
             service.request(
-                "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/",
+                `/servicesNS/nobody/${app_name}/storage/collections/data/expectedTime/`,
                 "POST",
                 null,
                 null,
                 jsonData,
-                {"Content-Type": "application/json"}, (err) => {
+                { "Content-Type": "application/json" }, (err) => {
                     if (err) {
                         this.toggleError(true, "Could not create new suppression.");
-                    } 
+                    }
                 })
                 .done(response => {
-                    console.log('response ::: ', response);
                     const responseObj = JSON.parse(response);
                     this.trigger("updating", false);
                     const rowData = [
@@ -274,17 +279,17 @@ define([
         },
 
         runUpdateSearch: function (row_data) {
-            
+
             this.trigger("updating", true);
 
             let data = {
-                'comments' : row_data["comments"],
-                'contact' : row_data["contact"],
-                'index' : row_data["index"],
-                'sourcetype' : row_data["sourcetype"],
-                'host' : row_data["host"],
-                'lateSecs' : row_data["lateSecs"],
-                'suppressUntil' :row_data["suppressUntil"]
+                'comments': row_data["comments"],
+                'contact': row_data["contact"],
+                'index': row_data["index"],
+                'sourcetype': row_data["sourcetype"],
+                'host': row_data["host"],
+                'lateSecs': row_data["lateSecs"],
+                'suppressUntil': row_data["suppressUntil"]
             };
 
             var temp = this.current_row.data();
@@ -299,16 +304,16 @@ define([
             this.current_row.data(temp).draw();
 
             var _key = row_data["_key"];
-            var service = mvc.createService({owner: "nobody"});
+            var service = mvc.createService({ owner: "nobody" });
             let jsonData = JSON.stringify(data);
 
             service.request(
-                "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/" + _key,
+                `/servicesNS/nobody/${app_name}/storage/collections/data/expectedTime/${_key}`,
                 "POST",
                 null,
                 null,
                 jsonData,
-                {"Content-Type": "application/json"}, (err) => {
+                { "Content-Type": "application/json" }, (err) => {
                     if (err) {
                         this.toggleError(true, err);
                     }
@@ -358,54 +363,54 @@ define([
 
         },
 
-        emptyKVStore: function(collection = 'expectedTime') {
-            var service = mvc.createService({owner: "nobody"});
+        emptyKVStore: function (collection = 'expectedTime') {
+            var service = mvc.createService({ owner: "nobody" });
             this.trigger("updating", true);
-        
+
             return new Promise((resolve, reject) => {
                 service.request(
-                    `/servicesNS/nobody/broken_hosts/storage/collections/data/${collection}/`,
+                    `/servicesNS/nobody/${app_name}/storage/collections/data/${collection}/`,
                     "DELETE",
                     null,
                     null,
                     null,
-                    { 
-                        "Content-Type" : "application/json", 
-                        "Accept" : "application/json" 
-                    }, 
+                    {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
                     (err) => {
-                        if(err) {
+                        if (err) {
                             console.error('error updating expectedTime: ', err);
                             reject(new Error("An Error occurred when attempting to backup the KV store."));
                         } else {
                             resolve();
                         }
                     })
-                    
+
             })
-            .catch(err => {
-                this.toggleError(true, err);
-            });
+                .catch(err => {
+                    this.toggleError(true, err);
+                });
 
         },
 
         removeRow: function (e) {
             e.preventDefault();
-            var service = mvc.createService({owner: "nobody"});
+            var service = mvc.createService({ owner: "nobody" });
             this.trigger("updating", true);
-            
+
             var _key = this.data_table.row($(e.currentTarget).parents('tr')).data()[0];
 
             service.request(
-                "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime/" + _key,
+                `/servicesNS/nobody/${app_name}/storage/collections/data/expectedTime/${_key}`,
                 "DELETE",
                 null,
                 null,
                 null,
-                { 
-                    "Content-Type" : "application/json", 
-                    "Accept" : "application/json" 
-                }, 
+                {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
                 (err) => {
                     if (err) {
                         console.error('ERROR ::: ', err);
@@ -429,25 +434,25 @@ define([
         },
 
         getData: function (collection = 'expectedTime') {
-            var service = mvc.createService({owner: "nobody"});
+            var service = mvc.createService({ owner: "nobody" });
             var auth = "";
             return new Promise((resolve, reject) => {
-                service.get(`/servicesNS/nobody/broken_hosts/storage/collections/data/${collection}`, auth,
-                function (err, res) {
+                service.get(`/servicesNS/nobody/${app_name}/storage/collections/data/${collection}`, auth,
+                    function (err, res) {
 
-                    if (err) {
-                        reject(err);
-                    }
+                        if (err) {
+                            reject(err);
+                        }
 
-                    resolve(res.data);
+                        resolve(res.data);
 
-                });
+                    });
             });
         },
 
-        addUpdatedDataToTable: function(data) {
+        addUpdatedDataToTable: function (data) {
             var cleaned_data = [];
-            
+
 
             function fix_key(key) {
                 return key.replace(/^_key/, "key");
@@ -472,7 +477,7 @@ define([
         renderList: function (retain_datatables_state) {
 
             var bh_template = $('#bhTable-template', this.$el).text();
-            
+
 
             if (this.results === null) {
                 return;
@@ -484,7 +489,7 @@ define([
                 restored: this.restored,
                 backup_available: this.backup_available,
                 error: this.error,
-                errorMsg : this.errorMsg
+                errorMsg: this.errorMsg
             }));
 
             this.data_table = $('#bhTable', this.$el).DataTable({
@@ -508,13 +513,13 @@ define([
                 "bFilter": false,
                 "stateSave": true,
                 "pagingType": "simple_numbers",
-                "language": {search: ""},
+                "language": { search: "" },
                 "aLengthMenu": [[5, 10, 15, -1], [5, 10, 15, "All"]],
                 "fnStateLoadParams": function (_oSettings, _oData) {
                     return retain_datatables_state;
                 },
-                "preDrawCallback": () => { this.pageScrollPos = $('body').scrollTop();},
-                "drawCallback": () => { $('body').scrollTop(this.pageScrollPos);},
+                "preDrawCallback": () => { this.pageScrollPos = $('body').scrollTop(); },
+                "drawCallback": () => { $('body').scrollTop(this.pageScrollPos); },
             });
 
             $('div.dataTables_filter input').addClass('search-query');
@@ -527,7 +532,7 @@ define([
         },
 
         closeBackupNotification: function () {
-            $("#backupNotice").animate({ opacity : 0, top: '-50px' }, 1000);
+            $("#backupNotice").animate({ opacity: 0, top: '-50px' }, 1000);
         },
 
         populateFromBackup: async function (e) {
@@ -547,19 +552,19 @@ define([
 
         },
 
-        populateTableWithDefaultData: function () {
+        populateTableWithDefaultData: async function () {
 
-            var service = mvc.createService({owner: "nobody"});
+            var service = mvc.createService({ owner: "nobody" });
 
             $("#populateDefault").prop('disabled', true).text("Populating...");
 
             service.request(
-                "/servicesNS/nobody/broken_hosts/bhosts/bhosts_setup/setup",
+                `/servicesNS/nobody/${app_name}/bhosts/bhosts_setup/setup`,
                 "POST",
                 null,
                 null,
                 null,
-                {"Content-Type": "application/json"}, async (err) => {
+                { "Content-Type": "application/json" }, async (err) => {
                     if (err) {
                         console.error('error updating expectedTime: ', err);
                         reject(new Error("An Error occurred. Could not update."));
@@ -574,17 +579,17 @@ define([
 
             setTimeout(() => {
                 const headers_data = this.data_table.columns().header();
-                const updatedData = this.data_table.rows({order: 'applied'}).data();
+                const updatedData = this.data_table.rows({ order: 'applied' }).data();
                 let headers = [];
                 const mappedHeaders = [
-                    {header: "Key", mapped: "_key"},
-                    {header: "Comments", mapped: "comments"},
-                    {header: "Contact", mapped: "contact"},
-                    {header: "Index", mapped: "index"},
-                    {header: "Sourcetype", mapped: "sourcetype"},
-                    {header: "Host", mapped: "host"},
-                    {header: "Late Seconds", mapped: "lateSecs"},
-                    {header: "Suppress Until", mapped: "suppressUntil"}
+                    { header: "Key", mapped: "_key" },
+                    { header: "Comments", mapped: "comments" },
+                    { header: "Contact", mapped: "contact" },
+                    { header: "Index", mapped: "index" },
+                    { header: "Sourcetype", mapped: "sourcetype" },
+                    { header: "Host", mapped: "host" },
+                    { header: "Late Seconds", mapped: "lateSecs" },
+                    { header: "Suppress Until", mapped: "suppressUntil" }
                 ];
 
                 _.each(headers_data, function () {
@@ -631,7 +636,7 @@ define([
 
         },
 
-        updateKVStore: async function(updatedData) {
+        updateKVStore: async function (updatedData) {
 
             try {
                 const currentData = await this.getData();
@@ -647,9 +652,9 @@ define([
 
         },
 
-        batchUpdate: function(data, start, end, collection = 'expectedTime') {
+        batchUpdate: function (data, start, end, collection = 'expectedTime') {
 
-            var service = mvc.createService({owner: "nobody"});
+            var service = mvc.createService({ owner: "nobody" });
             let total = data.length;
             let currentCollection = collection;
 
@@ -658,17 +663,17 @@ define([
                 end = 500;
             }
 
-            let dataChunk = JSON.stringify(data.slice(start, end+1)); // non-inclusive so +1
+            let dataChunk = JSON.stringify(data.slice(start, end + 1)); // non-inclusive so +1
 
             return new Promise((resolve, reject) => {
                 service.request(
-                    `/servicesNS/nobody/broken_hosts/storage/collections/data/${currentCollection}/batch_save`,
+                    `/servicesNS/nobody/${app_name}/storage/collections/data/${currentCollection}/batch_save`,
                     "POST",
                     null,
                     null,
                     dataChunk,
-                    {"Content-Type": "application/json"}, (err, _response) => {
-                        if(err) {
+                    { "Content-Type": "application/json" }, (err, _response) => {
+                        if (err) {
                             console.error('error updating expectedTime: ', err);
                             reject(new Error("An Error occurred. Could not update."));
                         } else {
