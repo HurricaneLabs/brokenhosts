@@ -33,7 +33,8 @@ You would then name this eventtype something like
 ``bh_aggregate-%orig_index%,pfsense,%orig_host%``. Once you have this created, you can add a single
 line to the Broken Hosts Lookup, using the actual index and host, but using "pfsense" for the
 sourcetype. Now, for each pfSense firewall you have, you will receive one alert if **all** of the
-sourcetypes stop coming in for that firewall.
+sourcetypes stop coming in for that firewall. Without aggregations, you would instead receive an
+alert if **any** sourcetype stopped coming in for that firewall.
 
 Suppressions
 ------------
