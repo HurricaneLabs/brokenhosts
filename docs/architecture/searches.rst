@@ -9,7 +9,9 @@ bh_stats_gen
 The ``bh_stats_gen`` search is responsible for generating statistics about data coming into Splunk.
 The results are written to the ``summary`` index, to be picked up and read by other searches for
 alerting purposes. It can be fine-tuned using the ``bh_stats_gen_contraints`` and
-``bh_stats_gen_additions`` macros.
+``bh_stats_gen_additions`` macros. By default, it will look over all data sources that have sent
+logs over the past 36 hours. If you have a data source that is regularly delayed longer that you
+wish to monitor, this time range will need to be adjusted.
 
 Broken Hosts - Auto Sort
 ------------------------
