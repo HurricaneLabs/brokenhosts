@@ -1,6 +1,6 @@
 "use strict";
 
-var app_name = "./broken_hosts";
+var app_name = "broken_hosts";
 
 require.config({
     paths: {
