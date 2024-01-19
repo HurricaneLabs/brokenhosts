@@ -8,7 +8,8 @@ import Button from '@splunk/react-ui/Button';
 import Pencil from '@splunk/react-icons/Pencil';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import { handleError, handleResponse, defaultFetchInit } from '@splunk/splunk-utils/fetch';
-import EditRecord from './EditRecord';
+import EditEntry from './EditEntry';
+import NewEntry from './NewEntry';
 
 interface Row {
     _key: string;
@@ -126,6 +127,31 @@ async function updateRecord(key, value) {
     return n;
 }
 
+async function addNewRecord() {
+    // delete the KV record for the key that is selected
+
+    const fetchInit = defaultFetchInit;
+    fetchInit.method = 'POST';
+    const updatedData = await fetch(
+        `/servicesNS/nobody/${config.app}/storage/collections/data/expectedTime/`,
+        {
+            ...fetchInit,
+            headers: {
+                'X-Splunk-Form-Key': config.CSRFToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(''),
+        }
+    )
+        .then(handleResponse(200))
+        .catch(() => {
+            handleError('error');
+        });
+
+    return updatedData;
+}
+
 async function deleteRecord(key) {
     // delete the KV record for the key that is selected
 
@@ -202,10 +228,18 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    handleRequestClose = () => {
+    handleRequestEditClose = () => {
         // handles what happens when modal is closed
         this.setState({
             openEditModal: false,
+        });
+        // modalToggle?.current?.focus(); // Must return focus to the invoking element when the modal closes
+    };
+
+    handleRequestNewClose = () => {
+        // handles what happens when modal is closed
+        this.setState({
+            openNewModal: false,
         });
         // modalToggle?.current?.focus(); // Must return focus to the invoking element when the modal closes
     };
@@ -297,12 +331,17 @@ export default class ReorderRows extends Component<{}, TableState> {
                                 ))}
                             </Table.Body>
                         </Table>
-                        <EditRecord
+                        <EditEntry
                             remove={deleteRecord}
                             update={updateRecord}
                             openState={this.state.openEditModal}
-                            onClose={this.handleRequestClose}
+                            onClose={this.handleRequestEditClose}
                             selectedRow={this.state.selected}
+                        />
+                        <NewEntry
+                            openState={this.state.openNewModal}
+                            onClose={this.handleRequestNewClose}
+                            onSubmit={addNewRecord}
                         />
                     </div>
                 </SplunkThemeProvider>
