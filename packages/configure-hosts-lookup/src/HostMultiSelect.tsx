@@ -5,38 +5,41 @@ import * as config from '@splunk/splunk-utils/config';
 import { createRESTURL } from '@splunk/splunk-utils/url';
 import Heading from '@splunk/react-ui/Heading';
 
-const sourcetypeUrl = createRESTURL(`saved/sourcetypes?output_mode=json&count=1000`, {
-    app: config.app,
-    sharing: 'app',
-});
+const hostUrl = createRESTURL(
+    `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt":${Date.now() - 86400}}}`,
+    {
+        app: config.app,
+        sharing: 'app',
+    }
+);
 
-type Sourcetype = {
+type Host = {
     name: string;
 };
 
-const SourcetypeMultiSelect = ({ selected, setSelected }) => {
-    const [availableSourcetypes, setAvailableSourcetypes] = useState([]);
+const HostMultiSelect = ({ selected, setSelected }) => {
+    const [availableHosts, setAvailableHosts] = useState([]);
 
-    const multiselectSourcetypeOptions = availableSourcetypes.map((v) => (
+    const multiselectHostOptions = availableHosts.map((v) => (
         <Multiselect.Option key={v} label={v} value={v} />
     ));
 
-    const handleMultiSelectSourcetypeChange: MultiselectChangeHandler = (e, { values }) =>
-        setSelected('update-sourcetypes', values);
+    const handleMultiSelectHostChange: MultiselectChangeHandler = (e, { values }) =>
+        setSelected('update-hosts', values);
 
-    const handleMultiSelectSourcetypeClose = () => {
-        const optionSet = new Set<string>(availableSourcetypes);
-        availableSourcetypes.forEach((v) => {
+    const handleMultiSelectHostClose = () => {
+        const optionSet = new Set<string>(availableHosts);
+        availableHosts.forEach((v) => {
             if (!optionSet.has(v)) {
-                setAvailableSourcetypes([v, ...availableSourcetypes]);
+                setAvailableHosts([v, ...availableHosts]);
             }
         });
     };
 
-    const getAvailableSourcetypes = async () => {
+    const getAvailableHosts = async () => {
         const fetchInit = defaultFetchInit; // from splunk-utils API
         fetchInit.method = 'GET';
-        const data = await fetch(sourcetypeUrl, {
+        const data = await fetch(hostUrl, {
             ...fetchInit,
             headers: {
                 'X-Splunk-Form-Key': config.CSRFToken,
@@ -51,31 +54,31 @@ const SourcetypeMultiSelect = ({ selected, setSelected }) => {
             })
             .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
 
-        console.log('sourcetypes ::: ', data);
+        console.log('Hosts ::: ', data);
 
-        return data.entry.map((sourcetype: Sourcetype) => sourcetype.name);
+        return data.entry.map((host: Host) => host.name);
     };
 
     useEffect(() => {
-        getAvailableSourcetypes().then((data) => setAvailableSourcetypes(data));
+        getAvailableHosts().then((data) => setAvailableHosts(data));
     }, []);
 
     return (
         <form>
-            <Heading level={4}>Select Sourcetypes</Heading>
+            <Heading level={4}>Select Hosts</Heading>
             <Multiselect
-                name="sourcetypeSelect"
+                name="hostSelect"
                 values={selected}
-                onChange={handleMultiSelectSourcetypeChange}
-                onClose={handleMultiSelectSourcetypeClose}
+                onChange={handleMultiSelectHostChange}
+                onClose={handleMultiSelectHostClose}
                 inline
                 allowNewValues
                 compact
             >
-                {multiselectSourcetypeOptions}
+                {multiselectHostOptions}
             </Multiselect>
         </form>
     );
 };
 
-export default SourcetypeMultiSelect;
+export default HostMultiSelect;

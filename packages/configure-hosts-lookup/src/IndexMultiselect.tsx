@@ -5,38 +5,38 @@ import * as config from '@splunk/splunk-utils/config';
 import { createRESTURL } from '@splunk/splunk-utils/url';
 import Heading from '@splunk/react-ui/Heading';
 
-const sourcetypeUrl = createRESTURL(`saved/sourcetypes?output_mode=json&count=1000`, {
+const indexUrl = createRESTURL(`data/indexes?output_mode=json&count=1000`, {
     app: config.app,
     sharing: 'app',
 });
 
-type Sourcetype = {
+type Index = {
     name: string;
 };
 
-const SourcetypeMultiSelect = ({ selectedSourcetypes, setSelectedSourcetypes }) => {
-    const [availableSourcetypes, setAvailableSourcetypes] = useState([]);
+const IndexMultiSelect = ({ selected, setSelected }) => {
+    const [availableIndexes, setAvailableIndexes] = useState([]);
 
-    const multiselectSourcetypeOptions = availableSourcetypes.map((v) => (
+    const multiselectIndexOptions = availableIndexes.map((v) => (
         <Multiselect.Option key={v} label={v} value={v} />
     ));
 
-    const handleMultiSelectSourcetypeChange: MultiselectChangeHandler = (e, { values }) =>
-        setSelectedSourcetypes('update-sourcetypes', values);
+    const handleMultiSelectIndexChange: MultiselectChangeHandler = (e, { values }) =>
+        setSelected('update-indexes', values);
 
-    const handleMultiSelectSourcetypeClose = () => {
-        const optionSet = new Set<string>(availableSourcetypes);
-        availableSourcetypes.forEach((v) => {
+    const handleMultiSelectIndexClose = () => {
+        const optionSet = new Set<string>(availableIndexes);
+        availableIndexes.forEach((v) => {
             if (!optionSet.has(v)) {
-                setAvailableSourcetypes([v, ...availableSourcetypes]);
+                setAvailableIndexes([v, ...availableIndexes]);
             }
         });
     };
 
-    const getAvailableSourcetypes = async () => {
+    const getAvailableIndexes = async () => {
         const fetchInit = defaultFetchInit; // from splunk-utils API
         fetchInit.method = 'GET';
-        const data = await fetch(sourcetypeUrl, {
+        const data = await fetch(indexUrl, {
             ...fetchInit,
             headers: {
                 'X-Splunk-Form-Key': config.CSRFToken,
@@ -51,31 +51,31 @@ const SourcetypeMultiSelect = ({ selectedSourcetypes, setSelectedSourcetypes }) 
             })
             .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
 
-        console.log('sourcetypes ::: ', data);
+        console.log('Indexes ::: ', data);
 
-        return data.entry.map((sourcetype: Sourcetype) => sourcetype.name);
+        return data.entry.map((Index: Index) => Index.name);
     };
 
     useEffect(() => {
-        getAvailableSourcetypes().then((data) => setAvailableSourcetypes(data));
+        getAvailableIndexes().then((data) => setAvailableIndexes(data));
     }, []);
 
     return (
         <form>
-            <Heading level={4}>Select Sourcetypes</Heading>
+            <Heading level={4}>Select Indexes</Heading>
             <Multiselect
-                name="sourcetypeSelect"
-                values={selectedSourcetypes}
-                onChange={handleMultiSelectSourcetypeChange}
-                onClose={handleMultiSelectSourcetypeClose}
+                name="indexSelect"
+                values={selected}
+                onChange={handleMultiSelectIndexChange}
+                onClose={handleMultiSelectIndexClose}
                 inline
                 allowNewValues
                 compact
             >
-                {multiselectSourcetypeOptions}
+                {multiselectIndexOptions}
             </Multiselect>
         </form>
     );
 };
 
-export default SourcetypeMultiSelect;
+export default IndexMultiSelect;

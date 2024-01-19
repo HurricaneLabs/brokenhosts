@@ -1,11 +1,16 @@
-import React, { useState, useEffect, useReducer, ReducerWithoutAction } from 'react';
+import React, { useState, useReducer } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
 import SourcetypeMultiSelect from './SourcetypeMultiselect';
+import IndexMultiSelect from './IndexMultiselect';
+import HostMultiSelect from './HostMultiSelect.tsx';
+import { formReducer } from './FormReducer.ts';
 
 type InitialForm = {
     sourcetypes: string[];
+    indexes: string[];
+    hosts: string[];
 };
 
 type Action = {
@@ -15,22 +20,9 @@ type Action = {
 
 const initialForm = {
     sourcetypes: [],
+    indexes: [],
+    hosts: [],
 } as InitialForm;
-
-function formReducer(fields, action) {
-    switch (action.type) {
-        case 'update-sourcetypes': {
-            console.log('UPDATE  SOURCETYPES');
-            return {
-                ...fields,
-                sourcetypes: action.value,
-            };
-        }
-        default: {
-            throw Error('Unknown event occurred.');
-        }
-    }
-}
 
 const EditRecord = ({ onSubmit, onClose, openState }) => {
     // pass in the remove and update functions as props
@@ -62,15 +54,18 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
             value,
         });
     };
+
     return (
         <div>
             <Modal onRequestClose={onClose} open={openState} style={{ width: '900px' }}>
                 <Modal.Header onRequestClose={onClose} title="New Entry" />
                 <Modal.Body>
                     <SourcetypeMultiSelect
-                        selectedSourcetypes={form.sourcetypes}
-                        setSelectedSourcetypes={handleFormChange}
+                        selected={form.sourcetypes}
+                        setSelected={handleFormChange}
                     />
+                    <IndexMultiSelect selected={form.indexes} setSelected={handleFormChange} />
+                    <HostMultiSelect selected={form.hosts} setSelected={handleFormChange} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button appearance="default" onClick={onClose} label="Cancel" />
