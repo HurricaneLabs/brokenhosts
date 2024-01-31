@@ -6,12 +6,7 @@ import SourcetypeMultiSelect from './SourcetypeMultiselect';
 import IndexMultiSelect from './IndexMultiselect';
 import HostMultiSelect from './HostMultiSelect.tsx';
 import { formReducer } from './FormReducer.ts';
-
-type InitialForm = {
-    sourcetypes: string[];
-    indexes: string[];
-    hosts: string[];
-};
+import { InitialForm } from './types.ts';
 
 type Action = {
     type: string;
@@ -22,17 +17,17 @@ const initialForm = {
     sourcetypes: [],
     indexes: [],
     hosts: [],
-} as InitialForm;
+};
 
 const EditRecord = ({ onSubmit, onClose, openState }) => {
     // pass in the remove and update functions as props
-    const [selectedIndexes, setSelectedIndexes] = useState([]);
-    const [selectedSourcetypes, setSelectedSourcetypes] = useState<string[]>([]);
-    const [selectedHosts, setSelectedHosts] = useState([]);
-    const [lateSecs, setSelectedLateSecs] = useState('');
-    const [suppressUntil, setSelectedSuppressUntil] = useState('');
-    const [contacts, setSelectedContacts] = useState('');
-    const [comments, setSelectedComments] = useState('');
+    // const [selectedIndexes, setSelectedIndexes] = useState([]);
+    // const [selectedSourcetypes, setSelectedSourcetypes] = useState<string[]>([]);
+    // const [selectedHosts, setSelectedHosts] = useState([]);
+    // const [lateSecs, setSelectedLateSecs] = useState('');
+    // const [suppressUntil, setSelectedSuppressUntil] = useState('');
+    // const [contacts, setSelectedContacts] = useState('');
+    // const [comments, setSelectedComments] = useState('');
     const [form, dispatchForm] = useReducer(formReducer, initialForm);
 
     const submitData = () => {
@@ -47,12 +42,9 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
         onClose();
     };
 
-    const handleFormChange = (type: string, value: string | string[]) => {
-        console.log('current form value ::: ', form);
-        dispatchForm({
-            type,
-            value,
-        });
+    const handleFormChange = (type: string, value: string[]) => {
+        console.log('current value ::: ', value);
+        dispatchForm({ type, value });
     };
 
     return (

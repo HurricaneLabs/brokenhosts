@@ -21,7 +21,7 @@ const IndexMultiSelect = ({ selected, setSelected }) => {
         <Multiselect.Option key={v} label={v} value={v} />
     ));
 
-    const handleMultiSelectIndexChange: MultiselectChangeHandler = (e, { values }) =>
+    const handleMultiSelectIndexChange: MultiselectChangeHandler = (_, { values }) =>
         setSelected('update-indexes', values);
 
     const handleMultiSelectIndexClose = () => {

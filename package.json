@@ -1,5 +1,5 @@
 {
-  "name": "@splunk/broken-hosts",
+  "name": "@splunk/broken_hosts",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {

@@ -21,8 +21,10 @@ const SourcetypeMultiSelect = ({ selected, setSelected }) => {
         <Multiselect.Option key={v} label={v} value={v} />
     ));
 
-    const handleMultiSelectSourcetypeChange: MultiselectChangeHandler = (e, { values }) =>
+    const handleMultiSelectSourcetypeChange: MultiselectChangeHandler = (e, { values }) => {
+        console.log('values ??? ', values);
         setSelected('update-sourcetypes', values);
+    };
 
     const handleMultiSelectSourcetypeClose = () => {
         const optionSet = new Set<string>(availableSourcetypes);
