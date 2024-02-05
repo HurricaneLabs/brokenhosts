@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Multiselect, { MultiselectChangeHandler } from '@splunk/react-ui/Multiselect';
 import Heading from '@splunk/react-ui/Heading';
+import Tooltip from '@splunk/react-ui/Tooltip';
 import NoCacheDataFoundWarning from './NoCacheDataFoundWarning';
 import { capitalize, sleep, getAvailableData } from './Helpers';
 import WaitSpinner from '@splunk/react-ui/WaitSpinner';
@@ -36,8 +37,10 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
         setSelected(`update-${type}`, values);
 
     return (
-        <form>
-            <Heading level={4}>Select {capitalize(type)}</Heading>
+        <>
+            <Heading level={4}>
+                Select {capitalize(type)} <Tooltip content="Add one or more value." />
+            </Heading>
             {dataEmpty ? (
                 <NoCacheDataFoundWarning
                     type={type}
@@ -64,7 +67,7 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
                     </Multiselect>
                 </div>
             )}
-        </form>
+        </>
     );
 };
 

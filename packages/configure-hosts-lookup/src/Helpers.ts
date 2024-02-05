@@ -53,5 +53,26 @@ export const handleMultiSelectClose = (state, stateSetter) => {
 // i.e. await sleep(1000);
 export const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
-export const capitalize = (str: string) =>
-    str.split('')[0].toUpperCase() + str.slice(1, str.length);
+/**
+ * Capitalizes the first letter of one or more words
+ *
+ * @param str
+ * @returns
+ */
+export const capitalize = function (str: string) {
+    const match = /-|_/g;
+
+    if (match.test(str)) {
+        str = str.replace(match, ' ');
+    }
+
+    if (str.split(' ').length > 1) {
+        const strArr = str.split(' ').map((str) => {
+            return str.split('')[0].toUpperCase() + str.slice(1, str.length);
+        });
+
+        return strArr.join(' ');
+    }
+
+    return str.split('')[0].toUpperCase() + str.slice(1, str.length);
+};

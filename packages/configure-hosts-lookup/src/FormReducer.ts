@@ -25,6 +25,12 @@ export function formReducer(state: InitialForm, action: Action) {
                 ...state,
                 hosts: action.value,
             };
+        case 'update-late_seconds':
+            console.log('LATE SECONDS ', action.value);
+            return {
+                ...state,
+                lateSeconds: action.value,
+            };
     }
     throw Error('Unknown action occurred.');
 }

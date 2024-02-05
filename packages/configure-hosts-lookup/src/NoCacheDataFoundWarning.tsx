@@ -9,7 +9,7 @@ import { Flex, FlexItem, SmallButtonTheme } from './BHStyles';
 
 const NoCacheDataFoundWarning = ({ type, refetchData, attempts, pullingData }) => {
     return attempts <= 2 ? (
-        <div>
+        <>
             <Flex $width="400px" $gap="20px">
                 <FlexItem>
                     <Message type="warning">No {type} data found in cache.</Message>

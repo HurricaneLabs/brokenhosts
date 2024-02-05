@@ -9,6 +9,10 @@ export const Flex = styled.div<{ $width?: string; $gap?: string }>`
     width: ${(props) => props.$width || '100%'};
 `;
 
+export const Div = styled.div<{ $width?: string }>`
+    width: ${(props) => props.$width || '100%'};
+`;
+
 export const FlexItem = styled.div`
     align-self: flex-start;
     margin: 0 0;

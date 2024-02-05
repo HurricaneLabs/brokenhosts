@@ -3,18 +3,27 @@ import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
 import DatasourceMultiSelect from './DatasourceMultiselect.tsx';
+import LateSecondsInput from './LateSecondsInput.tsx';
 import { formReducer } from './FormReducer.ts';
 import { epochNow } from './Helpers.ts';
+import ContactsInput from './ContactsInput.tsx';
+import CommentsTextarea from './CommentsTextarea.tsx';
 
 const initialForm = {
     sourcetypes: [],
     indexes: [],
     hosts: [],
+    lateSeconds: null,
+    contacts: null,
+    comments: null,
 };
 
 const INDEX = 'index';
 const SOURCETYPE = 'sourcetype';
 const HOST = 'host';
+const LATE_SECONDS = 'late_seconds';
+const CONTACTS = 'constacts';
+const COMMENTS = 'comments';
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 const indexUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
@@ -35,27 +44,32 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
 
     return (
         <div>
-            <Modal onRequestClose={onClose} open={openState} style={{ width: '900px' }}>
+            <Modal onRequestClose={onClose} open={openState} style={{ width: '450px' }}>
                 <Modal.Header onRequestClose={onClose} title="New Entry" />
                 <Modal.Body>
-                    <DatasourceMultiSelect
-                        type={INDEX}
-                        url={indexUrl}
-                        selected={form.indexes}
-                        setSelected={handleFormChange}
-                    />
-                    <DatasourceMultiSelect
-                        type={HOST}
-                        url={hostUrl}
-                        selected={form.indexes}
-                        setSelected={handleFormChange}
-                    />
-                    <DatasourceMultiSelect
-                        type={SOURCETYPE}
-                        url={sourcetypeUrl}
-                        selected={form.indexes}
-                        setSelected={handleFormChange}
-                    />
+                    <form>
+                        <DatasourceMultiSelect
+                            type={INDEX}
+                            url={indexUrl}
+                            selected={form.indexes}
+                            setSelected={handleFormChange}
+                        />
+                        <DatasourceMultiSelect
+                            type={HOST}
+                            url={hostUrl}
+                            selected={form.indexes}
+                            setSelected={handleFormChange}
+                        />
+                        <DatasourceMultiSelect
+                            type={SOURCETYPE}
+                            url={sourcetypeUrl}
+                            selected={form.indexes}
+                            setSelected={handleFormChange}
+                        />
+                        <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
+                        <ContactsInput type={CONTACTS} setSelected={handleFormChange} />
+                        <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />
+                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button appearance="default" onClick={onClose} label="Cancel" />
