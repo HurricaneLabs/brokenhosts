@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, find } from 'lodash';
 import SplunkThemeProvider from '@splunk/themes/SplunkThemeProvider';
-import Table, { TableRequestMoveRowHandler } from '@splunk/react-ui/Table';
+import Table, {
+    TableRequestMoveRowHandler,
+    RowClickHandler,
+    RowRequestToggleHandler,
+} from '@splunk/react-ui/Table';
 import { createRESTURL } from '@splunk/splunk-utils/url';
 import * as config from '@splunk/splunk-utils/config';
 import Button from '@splunk/react-ui/Button';
@@ -10,6 +14,7 @@ import Tooltip from '@splunk/react-ui/Tooltip';
 import { handleError, handleResponse, defaultFetchInit } from '@splunk/splunk-utils/fetch';
 import EditEntry from './EditEntry';
 import NewEntry from './NewEntry';
+import ConfirmRemoveSelected from './ConfirmRemoveSelected';
 
 interface Row {
     _key: string;
@@ -20,6 +25,8 @@ interface Row {
     sourcetype: string;
     host: string;
     lateSecs: string;
+    selected: boolean;
+    disabled: boolean;
 }
 
 interface Header {
@@ -29,9 +36,12 @@ interface Header {
 
 interface TableState {
     data: Row[];
+    activeRow?: string;
+    activeRowData?: string;
     headers: Header[];
     openEditModal: boolean;
     openNewModal: boolean;
+    openConfirmRemoveModal: boolean;
     selected: Row;
     initialFetch: boolean;
 }
@@ -104,7 +114,11 @@ async function readCollection() {
         .catch(handleError('error'))
         .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
 
-    return n;
+    return n.map((item) => {
+        item.disabled = false;
+        item.selected = false;
+        return item;
+    });
 }
 
 async function updateRecord(key, value) {
@@ -132,6 +146,7 @@ async function addNewRecord() {
 
     const fetchInit = defaultFetchInit;
     fetchInit.method = 'POST';
+
     const updatedData = await fetch(
         `/servicesNS/nobody/${config.app}/storage/collections/data/expectedTime/`,
         {
@@ -150,6 +165,14 @@ async function addNewRecord() {
         });
 
     return updatedData;
+}
+
+async function removeSelectedRecords() {
+    console.log(
+        'selected rows to remove ::: ',
+        this.state.data.filter((row) => row.selected)
+    );
+    return;
 }
 
 async function deleteRecord(key) {
@@ -191,6 +214,7 @@ export default class ReorderRows extends Component<{}, TableState> {
             initialFetch: false,
             openEditModal: false,
             openNewModal: false,
+            openConfirmRemoveModal: false,
             selected: {
                 _key: '',
                 comments: '',
@@ -200,6 +224,8 @@ export default class ReorderRows extends Component<{}, TableState> {
                 sourcetype: '',
                 host: '',
                 lateSecs: '',
+                selected: false,
+                disabled: false,
             },
         };
     }
@@ -220,6 +246,13 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
+    handleRemoveRequestOpen = (e, data) => {
+        // handles what happens when modal is open
+        this.setState({
+            openConfirmRemoveModal: true,
+        });
+    };
+
     handleEditRequestOpen = (e, data) => {
         // handles what happens when modal is open
         this.setState({
@@ -233,7 +266,6 @@ export default class ReorderRows extends Component<{}, TableState> {
         this.setState({
             openEditModal: false,
         });
-        // modalToggle?.current?.focus(); // Must return focus to the invoking element when the modal closes
     };
 
     handleRequestNewClose = () => {
@@ -241,7 +273,12 @@ export default class ReorderRows extends Component<{}, TableState> {
         this.setState({
             openNewModal: false,
         });
-        // modalToggle?.current?.focus(); // Must return focus to the invoking element when the modal closes
+    };
+
+    handleRequestConfirmRemoveClose = () => {
+        this.setState({
+            openConfirmRemoveModal: false,
+        });
     };
 
     handleDefaultDataPull = () => {
@@ -269,12 +306,49 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
+    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs }) => {
+        this.setState((state) => {
+            const data = cloneDeep(state.data);
+
+            const selectedRow = find(data, { index, sourcetype, host, lateSecs });
+            if (selectedRow) {
+                selectedRow.selected = !selectedRow.selected;
+                return { data };
+            }
+            return null;
+        });
+    };
+
+    handleRowClick: RowClickHandler = (_, data) => {
+        this.setState({ activeRow: data.name, activeRowData: JSON.stringify(data) });
+    };
+
+    // eslint-disable-next-line class-methods-use-this
+    rowSelectionState(data: Row[]) {
+        const selectedCount = data.reduce(
+            (count, { selected }) => (selected ? count + 1 : count),
+            0
+        );
+        const disabledCount = data.reduce(
+            (count, { disabled }) => (disabled ? count + 1 : count),
+            0
+        );
+
+        if (selectedCount === 0) {
+            return 'none';
+        }
+        if (selectedCount + disabledCount === data.length) {
+            return 'all';
+        }
+        return 'some';
+    }
+
     handleAdditionalRecord = () => {
         console.log('TO DO!');
     };
 
     render() {
-        const { headers, data } = this.state;
+        const { headers, data, sortKey, sortDir, activeRow, activeRowData } = this.state;
 
         const primaryActions = // adding row actions to our table
             (
@@ -300,14 +374,28 @@ export default class ReorderRows extends Component<{}, TableState> {
                             />
                         )}
                         <Button
-                            label="Add Data"
+                            label="Add New Entry"
                             appearance="primary"
                             onClick={this.handleNewRequestOpen}
                         />
+                        {this.state.data.filter((row) => row.selected).length > 0 ? (
+                            <Button
+                                label="Remove Selected"
+                                appearance="default"
+                                onClick={this.handleRemoveRequestOpen}
+                            />
+                        ) : (
+                            ''
+                        )}
                     </div>
                     <div>
-                        <Table stripeRows onRequestMoveRow={this.handleRequestMoveRow}>
+                        <Table
+                            stripeRows
+                            onRequestMoveRow={this.handleRequestMoveRow}
+                            rowSelection={this.rowSelectionState(data)}
+                        >
                             <Table.Head>
+                                <Table.HeadCell></Table.HeadCell>
                                 {headers.map((header) => (
                                     <Table.HeadCell key={header.key}>{header.label}</Table.HeadCell>
                                 ))}
@@ -319,6 +407,10 @@ export default class ReorderRows extends Component<{}, TableState> {
                                         key={row._key}
                                         data={row}
                                         actionPrimary={primaryActions}
+                                        onRequestToggle={this.handleToggle}
+                                        onClick={row.disabled ? undefined : this.handleRowClick}
+                                        selected={row.selected}
+                                        disabled={row.disabled}
                                     >
                                         <Table.Cell>{row.comments}</Table.Cell>
                                         <Table.Cell>{row.contact}</Table.Cell>
@@ -342,6 +434,14 @@ export default class ReorderRows extends Component<{}, TableState> {
                             openState={this.state.openNewModal}
                             onClose={this.handleRequestNewClose}
                             onSubmit={addNewRecord}
+                        />
+                        <ConfirmRemoveSelected
+                            openState={this.state.openConfirmRemoveModal}
+                            onClose={this.handleRequestConfirmRemoveClose}
+                            selectedRows={this.state.data.filter((row) =>
+                                row.selected ? row : false
+                            )}
+                            confirmRemoval={removeSelectedRecords}
                         />
                     </div>
                 </SplunkThemeProvider>
