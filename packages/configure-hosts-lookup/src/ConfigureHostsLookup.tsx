@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import Button from '@splunk/react-ui/Button';
 import BHTable from './BHTable';
 
 const propTypes = {

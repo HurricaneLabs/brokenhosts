@@ -4,7 +4,7 @@ const baseComponentConfig = require('@splunk/webpack-configs/component.config').
 
 module.exports = webpackMerge(baseComponentConfig, {
     entry: {
-        ConfigureSuppressions: path.join(__dirname, 'src/ConfigureSuppressions.jsx'),
+        ConfigureSuppressions: path.join(__dirname, 'src/ConfigureSuppressions.tsx'),
     },
     output: {
         path: path.join(__dirname),

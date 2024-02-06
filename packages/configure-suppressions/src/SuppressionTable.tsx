@@ -12,19 +12,17 @@ import Button from '@splunk/react-ui/Button';
 import Pencil from '@splunk/react-icons/Pencil';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import { handleError, handleResponse, defaultFetchInit } from '@splunk/splunk-utils/fetch';
-import EditRecord from './EditRecord';
-import NewRecord from './NewRecord';
+import EditEntry from './EditEntry';
+import NewEntry from './NewEntry';
 import ConfirmRemoveSelected from './ConfirmRemoveSelected';
 
 interface Row {
     _key: string;
     comments: string;
-    contact: string;
-    email: string;
     index: string;
     sourcetype: string;
     host: string;
-    lateSecs: string;
+    suppressUntil: string;
     selected: boolean;
     disabled: boolean;
 }
@@ -49,18 +47,17 @@ interface TableState {
 type TableData = {
     _key: '';
     comments: '';
-    contact: '';
     index: '';
     sourcetype: '';
     host: '';
-    lateSecs: '';
+    suppressUntil: '';
 };
 
 const themeToVariant = {
     prisma: { colorScheme: 'light', family: 'prisma' },
 };
 
-const kvUrl = createRESTURL(`storage/collections/data/expectedTime`, {
+const kvUrl = createRESTURL(`storage/collections/data/bh_suppressions`, {
     app: config.app,
     sharing: 'app',
 });
@@ -203,8 +200,6 @@ export default class ReorderRows extends Component<{}, TableState> {
         this.state = {
             headers: [
                 { label: 'Comments', key: 'comments' },
-                { label: 'contact', key: 'contact' },
-                { label: 'Email', key: 'email' },
                 { label: 'Index', key: 'index' },
                 { label: 'Sourcetype', key: 'sourcetype' },
                 { label: 'Host', key: 'host' },
@@ -218,7 +213,7 @@ export default class ReorderRows extends Component<{}, TableState> {
             selected: {
                 _key: '',
                 comments: '',
-                contact: '',
+                contacts: '',
                 email: '',
                 index: '',
                 sourcetype: '',
@@ -306,11 +301,11 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs, contact }) => {
+    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs }) => {
         this.setState((state) => {
             const data = cloneDeep(state.data);
 
-            const selectedRow = find(data, { index, sourcetype, host, lateSecs, contact });
+            const selectedRow = find(data, { index, sourcetype, host, lateSecs });
             if (selectedRow) {
                 selectedRow.selected = !selectedRow.selected;
                 return { data };
@@ -348,7 +343,7 @@ export default class ReorderRows extends Component<{}, TableState> {
     };
 
     render() {
-        const { headers, data, sortKey, sortDir, activeRow, activeRowData } = this.state;
+        const { headers, data } = this.state;
 
         const primaryActions = // adding row actions to our table
             (
@@ -374,7 +369,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                             />
                         )}
                         <Button
-                            label="Add New Entry"
+                            label="Add New Suppression"
                             appearance="primary"
                             onClick={this.handleNewRequestOpen}
                         />
@@ -413,23 +408,22 @@ export default class ReorderRows extends Component<{}, TableState> {
                                         disabled={row.disabled}
                                     >
                                         <Table.Cell>{row.comments}</Table.Cell>
-                                        <Table.Cell>{row.contact}</Table.Cell>
-                                        <Table.Cell>{row.email}</Table.Cell>
                                         <Table.Cell>{row.index}</Table.Cell>
                                         <Table.Cell>{row.sourcetype}</Table.Cell>
                                         <Table.Cell>{row.host}</Table.Cell>
-                                        <Table.Cell>{row.lateSecs}</Table.Cell>
+                                        <Table.Cell>{row.suppressUntil}</Table.Cell>
                                     </Table.Row>
                                 ))}
                             </Table.Body>
                         </Table>
-                        <EditRecord
-                            onUpdate={updateRecord}
+                        <EditEntry
+                            remove={deleteRecord}
+                            update={updateRecord}
                             openState={this.state.openEditModal}
                             onClose={this.handleRequestEditClose}
-                            selectedRowData={this.state.selected}
+                            selectedRow={this.state.selected}
                         />
-                        <NewRecord
+                        <NewEntry
                             openState={this.state.openNewModal}
                             onClose={this.handleRequestNewClose}
                             onSubmit={addNewRecord}

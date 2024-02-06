@@ -9,7 +9,7 @@ const CommentsTextarea = ({ type, setSelected }) => {
     const [comments] = useState<string>();
 
     const handleChange: TextAreaChangeHandler = (_, { value }) => {
-        setSelected(`update-${type}`, value);
+        setSelected(`${type}`, value);
     };
 
     return (

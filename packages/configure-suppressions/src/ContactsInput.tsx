@@ -9,7 +9,7 @@ const ContactsInput = ({ type, setSelected }) => {
     const [contacts] = useState<string>();
 
     const handleChange: TextChangeHandler = (_, { value }) => {
-        setSelected(`update-${type}`, value);
+        setSelected(`${type}`, value);
     };
 
     return (

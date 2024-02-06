@@ -57,13 +57,13 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
                         <DatasourceMultiSelect
                             type={HOST}
                             url={hostUrl}
-                            selected={form.indexes}
+                            selected={form.hosts}
                             setSelected={handleFormChange}
                         />
                         <DatasourceMultiSelect
                             type={SOURCETYPE}
                             url={sourcetypeUrl}
-                            selected={form.indexes}
+                            selected={form.sourcetypes}
                             setSelected={handleFormChange}
                         />
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />

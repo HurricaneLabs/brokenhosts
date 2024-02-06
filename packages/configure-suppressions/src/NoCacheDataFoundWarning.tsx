@@ -11,7 +11,10 @@ const NoCacheDataFoundWarning = ({ type, refetchData, attempts, pullingData }) =
     return attempts <= 2 ? (
         <>
             <Flex $width="400px" $gap="20px">
-                {/* <FlexItem>
+                <FlexItem>
+                    <Message type="warning">No {type} data found in cache.</Message>
+                </FlexItem>
+                <FlexItem>
                     <Button
                         style={SmallButtonTheme}
                         label={`Populate`}
@@ -20,13 +23,6 @@ const NoCacheDataFoundWarning = ({ type, refetchData, attempts, pullingData }) =
                         icon={pullingData ? <WaitSpinner size="small" /> : ''}
                         onClick={() => populateKVStoreCache(type).then(() => refetchData())}
                     />
-                </FlexItem> */}
-                <FlexItem>
-                    <Message type="warning">
-                        <p style={{ color: '#4d4d4d', margin: 0 }}>
-                            No {type} data found in cache. <a href="#">Configure</a>
-                        </p>
-                    </Message>
                 </FlexItem>
             </Flex>
         </>

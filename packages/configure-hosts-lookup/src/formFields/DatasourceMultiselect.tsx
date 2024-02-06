@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Multiselect, { MultiselectChangeHandler } from '@splunk/react-ui/Multiselect';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
-import NoCacheDataFoundWarning from './NoCacheDataFoundWarning';
-import { capitalize, sleep, getAvailableData } from './Helpers';
+import NoCacheDataFoundWarning from '../NoCacheDataFoundWarning';
+import { capitalize, sleep, getAvailableData } from '../Helpers';
 import WaitSpinner from '@splunk/react-ui/WaitSpinner';
 
 const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
@@ -34,7 +34,7 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
     };
 
     const handleMultiSelectChange: MultiselectChangeHandler = (_, { values }) =>
-        setSelected(`update-${type}`, values);
+        setSelected(`${type}`, values);
 
     return (
         <>

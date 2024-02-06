@@ -7,12 +7,3 @@ export type InitialForm = {
     indexes: string[];
     hosts: string[];
 };
-
-export type SelectedRow = {
-    sourcetype: string;
-    index: string;
-    host: string;
-    lateSecs: string;
-    contacts: string;
-    comments: string;
-};

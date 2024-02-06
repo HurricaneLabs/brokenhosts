@@ -7,25 +7,25 @@ type Action = {
 
 export function formReducer(state: InitialForm, action: Action) {
     switch (action.type) {
-        case 'update-sourcetypes':
+        case 'sourcetypes':
             console.log('UPDATE  SOURCETYPES ', action.value);
             return {
                 ...state,
                 sourcetypes: action.value,
             };
-        case 'update-indexes':
+        case 'indexes':
             console.log('UPDATE INDEXES ', action.value);
             return {
                 ...state,
                 indexes: action.value,
             };
-        case 'update-hosts':
+        case 'hosts':
             console.log('UPDATE HOSTS ', action.value);
             return {
                 ...state,
                 hosts: action.value,
             };
-        case 'update-late_seconds':
+        case 'lateSecs':
             console.log('LATE SECONDS ', action.value);
             return {
                 ...state,
