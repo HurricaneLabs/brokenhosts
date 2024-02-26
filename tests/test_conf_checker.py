@@ -11,7 +11,7 @@ class BrokenHostsConfigTest(unittest.TestCase):
         with open(os.path.join(os.path.abspath('..'), "broken_hosts/default/savedsearches.conf"), "r") as f:
             conf = f.read()
 
-        expected_saved_searches = "['Broken Hosts - Auto Sort', 'Broken Hosts Alert Search', 'Broken Hosts Alert - by contact', 'bh_stats_gen', 'Broken Hosts Alert - Volume Based Alerting', 'Broken Hosts Alert Search - Volume Alerting with Seasonality','Broken Hosts Index Flatline Failsafe Alert','Broken Hosts State Alert - to HL','Broken Hosts Tuning State Alert','Broken Hosts State Alert - to Client]"
+        expected_saved_searches = "['Broken Hosts - Auto Sort', 'Broken Hosts Alert Search', 'Broken Hosts Alert - by contact', 'bh_stats_gen', 'Broken Hosts Alert - Volume Based Alerting', 'Broken Hosts Alert Search - Volume Alerting with Seasonality', 'Broken Hosts Index Flatline Failsafe Alert', 'Broken Hosts State Alert - to HL', 'Broken Hosts Tuning State Alert', 'Broken Hosts State Alert - to Client]"
         parser = conf_parser.TABConfigParser()
         parser.read_string(conf)
         self.maxDiff = None
