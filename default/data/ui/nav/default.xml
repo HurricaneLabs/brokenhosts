@@ -1,5 +1,5 @@
 <nav search_view="search" color="#2ca888">
-  <view name="broken_hosts" default="true" />
+  <view name="broken_hosts_information" default="true" />
   <view name="investigation" />
   <view name="configure_lookup" />
   <view name="search" />
