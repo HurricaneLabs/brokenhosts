@@ -172,19 +172,23 @@
       <table>
         <title>Shows alerts that have been sent to HL, if they have been seen, their status, and the associated ticket number. Requires Hurricane Customer Metrics app to be installed and configured.</title>
         <search>
-          <query>| inputlookup hurricane_alerts where tags="broken_hosts_alert" 
+          <query>| inputlookup hurricane_alerts where tags="broken_hosts_alert"
 | eval _time=strptime(createdAt, "%Y-%m-%dT%H:%M:%S.%3N%Z"), ticket=mvfilter(match(tags,"zd_"))
-| `lookup_timepicker(_time)`
-| stats sum(count) AS alerts, earliest(_time) as earliest_time, latest(_time) as latest_time, latest(seen) AS seen, latest(status) as status, values(ticket) AS ticket by message
+| eval updated_at_epoch=strptime(updatedAt, "%Y-%m-%dT%H:%M:%S.%3N%Z"), ticket=mvfilter(match(tags,"zd_"))
+| stats sum(count) AS alerts, earliest(_time) as first_alert_created, latest(_time) as last_alert_created, latest(updated_at_epoch) AS last_alert_updated, latest(seen) AS seen, latest(status) as status, values(ticket) AS ticket by message
+| eval days=round(((last_alert_updated-last_alert_created)/86400), 2)
+| where status="open"
 | convert ctime(earliest_time) as earliest_time, ctime(latest_time) as latest_time
-| sort 0 - latest_time
+| sort - days
 | rex field=ticket "(?&lt;zd_ticket&gt;\d+)"
 | fields - ticket
-| rename message AS Alert, alerts AS "Number of Alerts", earliest_time AS "Earliest Time", latest_time AS "Latest Time", seen AS "Seen by Analyst?", status AS Status, zd_ticket AS "Ticket Number"</query>
-          <earliest>$time_tok.earliest$</earliest>
-          <latest>$time_tok.latest$</latest>
+| convert ctime(first_alert_created) AS "First Alert Created", ctime(last_alert_created) AS "Last Alert Created", ctime(last_alert_updated) AS "Last Alert Update"
+| rename message AS Alert, alerts AS "Number of Alerts", earliest_time AS "Earliest Time", latest_time AS "Latest Time", seen AS "Seen by Analyst?", status AS Status, zd_ticket AS "Ticket Number", days as "Days Open"</query>
+          <earliest>0</earliest>
+          <latest></latest>
         </search>
         <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
       </table>
     </panel>
   </row>
