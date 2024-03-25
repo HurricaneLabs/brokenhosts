@@ -1,90 +1,46 @@
-<dashboard version="1.1" script="log_host_monitoring.js" stylesheet="tableAlert.css">
-  <label>Broken Hosts</label>
+<form version="1.1">
+  <label>Broken Hosts Information</label>
+  <fieldset submitButton="true">
+    <input type="time" token="time_tok" searchWhenChanged="true">
+      <label>Time Picker</label>
+      <default>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
-      <title>Broken Hosts</title>
-      <table id="brokenHosts">
-        <title>Hosts that have not sent data to splunk for too long</title>
-        <search id="brokenHostsSearch">
-          <query>index=summary source="bh_stats_gen" | `bh_alert_additions` | typer | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)"
-| eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
-| stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields, _time | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
-| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
+      <title>Current Alerts</title>
+      <table>
+        <title>Shows all currently alerting data sources.</title>
+        <search>
+          <query>index=summary source="bh_stats_gen"| `bh_alert_additions` | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+| stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
+| eval host=lower(host),index=lower(index),sourcetype=lower(sourcetype)
+| lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil 
+| fillnull value="-" comments, contact
+| fillnull value="0" lateSecs, suppressUntil
+| eval output=mvzip(key, mvzip(suppressUntil, mvzip(comments, mvzip(contact, lateSecs, "|||"), "|||"), "|||"), "|||")
+| mvexpand output
+| eval key=mvindex(split(output, "|||"), 0), suppressUntil=mvindex(split(output, "|||"), 1), comments=mvindex(split(output, "|||"), 2), contact=mvindex(split(output, "|||"), 3), lateSecs=mvindex(split(output, "|||"), 4)
+| sort 0 + key
+| fields - key, output
+| stats first(*) AS * by index, host, sourcetype
+| convert auto(suppressUntil) 
 | fillnull value=`default_expected_time` lateSecs
-| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) | eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0)
-| stats sparkline(sum(count)) as sparkline min(lateSecs) as lateSecs min(howLateSecs) as howLateSecs max(latest_time) as latest_time max(lastAllowed) as lastAllowed values(eventtype) as eventtype sum(count) as count by host sourcetype index
-| where lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`
-| eval howLateSecs=now() - latest_time | eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration"))
-| rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
-| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | sort latest_time | eval Last=strftime(latest_time, "%D %H:%M:%S")
-| eval h=host | eval i=index | eval s=sourcetype
-| rename howLate AS "Time Since Last Event" i AS "Event Index" s AS "Event Sourcetype" h AS "Event Host"</query>
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
+| eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0)
+| eval status=if(lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`, "CRITICAL", "OK")
+| where status=="CRITICAL"
+| eval howLateSecs=now() - latest_time 
+| sort latest_time
+| convert ctime(lastAllowed) AS lastAllowed, ctime(latest_time) AS latest_time
+| table index, sourcetype, host, aggregate_fields, count, status, latest_time, lastAllowed, lateSecs
+| rename index AS Index, sourcetype AS Sourcetype, host AS Host, count AS "Log Source Event Count", status AS Status, latest_time AS "Last Log Seen", lastAllowed AS "Timestamp of Threshold for Critical Status", lateSecs AS "Threshold (in Seconds)", suppressUntil_commented AS "Suppression Information with Comments", aggregate_fields AS "Data Source with Aggregates Applied"</query>
           <earliest>-30d@d</earliest>
-          <latest>+1d@d</latest>
-        </search>
-        <option name="count">20</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">row</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="rowNumbers">false</option>
-        <option name="wrap">true</option>
-        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event","sparkline"]</fields>
-        <drilldown>
-          <eval token="latest_time_minus_1h">relative_time($row.latest_time$, "-1h")</eval>
-          <eval token="latest_time_plus_1h">relative_time($row.latest_time$, "+1h")</eval>
-          <link target="_blank">
-            <![CDATA[/app/broken_hosts/investigation?form.indexdropdown=$row.index$&form.sourcetypedropdown=$row.sourcetype$&form.hostdropdown=$row.host$&form.latest_time.earliest=$latest_time_minus_1h$&form.latest_time.latest=$latest_time_plus_1h$]]>
-          </link>
-        </drilldown>
-      </table>
-    </panel>
-    <panel>
-      <title>Future Hosts</title>
-      <table id="futureHosts">
-        <title>Hosts that have data from the future</title>
-        <search id="futureHostsSearch">
-          <query>| tstats max(_time) as latest_time where index=* by _time, index, sourcetype, host span=1d
-| eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
-| stats max(latest_time) as latest_time by _time index, sourcetype, host
-| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
-| eval suppressUntil=mvindex(suppressUntil,0)
-| eval howLateSecs=now() - latest_time | eval h=host | eval i=index | eval s=sourcetype
-| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(latest_time, "%D %H:%M:%S")
-| stats min(howLateSecs) as howLateSecs max(latest_time) as latest_time by host sourcetype index h i s
-| where (latest_time &gt; now() + 100) AND (now() - latest_time &lt; `ignore_after`) | sort - howLateSecs
-| eval howLate=if(howLateSecs&lt;0,"-".tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
-| eval h=host | eval i=index | eval s=sourcetype
-| rename howLate AS "Time Since Last Event" i AS "Event Index" s AS "Event Sourcetype" h AS "Event Host"</query>
-          <earliest>now</earliest>
           <latest>+7d@d</latest>
         </search>
-        <option name="count">20</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">row</option>
-        <option name="rowNumbers">false</option>
-        <option name="wrap">true</option>
-        <fields>["Event Index","Event Sourcetype","Event Host","Time Since Last Event"]</fields>
-        <drilldown>
-          <eval token="latest_time_minus_1h">relative_time($row.latest_time$, "-1h")</eval>
-          <eval token="latest_time_plus_1h">relative_time($row.latest_time$, "+1h")</eval>
-          <link target="_blank">
-            <![CDATA[/app/broken_hosts/investigation?form.indexdropdown=$row.index$&form.sourcetypedropdown=$row.sourcetype$&form.hostdropdown=$row.host$&form.latest_time.earliest=$latest_time_minus_1h$&form.latest_time.latest=$latest_time_plus_1h$]]>
-          </link>
-        </drilldown>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Broken Hosts Eventtypes</title>
-      <table id="eventtypes">
-        <title>These eventtypes are used by the Broken Hosts app</title>
-        <search>
-          <query>| rest splunk_server=local servicesNS/-/broken_hosts/saved/eventtypes | search title=bh_* | fields title eai:acl.app eai:acl.owner search | rename title AS Eventtype, eai:acl.app AS App, eai:acl.owner AS Owner, search AS Search</query>
-          <earliest>0</earliest>
-          <latest></latest>
-        </search>
-        <option name="count">10</option>
         <option name="drilldown">none</option>
         <option name="refresh.display">progressbar</option>
       </table>
@@ -92,24 +48,111 @@
   </row>
   <row>
     <panel>
-      <title>Lookup Suppressed Items</title>
-      <table id="suppressed">
-        <title>These items are suppressed by the Broken Hosts Lookup</title>
-        <search id="suppressedSearch">
-          <query>| inputlookup expectedTime
-| eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
-| where lateSecs=0 OR suppressUntil_epoch&gt;now() | eval suppressUntil=if(suppressUntil=0,"",suppressUntil)
-| fields index, sourcetype, host, suppressUntil, suppressUntil, comments | rename index AS "Event Index" sourcetype AS "Event Sourcetype" host AS "Event Host" suppressUntil AS "Suppressed Until" comments as Comments</query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
+      <title>Suppressed Log Sources Receiving Data</title>
+      <table>
+        <title>This panel shows log sources that are suppressed in expectedTime that have received logs within the time range selected above.</title>
+        <search>
+          <query>index=summary source="bh_stats_gen" | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+| stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
+| lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil
+| fillnull comments contact value=""
+| fillnull suppressUntil value=0
+| fillnull value=`default_expected_time` lateSecs
+| eval output=mvzip(key, mvzip(suppressUntil, mvzip(comments, mvzip(contact, lateSecs, "|||"), "|||"), "|||"), "|||")
+| mvexpand output
+| eval key=mvindex(split(output, "|||"), 0), suppressUntil=mvindex(split(output, "|||"), 1), comments=mvindex(split(output, "|||"), 2), contact=mvindex(split(output, "|||"), 3), lateSecs=mvindex(split(output, "|||"), 4)
+| sort 0 + key
+| fields - key, output
+| stats first(*) AS * by index, host, sourcetype
+| convert auto(suppressUntil)
+| fillnull value=`default_expected_time` lateSecs
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
+| eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0) 
+| eval status=if(lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`, "CRITICAL", "OK")
+| convert ctime(suppressUntil) AS suppressTimestamp
+| eval suppressUntil_commented=case((suppressUntil=0 AND lateSecs=0),"Permanent Suppression - " + comments, (suppressUntil!=0 OR lateSecs=0), suppressTimestamp + " - " + comments, 1==1, "Not Suppressed")
+| convert ctime(lastAllowed) AS lastAllowed, ctime(latest_time) AS latest_time
+| table index, sourcetype, host, count, status, latest_time, lastAllowed, lateSecs, suppressUntil_commented
+| search suppressUntil_commented!="Not Suppressed"
+| rename index AS Index, sourcetype AS Sourcetype, host AS Host, count AS "Log Source Event Count", status AS Status, latest_time AS "Last Log Seen", lastAllowed AS "Timestamp of Threshold for Critical Status", lateSecs AS "Threshold (in Seconds)", suppressUntil_commented AS "Suppression Information with Comments"</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
         </search>
-        <option name="count">50</option>
-        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
         <option name="refresh.display">progressbar</option>
-        <option name="rowNumbers">false</option>
-        <option name="wrap">true</option>
-        <fields>["Event Index","Event Sourcetype","Event Host","Suppressed Until","Comments"]</fields>
       </table>
     </panel>
   </row>
-</dashboard>
+  <row>
+    <panel>
+      <title>All Suppressions</title>
+      <table>
+        <title>This panel lists all suppressions found in expectedTime, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
+        <search>
+          <query>| inputlookup expectedTime
+| eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
+| where lateSecs=0 OR suppressUntil_epoch&gt;now() 
+| eval suppressUntil=if(suppressUntil=0,"Permanent Suppression",suppressUntil)
+| eval comments=suppressUntil + " - " + comments
+| fields index, sourcetype, host, suppressUntil, comments 
+| rename index AS "Index" sourcetype AS "Sourcetype" host AS "Host", comments as "Suppression Time with Comments", suppressUntil AS "Suppress Until"</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All Aggregates</title>
+      <table>
+        <title>This panel lists all aggregates that have been created within Broken Hosts.</title>
+        <search>
+          <query>| rest splunk_server=local servicesNS/-/broken_hosts/saved/eventtypes | search title=bh_* | fields title eai:acl.app eai:acl.owner search | rename title AS Eventtype, eai:acl.app AS App, eai:acl.owner AS Owner, search AS Search</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Non-Suppressed Log Sources Receiving Data</title>
+      <table>
+        <title>This panel will show all non-suppressed log sources that have received data within the time range selected. Additional log sources may appear a longer time range is selected above.</title>
+        <search>
+          <query>index=summary source="bh_stats_gen" | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+| stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
+| lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil
+| fillnull comments contact value=""
+| fillnull suppressUntil value=0
+| fillnull value=`default_expected_time` lateSecs
+| eval output=mvzip(key, mvzip(suppressUntil, mvzip(comments, mvzip(contact, lateSecs, "|||"), "|||"), "|||"), "|||")
+| mvexpand output
+| eval key=mvindex(split(output, "|||"), 0), suppressUntil=mvindex(split(output, "|||"), 1), comments=mvindex(split(output, "|||"), 2), contact=mvindex(split(output, "|||"), 3), lateSecs=mvindex(split(output, "|||"), 4)
+| sort 0 + key
+| fields - key, output
+| stats first(*) AS * by index, host, sourcetype
+| convert auto(suppressUntil)
+| fillnull value=`default_expected_time` lateSecs
+| eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
+| eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0) 
+| eval status=if(lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`, "CRITICAL", "OK")
+| convert ctime(suppressUntil) AS suppressTimestamp
+| eval suppressUntil_commented=case((suppressUntil=0 AND lateSecs=0),"Permanent Suppression - " + comments, (suppressUntil!=0 OR lateSecs=0), suppressTimestamp + " - " + comments, 1==1, "Not Suppressed")
+| convert ctime(lastAllowed) AS lastAllowed, ctime(latest_time) AS latest_time
+| search suppressUntil_commented="Not Suppressed"
+| table index, sourcetype, host, count, status, latest_time, lastAllowed, lateSecs, comments
+| rename index AS Index, sourcetype AS Sourcetype, host AS Host, count AS "Log Source Event Count", status AS Status, latest_time AS "Last Log Seen", lastAllowed AS "Timestamp of Threshold for Critical Status", lateSecs AS "Threshold (in Seconds)", suppressUntil_commented AS "Suppression Information with Comments", comments AS Comments</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>
