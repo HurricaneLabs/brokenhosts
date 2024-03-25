@@ -30,9 +30,9 @@
 | convert auto(suppressUntil) 
 | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
-| eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0) | lookup bh_status.csv index sourcetype host OUTPUT status as old_status
+| eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0)
 | eval status=if(lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`, "CRITICAL", "OK")
-| where (status=="CRITICAL" OR isnotnull(old_status)) AND (status!="OK" OR old_status!="OK")
+| where status=="CRITICAL"
 | eval howLateSecs=now() - latest_time 
 | sort latest_time
 | convert ctime(lastAllowed) AS lastAllowed, ctime(latest_time) AS latest_time
@@ -68,7 +68,6 @@
 | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
 | eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0) 
-| lookup bh_status.csv index sourcetype host OUTPUT status as old_status
 | eval status=if(lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`, "CRITICAL", "OK")
 | convert ctime(suppressUntil) AS suppressTimestamp
 | eval suppressUntil_commented=case((suppressUntil=0 AND lateSecs=0),"Permanent Suppression - " + comments, (suppressUntil!=0 OR lateSecs=0), suppressTimestamp + " - " + comments, 1==1, "Not Suppressed")
@@ -141,7 +140,6 @@
 | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
 | eval lastAllowed=round(coalesce(relative_time(now(), lateSecs),now()-lateSecs),0) 
-| lookup bh_status.csv index sourcetype host OUTPUT status as old_status
 | eval status=if(lateSecs != "0" AND ((latest_time &lt; lastAllowed) OR (latest_time &gt; now() + 3000)) AND (now() - latest_time &lt; `ignore_after`) AND searchmatch("NOT eventtype=bh_suppress*") AND count &gt; `min_count`, "CRITICAL", "OK")
 | convert ctime(suppressUntil) AS suppressTimestamp
 | eval suppressUntil_commented=case((suppressUntil=0 AND lateSecs=0),"Permanent Suppression - " + comments, (suppressUntil!=0 OR lateSecs=0), suppressTimestamp + " - " + comments, 1==1, "Not Suppressed")
