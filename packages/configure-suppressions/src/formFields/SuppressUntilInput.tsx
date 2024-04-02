@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import Text, { TextChangeHandler } from '@splunk/react-ui/Text';
 import Heading from '@splunk/react-ui/Heading';
-import { capitalize } from './Helpers';
+import { capitalize } from '../Helpers';
 import Tooltip from '@splunk/react-ui/Tooltip';
-import { Div } from './BHStyles';
+import { Div } from '../BHStyles';
 
-const LateSecondsInput = ({ type, setSelected }) => {
+const SuppressUntilInput = ({ type, setSelected }) => {
     const [lateSeconds] = useState<string>();
 
     const handleChange: TextChangeHandler = (e, { value }) => {
-        setSelected(`update-${type}`, value);
+        setSelected(`${type}`, value);
     };
 
     return (
@@ -23,4 +23,4 @@ const LateSecondsInput = ({ type, setSelected }) => {
     );
 };
 
-export default LateSecondsInput;
+export default SuppressUntilInput;

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Multiselect, { MultiselectChangeHandler } from '@splunk/react-ui/Multiselect';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
-import NoCacheDataFoundWarning from './NoCacheDataFoundWarning';
-import { capitalize, sleep, getAvailableData } from './Helpers';
+import NoCacheDataFoundWarning from '../NoCacheDataFoundWarning';
+import { capitalize, sleep, getAvailableData } from '../Helpers';
 import WaitSpinner from '@splunk/react-ui/WaitSpinner';
 
 const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
@@ -41,16 +41,6 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
             <Heading level={4}>
                 Select {capitalize(type)} <Tooltip content="Add one or more value." />
             </Heading>
-            {dataEmpty ? (
-                <NoCacheDataFoundWarning
-                    type={type}
-                    refetchData={pullData}
-                    pullingData={pullingData}
-                    attempts={attempts}
-                />
-            ) : (
-                ''
-            )}
             {attempts === 1 ? (
                 <WaitSpinner size="medium" />
             ) : (
@@ -66,6 +56,16 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
                         {multiselectOptions}
                     </Multiselect>
                 </div>
+            )}
+            {dataEmpty ? (
+                <NoCacheDataFoundWarning
+                    type={type}
+                    refetchData={pullData}
+                    pullingData={pullingData}
+                    attempts={attempts}
+                />
+            ) : (
+                ''
             )}
         </>
     );

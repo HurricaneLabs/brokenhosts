@@ -10,7 +10,7 @@ export function editFormReducer(state: InitialForm, action: Action) {
             console.log('UPDATE  SOURCETYPE ', action.value);
             return {
                 ...state,
-                sourcetype: action.value,
+            sourcetype: action.value,
             };
         case 'index':
             console.log('UPDATE INDEX ', action.value);
