@@ -37,7 +37,7 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         onUpdate();
         onClose();
     };
-    ('');
+
     const handleFormChange = (type: string, value: string[] | string) => {
         dispatchForm({ type, value });
     };

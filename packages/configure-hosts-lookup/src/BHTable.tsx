@@ -15,6 +15,8 @@ import { handleError, handleResponse, defaultFetchInit } from '@splunk/splunk-ut
 import EditRecord from './EditRecord';
 import NewRecord from './NewRecord';
 import ConfirmRemoveSelected from './ConfirmRemoveSelected';
+import SearchJob from '@splunk/search-job';
+import { keysToOmit } from './Searches';
 
 interface Row {
     _key: string;
@@ -61,6 +63,11 @@ const themeToVariant = {
 };
 
 const kvUrl = createRESTURL(`storage/collections/data/expectedTime`, {
+    app: config.app,
+    sharing: 'app',
+});
+
+const kvBatchUrl = createRESTURL(`storage/collections/data/expectedTime/batch_save`, {
     app: config.app,
     sharing: 'app',
 });
@@ -167,14 +174,6 @@ async function addNewRecord() {
     return updatedData;
 }
 
-async function removeSelectedRecords() {
-    console.log(
-        'selected rows to remove ::: ',
-        this.state.data.filter((row) => row.selected)
-    );
-    return;
-}
-
 async function deleteRecord(key) {
     // delete the KV record for the key that is selected
 
@@ -187,6 +186,28 @@ async function deleteRecord(key) {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json',
         },
+    })
+        .then(handleResponse(200))
+        .catch(() => {
+            handleError('error');
+        });
+
+    return n;
+}
+
+async function batchUpdate(remainingRows) {
+    console.log('batch update...');
+
+    const fetchInit = defaultFetchInit;
+    fetchInit.method = 'POST';
+    const n = await fetch(`${kvBatchUrl}`, {
+        ...fetchInit,
+        headers: {
+            'X-Splunk-Form-Key': config.CSRFToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(remainingRows),
     })
         .then(handleResponse(200))
         .catch(() => {
@@ -238,6 +259,66 @@ export default class ReorderRows extends Component<{}, TableState> {
             })
         );
     }
+
+    removeSelectedRecords = () => {
+        console.log(
+            'selected rows to remove ::: ',
+            this.state.data.filter((row) => row.selected)
+        );
+
+        console.log('row count before ::: ', this.state.data.length);
+
+        const _keysOfRows = this.state.data.filter((row) => row.selected).map((row) => row._key);
+
+        console.log('_keysOfRows ::: ', _keysOfRows);
+        console.log(
+            'post filtered rows ::: ',
+            this.state.data.filter((row) => !_keysOfRows.includes(row._key))
+        );
+
+        this.setState((prevState) => ({
+            data: prevState.data.filter((row) => !_keysOfRows.includes(row._key)),
+        }));
+
+        // If more than one row has been selected for removal we will do a batch update
+        // to the collection
+        if (_keysOfRows.length > 1) {
+            const keys = keysToOmit(_keysOfRows);
+
+            console.log(`
+                | inputlookup expectedTime 
+                | eval k=_key 
+                | fields k, * 
+                | search ${keys}
+                | outputlookup expectedTime
+            `);
+
+            const keysToRemoveSearch = SearchJob.create({
+                search: `
+                    | inputlookup expectedTime 
+                    | eval k=_key 
+                    | fields k, * 
+                    | search ${keys}
+                    | outputlookup expectedTime
+                `,
+                earliest_time: '-1m',
+                latest_time: 'now',
+            });
+
+            keysToRemoveSearch.getProgress().subscribe({
+                next: (response) => {
+                    console.log('keysToRemove response ::: ', response);
+                },
+                complete: () => {
+                    console.log('keysToRemove done');
+                },
+            });
+        } else {
+            deleteRecord(_keysOfRows[0]);
+        }
+
+        console.log('row count after ::: ', this.state.data.length);
+    };
 
     handleNewRequestOpen = (e, data) => {
         // handles what happens when modal is open
@@ -440,7 +521,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                             selectedRows={this.state.data.filter((row) =>
                                 row.selected ? row : false
                             )}
-                            confirmRemoval={removeSelectedRecords}
+                            confirmRemoval={this.removeSelectedRecords}
                         />
                     </div>
                 </SplunkThemeProvider>
