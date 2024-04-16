@@ -22,7 +22,7 @@ const initialForm = {
 const INDEX = 'index';
 const SOURCETYPE = 'sourcetype';
 const HOST = 'host';
-const LATE_SECONDS = 'late_seconds';
+const LATE_SECONDS = 'lateSecs';
 const CONTACT = 'contact';
 const COMMENTS = 'comments';
 
@@ -37,16 +37,11 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     const submitData = () => {
         console.log('FORM ??? ', form);
         updateRecord(form);
-        // // dispatchForm({
-        // //     value: [selectedRowData as SelectedRow],
-        // //     type: 'all',
-        // // });
         onClose();
     };
 
     const updateRecord = (form) => {
-        // update the KV record for the key that is selected
-
+        // Updates UI before sending it off to the API
         dispatchForm({
             value: [form as SelectedRow],
             type: 'all',
@@ -55,22 +50,6 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         console.log('POST data ::: ', form);
 
         onUpdate(form);
-
-        // const fetchInit = defaultFetchInit;
-        // fetchInit.method = 'POST';
-        // const n = await fetch(`${kvUrl}/${key}`, {
-        //     ...fetchInit,
-        //     headers: {
-        //         'X-Splunk-Form-Key': config.CSRFToken,
-        //         'X-Requested-With': 'XMLHttpRequest',
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify(value),
-        // })
-        //     .then(handleResponse(200))
-        //     .catch(handleError('error'))
-        //     .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
-        // return n;
     };
 
     const handleFormChange = (type: string, value: any[] | string | number | boolean) => {

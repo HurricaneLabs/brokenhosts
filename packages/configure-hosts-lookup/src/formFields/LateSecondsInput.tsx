@@ -17,12 +17,13 @@ const LateSecondsInput = ({ type, setSelected, editValue }: Props) => {
 
     const handleChange: TextChangeHandler = (e, { value }) => {
         setLateSeconds(value);
+        setSelected(type, value);
     };
 
     useEffect(() => {
-        console.log('Latesecs editValue ::: ', editValue);
         if (typeof editValue !== 'undefined') {
             setLateSeconds(editValue);
+            setSelected(type, editValue);
         }
     }, []);
 

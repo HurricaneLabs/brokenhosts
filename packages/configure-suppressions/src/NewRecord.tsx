@@ -39,7 +39,7 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
 
     const handleFormChange = (type: string, value: string[] | string) => {
         console.log('current value ::: ', value);
-        dispatchForm({ type, value });
+        dispatchForm(type, value);
     };
 
     return (

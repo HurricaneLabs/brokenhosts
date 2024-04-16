@@ -14,30 +14,31 @@ const initialForm = {
     indexes: [],
     hosts: [],
     lateSeconds: null,
-    CONTACT: null,
+    contact: null,
     comments: null,
 };
 
-const INDEX = 'index';
-const SOURCETYPE = 'sourcetype';
-const HOST = 'host';
+const INDEXES = 'indexes';
+const SOURCETYPES = 'sourcetypes';
+const HOSTS = 'hosts';
 const LATE_SECONDS = 'late_seconds';
-const CONTACT = 'contact';
+const contact = 'constacts';
 const COMMENTS = 'comments';
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 const indexUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 
-const NewRecord = ({ onSubmit, onClose, openState }) => {
+const EditRecord = ({ onSubmit, onClose, openState }) => {
     const [form, dispatchForm] = useReducer(newFormReducer, initialForm);
 
     const submitData = () => {
-        onSubmit();
+        console.log('FORM ??? ', form);
+        onSubmit(form);
         onClose();
     };
 
-    const handleFormChange = (type: string, value: string[] | string) => {
+    const handleFormChange = (type: string, value: any[] | string | number | boolean) => {
         console.log('current value ::: ', value);
         dispatchForm({ type, value });
     };
@@ -45,29 +46,29 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
     return (
         <div>
             <Modal onRequestClose={onClose} open={openState} style={{ width: '450px' }}>
-                <Modal.Header onRequestClose={onClose} title="New Entry" />
+                <Modal.Header onRequestClose={onClose} title="New Entry For Real" />
                 <Modal.Body>
                     <form>
                         <DatasourceMultiSelect
-                            type={INDEX}
+                            type={INDEXES}
                             url={indexUrl}
                             selected={form.indexes}
                             setSelected={handleFormChange}
                         />
                         <DatasourceMultiSelect
-                            type={HOST}
+                            type={HOSTS}
                             url={hostUrl}
-                            selected={form.indexes}
+                            selected={form.hosts}
                             setSelected={handleFormChange}
                         />
                         <DatasourceMultiSelect
-                            type={SOURCETYPE}
+                            type={SOURCETYPES}
                             url={sourcetypeUrl}
-                            selected={form.indexes}
+                            selected={form.sourcetypes}
                             setSelected={handleFormChange}
                         />
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
-                        <ContactInput type={CONTACT} setSelected={handleFormChange} />
+                        <ContactInput type={contact} setSelected={handleFormChange} />
                         <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />
                     </form>
                 </Modal.Body>
@@ -80,9 +81,9 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
     );
 };
 
-NewRecord.propTypes = {
+EditRecord.propTypes = {
     onSubmit: T.func,
     onClose: T.func,
     openState: T.bool,
 };
-export default NewRecord;
+export default EditRecord;

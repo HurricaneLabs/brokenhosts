@@ -13,6 +13,6 @@ export type SelectedRow = {
     index: string;
     host: string;
     lateSecs: string;
-    contacts: string;
+    contact: string;
     comments: string;
 };

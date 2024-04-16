@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { cloneDeep, find } from 'lodash';
+import { cloneDeep, find, update } from 'lodash';
 import SplunkThemeProvider from '@splunk/themes/SplunkThemeProvider';
 import Table, {
     TableRequestMoveRowHandler,
@@ -253,7 +253,7 @@ export default class ReorderRows extends Component<{}, TableState> {
     //     disabled: boolean;
     // }
 
-    updateSelectedRecord = (updatedData) => {
+    updateSelectedRecord = async (updatedData) => {
         Object.assign(updatedData, { _key: this.state.selected._key });
         console.log('updated row data ::: ', updatedData);
         console.log('selected row to update ::: ', this.state.selected);
@@ -273,6 +273,8 @@ export default class ReorderRows extends Component<{}, TableState> {
                         disabled,
                     } = updatedData;
 
+                    console.log('updatedData ::: ', updatedData);
+
                     return {
                         _key: row._key,
                         comments,
@@ -289,6 +291,22 @@ export default class ReorderRows extends Component<{}, TableState> {
                 return row;
             }),
         }));
+
+        const fetchInit = defaultFetchInit;
+        fetchInit.method = 'POST';
+        const n = await fetch(`${kvUrl}/${this.state.selected._key}`, {
+            ...fetchInit,
+            headers: {
+                'X-Splunk-Form-Key': config.CSRFToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedData),
+        })
+            .then(handleResponse(200))
+            .catch(handleError('error'))
+            .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
+        return n;
     };
 
     removeSelectedRecords = () => {

@@ -14,17 +14,16 @@ interface Props {
 
 const CommentsTextarea = ({ type, editValue, setSelected }: Props) => {
     const [comments, setComments] = useState<string>();
-    // const [_, dispatchForm] = useReducer(editFormReducer, { comments: editValue });
 
     const handleChange: TextAreaChangeHandler = (_, { value }) => {
         console.log('handle comments change ::: ', value);
         setComments(value);
         setSelected(type, value);
-        // dispatchForm({ type: 'comments', value });
     };
 
     useEffect(() => {
         if (typeof editValue !== 'undefined') {
+            setSelected(type, editValue);
             setComments(editValue);
         }
     }, []);

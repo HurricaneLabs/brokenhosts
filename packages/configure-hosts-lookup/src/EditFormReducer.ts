@@ -5,6 +5,8 @@ type Action = {
     type: string;
 };
 export function editFormReducer(state: InitialForm, action: Action) {
+    console.log('action.type ::: ', action.type);
+
     switch (action.type) {
         case 'sourcetype':
             console.log('UPDATE  SOURCETYPE ', action.value);
@@ -36,11 +38,11 @@ export function editFormReducer(state: InitialForm, action: Action) {
                 ...state,
                 comments: action.value,
             };
-        case 'contacts':
-            console.log('CONTACTS ', action.value);
+        case 'contact':
+            console.log('contact ', action.value);
             return {
                 ...state,
-                contacts: action.value,
+                contact: action.value,
             };
         case 'all':
             console.log('ALL ', action.value[0]);

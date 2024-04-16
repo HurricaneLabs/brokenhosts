@@ -1,10 +1,11 @@
 import { InitialForm } from './types';
 
 type Action = {
-    value: any[] | string;
+    value: any[] | string | number | boolean;
     type: string;
 };
 export function newFormReducer(state: InitialForm, action: Action) {
+    console.log('action.type ::: ', action.type);
     switch (action.type) {
         case 'sourcetypes':
             console.log('UPDATE  SOURCETYPES ', action.value);
@@ -36,11 +37,11 @@ export function newFormReducer(state: InitialForm, action: Action) {
                 ...state,
                 comments: action.value,
             };
-        case 'contacts':
-            console.log('CONTACTS ', action.value);
+        case 'contact':
+            console.log('contact ', action.value);
             return {
                 ...state,
-                contacts: action.value,
+                contact: action.value,
             };
         case 'all':
             console.log('ALL ', action.value[0]);

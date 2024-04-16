@@ -213,7 +213,7 @@ export default class ReorderRows extends Component<{}, TableState> {
             selected: {
                 _key: '',
                 comments: '',
-                contacts: '',
+                contact: '',
                 email: '',
                 index: '',
                 sourcetype: '',

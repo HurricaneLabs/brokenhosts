@@ -12,7 +12,7 @@ interface Props {
 }
 
 const ContactInput = ({ type, setSelected, editValue }: Props) => {
-    const [contacts, setContacts] = useState<string>();
+    const [contact, setContacts] = useState<string>();
 
     const handleChange: TextChangeHandler = (_, { value }) => {
         setSelected(`${type}`, value);
@@ -29,7 +29,7 @@ const ContactInput = ({ type, setSelected, editValue }: Props) => {
             <Heading level={4}>
                 {capitalize(type)} <Tooltip content="Comma delimited list of emails" />
             </Heading>
-            <Text canClear type="text" value={contacts || ''} onChange={handleChange} />
+            <Text canClear type="text" value={contact || ''} onChange={handleChange} />
         </Div>
     );
 };

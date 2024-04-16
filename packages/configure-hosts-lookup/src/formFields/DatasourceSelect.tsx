@@ -50,8 +50,15 @@ const DatasourceSelect = ({ type, url, selected, setSelected, editValue }: Props
         });
     };
 
-    const handleSelectChange: SelectChangeHandler = (_, { value }) => setSelected(`${type}`, value);
-    const handleInputChange: TextChangeHandler = (_, { value }) => setSelected(`${type}`, value);
+    const handleSelectChange: SelectChangeHandler = (_, { value }) => {
+        console.log('type ::: ', type);
+        setSelected(type, value);
+    };
+
+    const handleInputChange: TextChangeHandler = (_, { value }) => {
+        console.log('type ::: ', type);
+        setSelected(type, value);
+    };
 
     const inputView = () => {
         if (attempts === 1) {
