@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useReducer } from 'react';
 import TextArea, { TextAreaChangeHandler } from '@splunk/react-ui/TextArea';
+import { editFormReducer } from '../EditFormReducer.ts';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import { capitalize } from '../Helpers';
@@ -7,15 +8,19 @@ import { Div } from '../BHStyles';
 
 interface Props {
     type: string;
-    setSelected: (type: string, value: string) => void;
     editValue?: string;
+    setSelected: (type: string, value: string) => void;
 }
 
-const CommentsTextarea = ({ type, setSelected, editValue }: Props) => {
+const CommentsTextarea = ({ type, editValue, setSelected }: Props) => {
     const [comments, setComments] = useState<string>();
+    // const [_, dispatchForm] = useReducer(editFormReducer, { comments: editValue });
 
     const handleChange: TextAreaChangeHandler = (_, { value }) => {
-        setSelected(`${type}`, value);
+        console.log('handle comments change ::: ', value);
+        setComments(value);
+        setSelected(type, value);
+        // dispatchForm({ type: 'comments', value });
     };
 
     useEffect(() => {

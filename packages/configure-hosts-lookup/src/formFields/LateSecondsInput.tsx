@@ -16,7 +16,7 @@ const LateSecondsInput = ({ type, setSelected, editValue }: Props) => {
     const [lateSeconds, setLateSeconds] = useState<string>();
 
     const handleChange: TextChangeHandler = (e, { value }) => {
-        setSelected(`${type}`, value);
+        setLateSeconds(value);
     };
 
     useEffect(() => {

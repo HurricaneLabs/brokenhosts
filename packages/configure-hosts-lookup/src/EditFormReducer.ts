@@ -1,7 +1,7 @@
-import { InitialForm, SelectedRow } from './types';
+import { InitialForm } from './types';
 
 type Action = {
-    value: any[] | string;
+    value: any[] | string | number | boolean;
     type: string;
 };
 export function editFormReducer(state: InitialForm, action: Action) {
@@ -10,7 +10,7 @@ export function editFormReducer(state: InitialForm, action: Action) {
             console.log('UPDATE  SOURCETYPE ', action.value);
             return {
                 ...state,
-            sourcetype: action.value,
+                sourcetype: action.value,
             };
         case 'index':
             console.log('UPDATE INDEX ', action.value);

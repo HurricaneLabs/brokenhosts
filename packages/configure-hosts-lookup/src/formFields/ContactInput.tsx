@@ -15,7 +15,8 @@ const ContactInput = ({ type, setSelected, editValue }: Props) => {
     const [contacts, setContacts] = useState<string>();
 
     const handleChange: TextChangeHandler = (_, { value }) => {
-        setSelected(`${type}`, value);
+        setContacts(value);
+        setSelected(type, value);
     };
 
     useEffect(() => {

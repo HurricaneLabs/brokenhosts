@@ -32,13 +32,49 @@ const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt
 
 const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     const [form, dispatchForm] = useReducer(editFormReducer, initialForm);
+    const [open, setOpenState] = useState(false);
 
     const submitData = () => {
-        onUpdate();
+        console.log('FORM ??? ', form);
+        updateRecord(form);
+        // // dispatchForm({
+        // //     value: [selectedRowData as SelectedRow],
+        // //     type: 'all',
+        // // });
         onClose();
     };
 
-    const handleFormChange = (type: string, value: string[] | string) => {
+    const updateRecord = (form) => {
+        // update the KV record for the key that is selected
+
+        dispatchForm({
+            value: [form as SelectedRow],
+            type: 'all',
+        });
+
+        console.log('POST data ::: ', form);
+
+        onUpdate(form);
+
+        // const fetchInit = defaultFetchInit;
+        // fetchInit.method = 'POST';
+        // const n = await fetch(`${kvUrl}/${key}`, {
+        //     ...fetchInit,
+        //     headers: {
+        //         'X-Splunk-Form-Key': config.CSRFToken,
+        //         'X-Requested-With': 'XMLHttpRequest',
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify(value),
+        // })
+        //     .then(handleResponse(200))
+        //     .catch(handleError('error'))
+        //     .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
+        // return n;
+    };
+
+    const handleFormChange = (type: string, value: any[] | string | number | boolean) => {
+        console.log('handleFormChange ::: ', { type, value });
         dispatchForm({ type, value });
     };
 
@@ -51,7 +87,10 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     };
 
     useEffect(() => {
-        populateForm();
+        if (!open) {
+            setOpenState(true);
+            populateForm();
+        }
     }, [openState]);
 
     return (

@@ -11,7 +11,7 @@ interface Props {
     type: string;
     url: string;
     selected: string;
-    setSelected: (type: string, value: string | number | boolean) => void;
+    setSelected: (type: string, value: any[] | string | number | boolean) => void;
     editValue?: string;
 }
 

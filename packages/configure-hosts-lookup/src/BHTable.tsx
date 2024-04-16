@@ -128,26 +128,6 @@ async function readCollection() {
     });
 }
 
-async function updateRecord(key, value) {
-    // update the KV record for the key that is selected
-
-    const fetchInit = defaultFetchInit;
-    fetchInit.method = 'POST';
-    const n = await fetch(`${kvUrl}/${key}`, {
-        ...fetchInit,
-        headers: {
-            'X-Splunk-Form-Key': config.CSRFToken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(value),
-    })
-        .then(handleResponse(200))
-        .catch(handleError('error'))
-        .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
-    return n;
-}
-
 async function addNewRecord() {
     // delete the KV record for the key that is selected
 
@@ -259,6 +239,57 @@ export default class ReorderRows extends Component<{}, TableState> {
             })
         );
     }
+
+    // interface Row {
+    //     _key: string;
+    //     comments: string;
+    //     contact: string;
+    //     email: string;
+    //     index: string;
+    //     sourcetype: string;
+    //     host: string;
+    //     lateSecs: string;
+    //     selected: boolean;
+    //     disabled: boolean;
+    // }
+
+    updateSelectedRecord = (updatedData) => {
+        Object.assign(updatedData, { _key: this.state.selected._key });
+        console.log('updated row data ::: ', updatedData);
+        console.log('selected row to update ::: ', this.state.selected);
+
+        this.setState((prevState) => ({
+            data: prevState.data.map((row) => {
+                if (row._key === this.state.selected._key) {
+                    const {
+                        comments,
+                        contact,
+                        email,
+                        index,
+                        sourcetype,
+                        host,
+                        lateSecs,
+                        selected,
+                        disabled,
+                    } = updatedData;
+
+                    return {
+                        _key: row._key,
+                        comments,
+                        contact,
+                        email,
+                        index,
+                        sourcetype,
+                        host,
+                        lateSecs,
+                        selected,
+                        disabled,
+                    } as Row;
+                }
+                return row;
+            }),
+        }));
+    };
 
     removeSelectedRecords = () => {
         console.log(
@@ -372,20 +403,20 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    handleRequestMoveRow: TableRequestMoveRowHandler = ({ fromIndex, toIndex }) => {
-        this.setState((state) => {
-            const data = cloneDeep(state.data);
-            const rowToMove = data[fromIndex];
+    // handleRequestMoveRow: TableRequestMoveRowHandler = ({ fromIndex, toIndex }) => {
+    //     this.setState((state) => {
+    //         const data = cloneDeep(state.data);
+    //         const rowToMove = data[fromIndex];
 
-            const insertionIndex = toIndex < fromIndex ? toIndex : toIndex + 1;
-            data.splice(insertionIndex, 0, rowToMove);
+    //         const insertionIndex = toIndex < fromIndex ? toIndex : toIndex + 1;
+    //         data.splice(insertionIndex, 0, rowToMove);
 
-            const removalIndex = toIndex < fromIndex ? fromIndex + 1 : fromIndex;
-            data.splice(removalIndex, 1);
+    //         const removalIndex = toIndex < fromIndex ? fromIndex + 1 : fromIndex;
+    //         data.splice(removalIndex, 1);
 
-            return { data };
-        });
-    };
+    //         return { data };
+    //     });
+    // };
 
     handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs, contact }) => {
         this.setState((state) => {
@@ -472,7 +503,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                     <div>
                         <Table
                             stripeRows
-                            onRequestMoveRow={this.handleRequestMoveRow}
+                            // onRequestMoveRow={this.handleRequestMoveRow}
                             rowSelection={this.rowSelectionState(data)}
                         >
                             <Table.Head>
@@ -505,7 +536,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                             </Table.Body>
                         </Table>
                         <EditRecord
-                            onUpdate={updateRecord}
+                            onUpdate={this.updateSelectedRecord}
                             openState={this.state.openEditModal}
                             onClose={this.handleRequestEditClose}
                             selectedRowData={this.state.selected}
