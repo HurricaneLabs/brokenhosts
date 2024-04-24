@@ -21,15 +21,15 @@ const initialForm = {
 const INDEXES = 'indexes';
 const SOURCETYPES = 'sourcetypes';
 const HOSTS = 'hosts';
-const LATE_SECONDS = 'late_seconds';
-const contact = 'constacts';
+const LATE_SECONDS = 'lateSecs';
+const CONTACT = 'contact';
 const COMMENTS = 'comments';
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 const indexUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 
-const EditRecord = ({ onSubmit, onClose, openState }) => {
+const NewRecord = ({ onSubmit, onClose, openState }) => {
     const [form, dispatchForm] = useReducer(newFormReducer, initialForm);
 
     const submitData = () => {
@@ -68,7 +68,7 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
                             setSelected={handleFormChange}
                         />
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
-                        <ContactInput type={contact} setSelected={handleFormChange} />
+                        <ContactInput type={CONTACT} setSelected={handleFormChange} />
                         <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />
                     </form>
                 </Modal.Body>
@@ -81,9 +81,9 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
     );
 };
 
-EditRecord.propTypes = {
+NewRecord.propTypes = {
     onSubmit: T.func,
     onClose: T.func,
     openState: T.bool,
 };
-export default EditRecord;
+export default NewRecord;

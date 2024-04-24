@@ -91,7 +91,7 @@ const DatasourceSelect = ({ type, url, selected, setSelected, editValue }: Props
     return (
         <>
             <Heading level={4}>
-                Select {capitalize(type)} <Tooltip content="Add one or more value." />
+                Select {capitalize(type)} <Tooltip content="Add a value." />
             </Heading>
             {inputView()}
             {dataEmpty ? (

@@ -8,16 +8,16 @@ import { editFormReducer } from './EditFormReducer.ts';
 import { epochNow } from './Helpers.ts';
 import ContactInput from './formFields/ContactInput.tsx';
 import CommentsTextarea from './formFields/CommentsTextarea.tsx';
-import { SelectedRow } from './types.ts';
+import { SelectedRow, InitialForm } from './types.ts';
 
 const initialForm = {
-    sourcetypes: [],
-    indexes: [],
-    hosts: [],
+    sourcetypes: '',
+    indexes: '',
+    hosts: '',
     lateSecs: null,
     contact: null,
     comments: null,
-};
+} as InitialForm;
 
 const INDEX = 'index';
 const SOURCETYPE = 'sourcetype';

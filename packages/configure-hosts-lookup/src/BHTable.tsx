@@ -14,6 +14,7 @@ import Tooltip from '@splunk/react-ui/Tooltip';
 import { handleError, handleResponse, defaultFetchInit } from '@splunk/splunk-utils/fetch';
 import EditRecord from './EditRecord';
 import NewRecord from './NewRecord';
+import NewBatchRecords from './NewBatchRecords';
 import ConfirmRemoveSelected from './ConfirmRemoveSelected';
 import SearchJob from '@splunk/search-job';
 import { keysToOmit } from './Searches';
@@ -43,6 +44,7 @@ interface TableState {
     headers: Header[];
     openEditModal: boolean;
     openNewModal: boolean;
+    openNewBatchModal: boolean;
     openConfirmRemoveModal: boolean;
     selected: Row;
     initialFetch: boolean;
@@ -128,24 +130,44 @@ async function readCollection() {
     });
 }
 
-async function addNewRecord() {
+async function addNewRecord(record) {
     // delete the KV record for the key that is selected
 
     const fetchInit = defaultFetchInit;
     fetchInit.method = 'POST';
 
-    const updatedData = await fetch(
-        `/servicesNS/nobody/${config.app}/storage/collections/data/expectedTime/`,
-        {
-            ...fetchInit,
-            headers: {
-                'X-Splunk-Form-Key': config.CSRFToken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(''),
-        }
-    )
+    const updatedData = await fetch(kvUrl, {
+        ...fetchInit,
+        headers: {
+            'X-Splunk-Form-Key': config.CSRFToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(record),
+    })
+        .then(handleResponse(200))
+        .catch(() => {
+            handleError('error');
+        });
+
+    return updatedData;
+}
+
+async function addNewRecords(records: any[]) {
+    // delete the KV record for the key that is selected
+
+    const fetchInit = defaultFetchInit;
+    fetchInit.method = 'POST';
+
+    const updatedData = await fetch(kvBatchUrl, {
+        ...fetchInit,
+        headers: {
+            'X-Splunk-Form-Key': config.CSRFToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(records),
+    })
         .then(handleResponse(200))
         .catch(() => {
             handleError('error');
@@ -215,6 +237,7 @@ export default class ReorderRows extends Component<{}, TableState> {
             initialFetch: false,
             openEditModal: false,
             openNewModal: false,
+            openNewBatchModal: false,
             openConfirmRemoveModal: false,
             selected: {
                 _key: '',
@@ -376,6 +399,13 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
+    handleNewBatchRequestOpen = (e, data) => {
+        // handles what happens when modal is open
+        this.setState({
+            openNewBatchModal: true,
+        });
+    };
+
     handleRemoveRequestOpen = (e, data) => {
         // handles what happens when modal is open
         this.setState({
@@ -402,6 +432,13 @@ export default class ReorderRows extends Component<{}, TableState> {
         // handles what happens when modal is closed
         this.setState({
             openNewModal: false,
+        });
+    };
+
+    handleRequestNewBatchClose = () => {
+        // handles what happens when modal is closed
+        this.setState({
+            openNewBatchModal: false,
         });
     };
 
@@ -508,6 +545,11 @@ export default class ReorderRows extends Component<{}, TableState> {
                             appearance="primary"
                             onClick={this.handleNewRequestOpen}
                         />
+                        <Button
+                            label="Add Multiple Entries"
+                            appearance="primary"
+                            onClick={this.handleNewBatchRequestOpen}
+                        />
                         {this.state.data.filter((row) => row.selected).length > 0 ? (
                             <Button
                                 label="Remove Selected"
@@ -563,6 +605,11 @@ export default class ReorderRows extends Component<{}, TableState> {
                             openState={this.state.openNewModal}
                             onClose={this.handleRequestNewClose}
                             onSubmit={addNewRecord}
+                        />
+                        <NewBatchRecords
+                            openState={this.state.openNewBatchModal}
+                            onClose={this.handleRequestNewBatchClose}
+                            onSubmit={addNewRecords}
                         />
                         <ConfirmRemoveSelected
                             openState={this.state.openConfirmRemoveModal}

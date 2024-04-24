@@ -21,8 +21,8 @@ const initialForm = {
 const INDEX = 'index';
 const SOURCETYPE = 'sourcetype';
 const HOST = 'host';
-const LATE_SECONDS = 'late_seconds';
-const contact = 'constacts';
+const LATE_SECONDS = 'lateSecs';
+const CONTACT = 'contact';
 const COMMENTS = 'comments';
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
@@ -68,7 +68,7 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
                             setSelected={handleFormChange}
                         />
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
-                        <ContactsInput type={contact} setSelected={handleFormChange} />
+                        <ContactsInput type={CONTACT} setSelected={handleFormChange} />
                         <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />
                     </form>
                 </Modal.Body>

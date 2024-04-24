@@ -3,10 +3,15 @@ export type DataType = {
 };
 
 export type InitialForm = {
-    sourcetypes: string[];
-    indexes: string[];
-    hosts: string[];
+    sourcetypes: string | unknown;
+    indexes: string | unknown;
+    hosts: string | unknown;
+    lateSecs: string | unknown;
+    contact: string | unknown;
+    comments: string | unknown;
 };
+
+export type RowsOfData = InitialForm[];
 
 export type SelectedRow = {
     sourcetype: string;
