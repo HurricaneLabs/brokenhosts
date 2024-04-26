@@ -1,29 +1,29 @@
 import { InitialForm } from './types';
 
 type Action = {
-    value: any[] | string | number | boolean;
+    value: string;
     type: string;
 };
 export function newFormReducer(state: InitialForm, action: Action) {
     console.log('action.type ::: ', action.type);
     switch (action.type) {
-        case 'sourcetypes':
+        case 'sourcetype':
             console.log('UPDATE  SOURCETYPES ', action.value);
             return {
                 ...state,
-                sourcetypes: action.value,
+                sourcetype: action.value,
             };
-        case 'indexes':
+        case 'index':
             console.log('UPDATE INDEXES ', action.value);
             return {
                 ...state,
-                indexes: action.value,
+                index: action.value,
             };
-        case 'hosts':
+        case 'host':
             console.log('UPDATE HOSTS ', action.value);
             return {
                 ...state,
-                hosts: action.value,
+                host: action.value,
             };
         case 'lateSecs':
             console.log('LATE SECONDS ', action.value);

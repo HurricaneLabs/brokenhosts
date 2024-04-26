@@ -18,9 +18,9 @@ const initialForm = {
     comments: null,
 };
 
-const INDEXES = 'indexes';
-const SOURCETYPES = 'sourcetypes';
-const HOSTS = 'hosts';
+const INDEXES = 'index';
+const SOURCETYPES = 'sourcetype';
+const HOSTS = 'host';
 const LATE_SECONDS = 'lateSecs';
 const CONTACT = 'contact';
 const COMMENTS = 'comments';
@@ -38,7 +38,8 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
         onClose();
     };
 
-    const handleFormChange = (type: string, value: any[] | string | number | boolean) => {
+    const handleFormChange = (type: string, value: string) => {
+        console.log('current type ::: ', type);
         console.log('current value ::: ', value);
         dispatchForm({ type, value });
     };
@@ -52,20 +53,20 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                         <DatasourceMultiSelect
                             type={INDEXES}
                             url={indexUrl}
-                            selected={form.indexes}
-                            setSelected={handleFormChange}
+                            value={form.index}
+                            setValue={handleFormChange}
                         />
                         <DatasourceMultiSelect
                             type={HOSTS}
                             url={hostUrl}
-                            selected={form.hosts}
-                            setSelected={handleFormChange}
+                            value={form.host}
+                            setValue={handleFormChange}
                         />
                         <DatasourceMultiSelect
                             type={SOURCETYPES}
                             url={sourcetypeUrl}
-                            selected={form.sourcetypes}
-                            setSelected={handleFormChange}
+                            value={form.sourcetype}
+                            setValue={handleFormChange}
                         />
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
                         <ContactInput type={CONTACT} setSelected={handleFormChange} />

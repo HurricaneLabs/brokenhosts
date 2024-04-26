@@ -52,7 +52,7 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         onUpdate(form);
     };
 
-    const handleFormChange = (type: string, value: any[] | string | number | boolean) => {
+    const handleFormChange = (type: string, value: string) => {
         console.log('handleFormChange ::: ', { type, value });
         dispatchForm({ type, value });
     };

@@ -1,20 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import Multiselect, { MultiselectChangeHandler } from '@splunk/react-ui/Multiselect';
+import Select, { SelectChangeHandler } from '@splunk/react-ui/Select';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
+import Text from '@splunk/react-ui/Text';
 import NoCacheDataFoundWarning from '../NoCacheDataFoundWarning';
 import { capitalize, sleep, getAvailableData } from '../Helpers';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import WaitSpinner from '@splunk/react-ui/WaitSpinner';
 
-const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
-    const [availableSourcetypes, setAvailableSourcetypes] = useState<string[]>([]);
-    const [dataEmpty, setDataEmpty] = useState<boolean>(false);
-    const [attempts, setAttempts] = useState<number>(1);
-    const [pullingData, setPullingData] = useState<boolean>(false);
+type Props = {
+    type: string;
+    url: string;
+    value: string;
+    setValue: (type: string, value: string, index?: number) => void;
+    index?: number;
+    inline?: boolean;
+};
 
-    const multiselectOptions = availableSourcetypes.map((v) => (
-        <Multiselect.Option key={v} label={v} value={v} />
-    ));
+const defaultProps = {
+    index: -1,
+};
+
+const DatasourceMultiSelect = (props: Props) => {
+    props = { ...defaultProps, ...props };
+
+    const { type, url, value, setValue, index } = props;
+
+    const [availableData, setAvailableData] = useState<string[]>([]);
+    const [dataEmpty, setDataEmpty] = useState<boolean>(true);
+    const [attempts, setAttempts] = useState<number>(0);
+    const [pullingData, setPullingData] = useState<boolean>(false);
+    const [currentValue, setCurrentValue] = useState<string>('');
+
+    const selectOptions = availableData.map((v) => <Select.Option key={v} label={v} value={v} />);
 
     useEffect(() => {
         pullData();
@@ -24,51 +42,66 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
         getAvailableData(url).then(async (data) => {
             setPullingData(true);
             await sleep(1500);
-            if (data.length === 0) {
-                setDataEmpty(true);
+            if (data.length > 0) {
+                setDataEmpty(false);
+            } else if (attempts < 1) {
                 setAttempts((attempts) => attempts + 1);
             }
-            setAvailableSourcetypes(data);
+            console.log('data???? ', data);
+            setAvailableData(data);
             setPullingData(false);
         });
     };
 
-    const handleMultiSelectChange: MultiselectChangeHandler = (_, { values }) =>
-        setSelected(`${type}`, values);
+    // Handle value change when its a text input
+    const handleInputChange = (value: string) => {
+        // Index is passed in if we are dealing with a batch update
+        console.log('handleInputChange type ::: ', type);
+        console.log('handleInputChange value ::: ', value);
+        console.log('handleInputChange index ::: ', index);
+        setCurrentValue(value);
+        if (index !== undefined && index > -1) {
+            setValue(`${type}`, value, index);
+        } else {
+            setValue(`${type}`, value);
+        }
+    };
 
-    return (
-        <>
-            <Heading level={4}>
-                Select {capitalize(type)} <Tooltip content="Add one or more value." />
-            </Heading>
-            {attempts === 1 ? (
-                <WaitSpinner size="medium" />
-            ) : (
-                <div>
-                    <Multiselect
+    // Handle value change when its a select input
+    const handleSelectChange = (_, { value }) => {
+        setCurrentValue(value);
+        setValue(`${type}`, value, index);
+    };
+    const inputView = () => {
+        if (attempts === 0 && dataEmpty) {
+            return <WaitSpinner size="medium" />;
+        } else if (!dataEmpty) {
+            return (
+                <>
+                    <Select
+                        style={{ width: '100%' }}
                         name="indexSelect"
-                        values={selected}
-                        onChange={handleMultiSelectChange}
-                        inline
-                        allowNewValues
-                        compact
+                        value={currentValue}
+                        onChange={handleSelectChange}
                     >
-                        {multiselectOptions}
-                    </Multiselect>
-                </div>
-            )}
-            {dataEmpty ? (
-                <NoCacheDataFoundWarning
-                    type={type}
-                    refetchData={pullData}
-                    pullingData={pullingData}
-                    attempts={attempts}
+                        {selectOptions}
+                    </Select>
+                </>
+            );
+        } else if (dataEmpty) {
+            return (
+                <Text
+                    style={{ margin: '0 .25em 0 0' }}
+                    value={currentValue}
+                    onChange={(e) => {
+                        handleInputChange((e.target as HTMLInputElement).value);
+                    }}
                 />
-            ) : (
-                ''
-            )}
-        </>
-    );
+            );
+        }
+    };
+
+    return <>{inputView()}</>;
 };
 
 export default DatasourceMultiSelect;

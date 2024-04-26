@@ -29,11 +29,13 @@ export const getAvailableData = async (url: string) => {
         })
         .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
 
+    console.log('data??? ', data);
+
     if (data.length === 0) {
         return [];
     }
 
-    return data.entry.map((item) => item.name);
+    return data.map((item) => item[item.type]);
 };
 
 export const handleMultiSelectClose = (state, stateSetter) => {

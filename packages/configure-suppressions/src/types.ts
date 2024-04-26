@@ -3,7 +3,7 @@ export type DataType = {
 };
 
 export type InitialForm = {
-    sourcetypes: string[];
-    indexes: string[];
-    hosts: string[];
+    sourcetype: string;
+    index: string;
+    host: string;
 };

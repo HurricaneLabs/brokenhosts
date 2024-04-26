@@ -156,6 +156,8 @@ async function addNewRecord(record) {
 async function addNewRecords(records: any[]) {
     // delete the KV record for the key that is selected
 
+    console.log('addNewRecords: ', records);
+
     const fetchInit = defaultFetchInit;
     fetchInit.method = 'POST';
 
@@ -173,6 +175,10 @@ async function addNewRecords(records: any[]) {
             handleError('error');
         });
 
+    // this.setState((prevState) => ({
+    //     data: [...prevState.data, ...records],
+    // }));
+
     return updatedData;
 }
 
@@ -188,28 +194,6 @@ async function deleteRecord(key) {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json',
         },
-    })
-        .then(handleResponse(200))
-        .catch(() => {
-            handleError('error');
-        });
-
-    return n;
-}
-
-async function batchUpdate(remainingRows) {
-    console.log('batch update...');
-
-    const fetchInit = defaultFetchInit;
-    fetchInit.method = 'POST';
-    const n = await fetch(`${kvBatchUrl}`, {
-        ...fetchInit,
-        headers: {
-            'X-Splunk-Form-Key': config.CSRFToken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(remainingRows),
     })
         .then(handleResponse(200))
         .catch(() => {
@@ -330,6 +314,20 @@ export default class ReorderRows extends Component<{}, TableState> {
             .catch(handleError('error'))
             .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
         return n;
+    };
+
+    addNewRow = async (row) => {
+        await addNewRecord(row);
+        this.setState((prevState) => ({
+            data: [...prevState.data, row],
+        }));
+    };
+
+    addNewRows = async (rows: any[]) => {
+        await addNewRecords(rows);
+        this.setState((prevState) => ({
+            data: [...prevState.data, ...rows],
+        }));
     };
 
     removeSelectedRecords = () => {
@@ -458,21 +456,6 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    // handleRequestMoveRow: TableRequestMoveRowHandler = ({ fromIndex, toIndex }) => {
-    //     this.setState((state) => {
-    //         const data = cloneDeep(state.data);
-    //         const rowToMove = data[fromIndex];
-
-    //         const insertionIndex = toIndex < fromIndex ? toIndex : toIndex + 1;
-    //         data.splice(insertionIndex, 0, rowToMove);
-
-    //         const removalIndex = toIndex < fromIndex ? fromIndex + 1 : fromIndex;
-    //         data.splice(removalIndex, 1);
-
-    //         return { data };
-    //     });
-    // };
-
     handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs, contact }) => {
         this.setState((state) => {
             const data = cloneDeep(state.data);
@@ -487,6 +470,7 @@ export default class ReorderRows extends Component<{}, TableState> {
     };
 
     handleRowClick: RowClickHandler = (_, data) => {
+        console.log('handleRowClick!!!! ', data);
         this.setState({ activeRow: data.name, activeRowData: JSON.stringify(data) });
     };
 
@@ -510,12 +494,8 @@ export default class ReorderRows extends Component<{}, TableState> {
         return 'some';
     }
 
-    handleAdditionalRecord = () => {
-        console.log('TO DO!');
-    };
-
     render() {
-        const { headers, data, sortKey, sortDir, activeRow, activeRowData } = this.state;
+        const { headers, data } = this.state;
 
         const primaryActions = // adding row actions to our table
             (
@@ -561,11 +541,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                         )}
                     </div>
                     <div>
-                        <Table
-                            stripeRows
-                            // onRequestMoveRow={this.handleRequestMoveRow}
-                            rowSelection={this.rowSelectionState(data)}
-                        >
+                        <Table stripeRows rowSelection={this.rowSelectionState(data)}>
                             <Table.Head>
                                 <Table.HeadCell></Table.HeadCell>
                                 {headers.map((header) => (
@@ -604,12 +580,12 @@ export default class ReorderRows extends Component<{}, TableState> {
                         <NewRecord
                             openState={this.state.openNewModal}
                             onClose={this.handleRequestNewClose}
-                            onSubmit={addNewRecord}
+                            onSubmit={this.addNewRow}
                         />
                         <NewBatchRecords
                             openState={this.state.openNewBatchModal}
                             onClose={this.handleRequestNewBatchClose}
-                            onSubmit={addNewRecords}
+                            onSubmit={this.addNewRows}
                         />
                         <ConfirmRemoveSelected
                             openState={this.state.openConfirmRemoveModal}

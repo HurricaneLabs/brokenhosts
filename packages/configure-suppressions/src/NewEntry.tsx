@@ -8,12 +8,13 @@ import { formReducer } from './FormReducer.ts';
 import { epochNow } from './Helpers.ts';
 import ContactsInput from './ContactsInput.tsx';
 import CommentsTextarea from './CommentsTextarea.tsx';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 
 const initialForm = {
-    sourcetypes: [],
-    indexes: [],
-    hosts: [],
-    lateSeconds: null,
+    sourcetype: '',
+    index: '',
+    host: '',
+    lateSecs: null,
     contact: null,
     comments: null,
 };
@@ -38,7 +39,7 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
         onClose();
     };
 
-    const handleFormChange = (type: string, value: string[]) => {
+    const handleFormChange = (type: string, value: string) => {
         console.log('current value ::: ', value);
         dispatchForm({ type, value });
     };
@@ -49,24 +50,42 @@ const EditRecord = ({ onSubmit, onClose, openState }) => {
                 <Modal.Header onRequestClose={onClose} title="New Entry" />
                 <Modal.Body>
                     <form>
-                        <DatasourceMultiSelect
-                            type={INDEX}
-                            url={indexUrl}
-                            selected={form.indexes}
-                            setSelected={handleFormChange}
-                        />
-                        <DatasourceMultiSelect
-                            type={HOST}
-                            url={hostUrl}
-                            selected={form.hosts}
-                            setSelected={handleFormChange}
-                        />
-                        <DatasourceMultiSelect
-                            type={SOURCETYPE}
-                            url={sourcetypeUrl}
-                            selected={form.sourcetypes}
-                            setSelected={handleFormChange}
-                        />
+                        <ControlGroup
+                            label="Index"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceMultiSelect
+                                type={INDEX}
+                                url={indexUrl}
+                                selected={form.index}
+                                setSelected={handleFormChange}
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Host"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceMultiSelect
+                                type={HOST}
+                                url={hostUrl}
+                                selected={form.host}
+                                setSelected={handleFormChange}
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Sourcetype"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceMultiSelect
+                                type={SOURCETYPE}
+                                url={sourcetypeUrl}
+                                selected={form.sourcetype}
+                                setSelected={handleFormChange}
+                            />
+                        </ControlGroup>
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
                         <ContactsInput type={CONTACT} setSelected={handleFormChange} />
                         <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />

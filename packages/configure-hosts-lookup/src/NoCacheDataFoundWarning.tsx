@@ -8,23 +8,14 @@ import { populateKVStoreCache } from './Search';
 import { Flex, FlexItem, SmallButtonTheme } from './BHStyles';
 
 const NoCacheDataFoundWarning = ({ type, refetchData, attempts, pullingData }) => {
-    return attempts <= 2 ? (
+    return attempts <= 1 ? (
         <>
             <Flex $width="400px" $gap="20px">
-                {/* <FlexItem>
-                    <Button
-                        style={SmallButtonTheme}
-                        label={`Populate`}
-                        appearance="primary"
-                        disabled={pullingData}
-                        icon={pullingData ? <WaitSpinner size="small" /> : ''}
-                        onClick={() => populateKVStoreCache(type).then(() => refetchData())}
-                    />
-                </FlexItem> */}
                 <FlexItem>
                     <Message type="warning">
                         <p style={{ color: '#4d4d4d', margin: 0 }}>
-                            No {type} data found in cache. <a href="#">Configure</a>
+                            No {type} data found in cache. <a href="#">Configure</a> or manually
+                            enter in data.
                         </p>
                     </Message>
                 </FlexItem>

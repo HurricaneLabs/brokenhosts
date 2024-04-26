@@ -1,7 +1,7 @@
 import { InitialForm } from './types';
 
 type Action = {
-    value: any[] | string | number | boolean;
+    value: string;
     type: string;
 };
 export function editFormReducer(state: InitialForm, action: Action) {

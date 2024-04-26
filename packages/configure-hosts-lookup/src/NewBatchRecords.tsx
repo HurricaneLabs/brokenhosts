@@ -1,11 +1,13 @@
-import React, { useReducer } from 'react';
-import { newBatchRecordsFormReducer } from './NewBatchFormReducer.ts';
-import { epochNow } from './Helpers.ts';
+import React from 'react';
 import FormRows from '@splunk/react-ui/FormRows';
 import { createDOMID } from '@splunk/ui-utils/id';
 import Text from '@splunk/react-ui/Text';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
+import TextArea from '@splunk/react-ui/TextArea';
+import { epochNow } from './Helpers.ts';
+import DatasourceMultiSelect from './formFields/DatasourceMultiselect.tsx';
 
 interface Item {
     sourcetypes: string;
@@ -21,8 +23,8 @@ interface Form {
 }
 
 interface Props {
-    onClose: () => {};
-    onSubmit: (f: any[]) => {};
+    onClose: () => void;
+    onSubmit: (f: any[]) => Promise<void | Response>;
     dispatchForm: () => {};
     form: Form;
     openState: boolean;
@@ -31,61 +33,60 @@ interface Props {
 interface State {
     items: any[];
     itemsValue: any[];
+    currentIndexValue: string;
+    currentHostValue: string;
+    currentSourcetypeValue: string;
 }
 
-// const initialForm = {
-//     items: []
-// } as Form;
+const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
+const indexUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
+const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 
 class NewBatchRecords extends React.PureComponent<Props, State> {
     constructor(props) {
         super(props);
 
-        const items = [
-            // {
-            //     sourcetype: '',
-            // },
-            // <FormRows.Row index={0} key="0" onRequestRemove={this.handleRequestRemove}>
-            //     <Text style={{ margin: '.5em 0' }} defaultValue="Index" />
-            //     <Text
-            //         style={{ margin: '.5em 0' }}
-            //         defaultValue="Sourcetype"
-            //         value={this.state.items[0]['sourcetype']}
-            //         onChange={(value, index) => this.handleFormChange('sourcetype', value, index)}
-            //     />
-            //     <Text style={{ margin: '.5em 0' }} defaultValue="Host" />
-            //     <Text style={{ margin: '.5em 0' }} defaultValue="Late Seconds" />
-            //     <Text style={{ margin: '.5em 0' }} defaultValue="Contacts" />
-            //     <Text style={{ margin: '.5em 0' }} defaultValue="Comments" />
-            // </FormRows.Row>,
-        ];
+        const items = [];
 
         this.state = {
             items,
             itemsValue: [],
+            currentIndexValue: '',
+            currentHostValue: '',
+            currentSourcetypeValue: '',
         };
     }
 
     submitData = () => {
-        console.log('FORM ??? ', this.state.items);
-        this.props.onSubmit(this.state.items);
+        console.log('FORM ??? ', this.state.itemsValue);
+        this.props.onSubmit(this.state.itemsValue);
         this.props.onClose();
     };
 
-    handleFormChange = (label, value, index): void => {
-        console.log('current value ::: ', label, value, index);
+    handleFormChange = (type: string, value: string, index?: number | undefined): void => {
+        console.log('current value ::: ', type, value, index);
+        switch (type) {
+            case 'index':
+                this.setState({ currentIndexValue: value });
+            case 'sourcetype':
+                this.setState({ currentSourcetypeValue: value });
+            case 'host':
+                this.setState({ currentHostValue: value });
+        }
         const currentItemsValueArray = this.state.itemsValue;
-        currentItemsValueArray[index][label] = value;
-
-        this.setState((state) => {
-            itemsValue: currentItemsValueArray;
-        });
+        if (index !== undefined) {
+            currentItemsValueArray[index][type] = value;
+            console.log('currentItemsValueArray ::: ', currentItemsValueArray);
+            this.setState((_) => {
+                itemsValue: currentItemsValueArray;
+            });
+        }
     };
 
     handleRequestAdd = () => {
-        const newValue = {
-            sourcetype: '',
-        };
+        const newValue = {};
+
+        console.log('handleRequestAdd');
 
         console.log('this.state.itemsValue before', this.state.itemsValue);
 
@@ -102,23 +103,108 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                     key={createDOMID()}
                     onRequestRemove={this.handleRequestRemove}
                 >
-                    <Text style={{ margin: '.5em 0' }} defaultValue="Index" />
-                    <Text
-                        style={{ margin: '.5em 0' }}
-                        defaultValue="Sourcetype"
-                        value={state.itemsValue[state.itemsValue.length - 1]['sourcetype']}
-                        onChange={(e) =>
-                            this.handleFormChange(
-                                'sourcetype',
-                                (e.target as HTMLInputElement).value,
-                                state.itemsValue.length - 1
-                            )
-                        }
-                    />
-                    <Text style={{ margin: '.5em 0' }} defaultValue="Host" />
-                    <Text style={{ margin: '.5em 0' }} defaultValue="Late Seconds" />
-                    <Text style={{ margin: '.5em 0' }} defaultValue="Contacts" />
-                    <Text style={{ margin: '.5em 0' }} defaultValue="Comments" />
+                    <div style={{ display: 'flex' }}>
+                        <ControlGroup
+                            label="Index"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
+                        >
+                            <DatasourceMultiSelect
+                                type="index"
+                                url={indexUrl}
+                                setValue={this.handleFormChange}
+                                index={state.items.length}
+                                value={state.currentIndexValue}
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Sourcetype"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
+                        >
+                            <DatasourceMultiSelect
+                                type="sourcetype"
+                                url={indexUrl}
+                                setValue={this.handleFormChange}
+                                index={state.items.length}
+                                value={state.currentSourcetypeValue}
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Host"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
+                        >
+                            <DatasourceMultiSelect
+                                type="host"
+                                url={hostUrl}
+                                setValue={this.handleFormChange}
+                                index={state.items.length}
+                                value={state.currentHostValue}
+                            />
+                        </ControlGroup>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                        <ControlGroup
+                            label="Late Seconds"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
+                        >
+                            <Text
+                                style={{ margin: '0 .25em 0 0' }}
+                                defaultValue="Late Seconds"
+                                describedBy="header-lateSecs"
+                                value={state.itemsValue[state.itemsValue.length - 1]['lateSecs']}
+                                onChange={(e) =>
+                                    this.handleFormChange(
+                                        'lateSecs',
+                                        (e.target as HTMLInputElement).value,
+                                        state.itemsValue.length - 1
+                                    )
+                                }
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Contacts"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
+                        >
+                            <Text
+                                style={{ margin: '0 .25em 0 0' }}
+                                defaultValue="Contact"
+                                describedBy="header-contacts"
+                                value={state.itemsValue[state.itemsValue.length - 1]['contact']}
+                                onChange={(e) =>
+                                    this.handleFormChange(
+                                        'contact',
+                                        (e.target as HTMLInputElement).value,
+                                        state.itemsValue.length - 1
+                                    )
+                                }
+                            />
+                        </ControlGroup>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                        <ControlGroup
+                            label="Comments"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
+                        >
+                            <TextArea
+                                style={{ margin: '0 .25em 0 0' }}
+                                defaultValue="Comments"
+                                describedBy="header-comments"
+                                value={state.itemsValue[state.itemsValue.length - 1]['comments']}
+                                onChange={(e) =>
+                                    this.handleFormChange(
+                                        'comments',
+                                        (e.target as HTMLInputElement).value,
+                                        state.itemsValue.length - 1
+                                    )
+                                }
+                            />
+                        </ControlGroup>
+                    </div>
                 </FormRows.Row>,
                 state.items
             ),
@@ -138,65 +224,57 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
     };
 
     render() {
+        const header = (
+            <div>
+                <span style={{ display: 'inline-block', width: 50 }} id="header-index">
+                    Index
+                </span>
+                <span style={{ display: 'inline-block', width: 100 }} id="header-sourcetype">
+                    Sourcetype
+                </span>
+                <span style={{ display: 'inline-block', width: 100 }} id="header-host">
+                    Host
+                </span>
+                <span style={{ display: 'inline-block', width: 100 }} id="header-lateSecs">
+                    Late Seconds
+                </span>
+                <span style={{ display: 'inline-block', width: 100 }} id="header-contacts">
+                    Contacts
+                </span>
+                <span style={{ display: 'inline-block', width: 100 }} id="header-comments">
+                    Comments
+                </span>
+            </div>
+        );
+
         return (
             <div>
                 <Modal
                     onRequestClose={this.props.onClose}
                     open={this.props.openState}
-                    style={{ width: '400px' }}
+                    style={{ width: '800px' }}
                 >
-                    <Modal.Header onRequestClose={this.props.onClose} title="New Entry For Real" />
+                    <Modal.Header
+                        onRequestClose={this.props.onClose}
+                        title="Add Multiple Entries"
+                    />
                     <Modal.Body>
-                        <form>
-                            {/* <DatasourceMultiSelect
-                            type={INDEXES}
-                            url={indexUrl}
-                            selected={form.indexes}
-                            setSelected={handleFormChange}
-                        />
-                        <DatasourceMultiSelect
-                            type={HOSTS}
-                            url={hostUrl}
-                            selected={form.hosts}
-                            setSelected={handleFormChange}
-                        />
-                        <DatasourceMultiSelect
-                            type={SOURCETYPES}
-                            url={sourcetypeUrl}
-                            selected={form.sourcetypes}
-                            setSelected={handleFormChange}
-                        />
-                        <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
-                        <ContactInput type={CONTACT} setSelected={handleFormChange} />
-                        <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} /> */}
-                        </form>
                         <FormRows
                             onRequestAdd={this.handleRequestAdd}
                             onRequestMove={this.handleRequestMove}
-                            style={{ width: 300 }}
+                            style={{ width: '650px', margin: '0 auto' }}
                         >
                             {this.state.items}
                         </FormRows>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button appearance="default" onClick={this.props.onClose} label="Cancel" />
-                        <Button appearance="primary" onClick={this.submitData} label="Submit" />
+                        <Button appearance="default" onClick={this.props.onClose} type="Cancel" />
+                        <Button appearance="primary" onClick={this.submitData} type="Submit" />
                     </Modal.Footer>
                 </Modal>
             </div>
         );
     }
 }
-
-// const [form, dispatchForm] = useReducer(newBatchRecordsFormReducer, initialForm);
-
-// const withUseReducer =
-//     (...useReducerArgs) =>
-//     (Component) =>
-//     (props) => {
-//         const [form, dispatchForm] = useReducer(newBatchRecordsFormReducer, initialForm);
-
-//         return <NewBatchRecords {...props} {...{ form, dispatchForm }} />;
-//     };
 
 export default NewBatchRecords;
