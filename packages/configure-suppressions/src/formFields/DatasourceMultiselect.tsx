@@ -6,7 +6,7 @@ import NoCacheDataFoundWarning from '../NoCacheDataFoundWarning';
 import { capitalize, sleep, getAvailableData } from '../Helpers';
 import WaitSpinner from '@splunk/react-ui/WaitSpinner';
 
-const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
+const DatasourceSelect = ({ type, url, selected, setSelected }) => {
     const [availableSourcetypes, setAvailableSourcetypes] = useState<string[]>([]);
     const [dataEmpty, setDataEmpty] = useState<boolean>(false);
     const [attempts, setAttempts] = useState<number>(1);
@@ -71,4 +71,4 @@ const DatasourceMultiSelect = ({ type, url, selected, setSelected }) => {
     );
 };
 
-export default DatasourceMultiSelect;
+export default DatasourceSelect;

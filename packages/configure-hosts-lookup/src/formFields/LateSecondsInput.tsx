@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import T from 'prop-types';
 import Text, { TextChangeHandler } from '@splunk/react-ui/Text';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import Heading from '@splunk/react-ui/Heading';
 import { capitalize } from '../Helpers';
 import Tooltip from '@splunk/react-ui/Tooltip';
@@ -29,11 +30,14 @@ const LateSecondsInput = ({ type, setSelected, editValue }: Props) => {
 
     return (
         <Div $width="400px">
-            <Heading level={4}>
-                {capitalize(type)}
+            <ControlGroup
+                label={capitalize(type)}
+                labelPosition="top"
+                style={{ margin: '.5em .25em 0 0' }}
+            >
+                <Text canClear type="text" value={lateSeconds || ''} onChange={handleChange} />
                 <Tooltip content="Use seconds or SPL relative time format. 0 means always suppress." />
-            </Heading>
-            <Text canClear type="text" value={lateSeconds || ''} onChange={handleChange} />
+            </ControlGroup>
         </Div>
     );
 };

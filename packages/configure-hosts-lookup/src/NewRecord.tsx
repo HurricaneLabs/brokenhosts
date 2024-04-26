@@ -2,12 +2,14 @@ import React, { useState, useReducer } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
-import DatasourceMultiSelect from './formFields/DatasourceMultiselect.tsx';
-import LateSecondsInput from './formFields/LateSecondsInput.tsx';
+import Tooltip from '@splunk/react-ui/Tooltip';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import { newFormReducer } from './NewFormReducer.ts';
 import { epochNow } from './Helpers.ts';
 import ContactInput from './formFields/ContactInput.tsx';
 import CommentsTextarea from './formFields/CommentsTextarea.tsx';
+import DatasourceSelect from './formFields/DatasourceSelect.tsx';
+import LateSecondsInput from './formFields/LateSecondsInput.tsx';
 
 const initialForm = {
     sourcetypes: [],
@@ -38,7 +40,7 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
         onClose();
     };
 
-    const handleFormChange = (type: string, value: string) => {
+    const handleFormChange = (type: string, value: any[] | any) => {
         console.log('current type ::: ', type);
         console.log('current value ::: ', value);
         dispatchForm({ type, value });
@@ -50,24 +52,45 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                 <Modal.Header onRequestClose={onClose} title="New Entry For Real" />
                 <Modal.Body>
                     <form>
-                        <DatasourceMultiSelect
-                            type={INDEXES}
-                            url={indexUrl}
-                            value={form.index}
-                            setValue={handleFormChange}
-                        />
-                        <DatasourceMultiSelect
-                            type={HOSTS}
-                            url={hostUrl}
-                            value={form.host}
-                            setValue={handleFormChange}
-                        />
-                        <DatasourceMultiSelect
-                            type={SOURCETYPES}
-                            url={sourcetypeUrl}
-                            value={form.sourcetype}
-                            setValue={handleFormChange}
-                        />
+                        <ControlGroup
+                            label="Index"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={INDEXES}
+                                url={indexUrl}
+                                value={form.index}
+                                setValue={handleFormChange}
+                            />
+                            <Tooltip content="If no indexes are found then you must manually enter a value." />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Host"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={HOSTS}
+                                url={hostUrl}
+                                value={form.host}
+                                setValue={handleFormChange}
+                            />
+                            <Tooltip content="If no hosts are found then you must manually enter a value." />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Sourcetype"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={SOURCETYPES}
+                                url={sourcetypeUrl}
+                                value={form.sourcetype}
+                                setValue={handleFormChange}
+                            />
+                            <Tooltip content="If no sourcetypes are found then you must manually enter a value." />
+                        </ControlGroup>
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
                         <ContactInput type={CONTACT} setSelected={handleFormChange} />
                         <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />

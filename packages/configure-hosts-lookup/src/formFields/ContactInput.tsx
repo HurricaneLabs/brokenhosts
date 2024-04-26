@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Text, { TextChangeHandler } from '@splunk/react-ui/Text';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import { capitalize } from '../Helpers';
@@ -28,10 +29,14 @@ const ContactInput = ({ type, setSelected, editValue }: Props) => {
 
     return (
         <Div $width="400px">
-            <Heading level={4}>
-                {capitalize(type)} <Tooltip content="Comma delimited list of emails" />
-            </Heading>
-            <Text canClear type="text" value={contact || ''} onChange={handleChange} />
+            <ControlGroup
+                label={capitalize(type)}
+                labelPosition="top"
+                style={{ margin: '.5em .25em 0 0' }}
+            >
+                <Text canClear type="text" value={contact || ''} onChange={handleChange} />
+                <Tooltip content="Comma delimited list of emails" />
+            </ControlGroup>
         </Div>
     );
 };

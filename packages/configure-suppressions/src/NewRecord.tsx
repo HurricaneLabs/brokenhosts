@@ -2,7 +2,7 @@ import React, { useState, useReducer } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
-import DatasourceMultiSelect from './formFields/DatasourceMultiselect.tsx';
+import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
 import { newFormReducer } from './NewFormReducer.ts';
 import { epochNow } from './Helpers.ts';
@@ -39,7 +39,7 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
 
     const handleFormChange = (type: string, value: string[] | string) => {
         console.log('current value ::: ', value);
-        dispatchForm(type, value);
+        dispatchForm(type, value });
     };
 
     return (
@@ -48,19 +48,19 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                 <Modal.Header onRequestClose={onClose} title="New Entry" />
                 <Modal.Body>
                     <form>
-                        <DatasourceMultiSelect
+                        <DatasourceSelect
                             type={INDEX}
                             url={indexUrl}
                             selected={form.indexes}
                             setSelected={handleFormChange}
                         />
-                        <DatasourceMultiSelect
+                        <DatasourceSelect
                             type={HOST}
                             url={hostUrl}
                             selected={form.indexes}
                             setSelected={handleFormChange}
                         />
-                        <DatasourceMultiSelect
+                        <DatasourceSelect
                             type={SOURCETYPE}
                             url={sourcetypeUrl}
                             selected={form.indexes}

@@ -7,7 +7,7 @@ import Modal from '@splunk/react-ui/Modal';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
 import TextArea from '@splunk/react-ui/TextArea';
 import { epochNow } from './Helpers.ts';
-import DatasourceMultiSelect from './formFields/DatasourceMultiselect.tsx';
+import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 
 interface Item {
     sourcetypes: string;
@@ -33,9 +33,6 @@ interface Props {
 interface State {
     items: any[];
     itemsValue: any[];
-    currentIndexValue: string;
-    currentHostValue: string;
-    currentSourcetypeValue: string;
 }
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
@@ -51,9 +48,6 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
         this.state = {
             items,
             itemsValue: [],
-            currentIndexValue: '',
-            currentHostValue: '',
-            currentSourcetypeValue: '',
         };
     }
 
@@ -65,14 +59,6 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
 
     handleFormChange = (type: string, value: string, index?: number | undefined): void => {
         console.log('current value ::: ', type, value, index);
-        switch (type) {
-            case 'index':
-                this.setState({ currentIndexValue: value });
-            case 'sourcetype':
-                this.setState({ currentSourcetypeValue: value });
-            case 'host':
-                this.setState({ currentHostValue: value });
-        }
         const currentItemsValueArray = this.state.itemsValue;
         if (index !== undefined) {
             currentItemsValueArray[index][type] = value;
@@ -109,12 +95,12 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                             labelPosition="top"
                             style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
                         >
-                            <DatasourceMultiSelect
+                            <DatasourceSelect
                                 type="index"
                                 url={indexUrl}
                                 setValue={this.handleFormChange}
                                 index={state.items.length}
-                                value={state.currentIndexValue}
+                                value={state.itemsValue[state.itemsValue.length - 1]['index']}
                             />
                         </ControlGroup>
                         <ControlGroup
@@ -122,12 +108,12 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                             labelPosition="top"
                             style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
                         >
-                            <DatasourceMultiSelect
+                            <DatasourceSelect
                                 type="sourcetype"
                                 url={indexUrl}
                                 setValue={this.handleFormChange}
                                 index={state.items.length}
-                                value={state.currentSourcetypeValue}
+                                value={state.itemsValue[state.itemsValue.length - 1]['sourcetype']}
                             />
                         </ControlGroup>
                         <ControlGroup
@@ -135,12 +121,12 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                             labelPosition="top"
                             style={{ margin: '.5em .25em 0 0', flexGrow: '1' }}
                         >
-                            <DatasourceMultiSelect
+                            <DatasourceSelect
                                 type="host"
                                 url={hostUrl}
                                 setValue={this.handleFormChange}
                                 index={state.items.length}
-                                value={state.currentHostValue}
+                                value={state.itemsValue[state.itemsValue.length - 1]['host']}
                             />
                         </ControlGroup>
                     </div>

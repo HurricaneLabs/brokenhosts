@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useReducer } from 'react';
 import TextArea, { TextAreaChangeHandler } from '@splunk/react-ui/TextArea';
-import { editFormReducer } from '../EditFormReducer.ts';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import { capitalize } from '../Helpers';
@@ -30,11 +30,14 @@ const CommentsTextarea = ({ type, editValue, setSelected }: Props) => {
 
     return (
         <Div $width="400px">
-            <Heading level={4}>
-                {capitalize(type)}
+            <ControlGroup
+                label={capitalize(type)}
+                labelPosition="top"
+                style={{ margin: '.5em .25em 0 0' }}
+            >
+                <TextArea value={comments || ''} onChange={handleChange} />
                 <Tooltip content="Be sure to include a ticket number if applicable." />
-            </Heading>
-            <TextArea value={comments || ''} onChange={handleChange} />
+            </ControlGroup>
         </Div>
     );
 };

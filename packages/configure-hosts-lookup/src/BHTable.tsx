@@ -318,16 +318,28 @@ export default class ReorderRows extends Component<{}, TableState> {
 
     addNewRow = async (row) => {
         await addNewRecord(row);
-        this.setState((prevState) => ({
-            data: [...prevState.data, row],
-        }));
+        // this.setState((prevState) => ({
+        //     data: [...prevState.data, row],
+        // }));
+        readCollection().then((data) =>
+            this.setState({
+                data,
+                initialFetch: true,
+            })
+        );
     };
 
     addNewRows = async (rows: any[]) => {
         await addNewRecords(rows);
-        this.setState((prevState) => ({
-            data: [...prevState.data, ...rows],
-        }));
+        // this.setState((prevState) => ({
+        //     data: [...prevState.data, ...rows],
+        // }));
+        readCollection().then((data) =>
+            this.setState({
+                data,
+                initialFetch: true,
+            })
+        );
     };
 
     removeSelectedRecords = () => {
@@ -386,32 +398,30 @@ export default class ReorderRows extends Component<{}, TableState> {
         } else {
             deleteRecord(_keysOfRows[0]);
         }
-
-        console.log('row count after ::: ', this.state.data.length);
     };
 
-    handleNewRequestOpen = (e, data) => {
+    handleNewRequestOpen = () => {
         // handles what happens when modal is open
         this.setState({
             openNewModal: true,
         });
     };
 
-    handleNewBatchRequestOpen = (e, data) => {
+    handleNewBatchRequestOpen = () => {
         // handles what happens when modal is open
         this.setState({
             openNewBatchModal: true,
         });
     };
 
-    handleRemoveRequestOpen = (e, data) => {
+    handleRemoveRequestOpen = () => {
         // handles what happens when modal is open
         this.setState({
             openConfirmRemoveModal: true,
         });
     };
 
-    handleEditRequestOpen = (e, data) => {
+    handleEditRequestOpen = (_, data) => {
         // handles what happens when modal is open
         this.setState({
             openEditModal: true,
