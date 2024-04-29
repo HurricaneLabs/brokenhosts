@@ -8,11 +8,11 @@ import { Div } from '../BHStyles';
 
 interface Props {
     type: string;
-    editValue?: string;
+    value?: string;
     setSelected: (type: string, value: string) => void;
 }
 
-const CommentsTextarea = ({ type, editValue, setSelected }: Props) => {
+const CommentsTextarea = ({ type, value: valueProps, setSelected }: Props) => {
     const [comments, setComments] = useState<string>();
 
     const handleChange: TextAreaChangeHandler = (_, { value }) => {
@@ -22,11 +22,11 @@ const CommentsTextarea = ({ type, editValue, setSelected }: Props) => {
     };
 
     useEffect(() => {
-        if (typeof editValue !== 'undefined') {
-            setSelected(type, editValue);
-            setComments(editValue);
+        if (typeof valueProps !== 'undefined') {
+            setSelected(type, valueProps);
+            setComments(valueProps);
         }
-    }, []);
+    }, [valueProps]);
 
     return (
         <Div $width="400px">

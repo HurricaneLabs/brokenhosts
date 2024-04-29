@@ -8,6 +8,9 @@ import ControlGroup from '@splunk/react-ui/ControlGroup';
 import TextArea from '@splunk/react-ui/TextArea';
 import { epochNow } from './Helpers.ts';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
+import Heading from '@splunk/react-ui/Heading';
+import Tooltip from '@splunk/react-ui/Tooltip';
+import P from '@splunk/react-ui/Paragraph';
 
 interface Item {
     sourcetypes: string;
@@ -89,6 +92,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                     key={createDOMID()}
                     onRequestRemove={this.handleRequestRemove}
                 >
+                    <Heading level={5}>New Entry</Heading>
                     <div style={{ display: 'flex' }}>
                         <ControlGroup
                             label="Index"
@@ -149,6 +153,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                     )
                                 }
                             />
+                            <Tooltip content="Use seconds or SPL relative time format. 0 means always suppress." />
                         </ControlGroup>
                         <ControlGroup
                             label="Contacts"
@@ -168,6 +173,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                     )
                                 }
                             />
+                            <Tooltip content="Comma delimited list of emails" />
                         </ControlGroup>
                     </div>
                     <div style={{ display: 'flex' }}>
@@ -189,6 +195,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                     )
                                 }
                             />
+                            <Tooltip content="Be sure to include a ticket number if applicable." />
                         </ControlGroup>
                     </div>
                 </FormRows.Row>,
@@ -254,8 +261,8 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                         </FormRows>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button appearance="default" onClick={this.props.onClose} type="Cancel" />
-                        <Button appearance="primary" onClick={this.submitData} type="Submit" />
+                        <Button appearance="default" onClick={this.props.onClose} label="Cancel" />
+                        <Button appearance="primary" onClick={this.submitData} label="Submit" />
                     </Modal.Footer>
                 </Modal>
             </div>

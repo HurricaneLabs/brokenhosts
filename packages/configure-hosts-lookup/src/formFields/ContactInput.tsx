@@ -9,10 +9,10 @@ import { Div } from '../BHStyles';
 interface Props {
     type: string;
     setSelected: (type: string, value: string) => void;
-    editValue?: string;
+    value?: string;
 }
 
-const ContactInput = ({ type, setSelected, editValue }: Props) => {
+const ContactInput = ({ type, setSelected, value: valueProps }: Props) => {
     const [contact, setContacts] = useState<string>();
 
     const handleChange: TextChangeHandler = (_, { value }) => {
@@ -21,11 +21,11 @@ const ContactInput = ({ type, setSelected, editValue }: Props) => {
     };
 
     useEffect(() => {
-        if (typeof editValue !== 'undefined') {
-            setContacts(editValue);
-            setSelected(type, editValue);
+        if (typeof valueProps !== 'undefined') {
+            setContacts(valueProps);
+            setSelected(type, valueProps);
         }
-    }, []);
+    }, [valueProps]);
 
     return (
         <Div $width="400px">

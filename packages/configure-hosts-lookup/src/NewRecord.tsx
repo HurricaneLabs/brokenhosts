@@ -1,8 +1,7 @@
-import React, { useState, useReducer } from 'react';
+import React, { useReducer } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
-import Tooltip from '@splunk/react-ui/Tooltip';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
 import { newFormReducer } from './NewFormReducer.ts';
 import { epochNow } from './Helpers.ts';
@@ -20,9 +19,9 @@ const initialForm = {
     comments: null,
 };
 
-const INDEXES = 'index';
-const SOURCETYPES = 'sourcetype';
-const HOSTS = 'host';
+const INDEX = 'index';
+const SOURCETYPE = 'sourcetype';
+const HOST = 'host';
 const LATE_SECONDS = 'lateSecs';
 const CONTACT = 'contact';
 const COMMENTS = 'comments';
@@ -41,15 +40,13 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
     };
 
     const handleFormChange = (type: string, value: any[] | any) => {
-        console.log('current type ::: ', type);
-        console.log('current value ::: ', value);
         dispatchForm({ type, value });
     };
 
     return (
         <div>
             <Modal onRequestClose={onClose} open={openState} style={{ width: '450px' }}>
-                <Modal.Header onRequestClose={onClose} title="New Entry For Real" />
+                <Modal.Header onRequestClose={onClose} title="New Entry" />
                 <Modal.Body>
                     <form>
                         <ControlGroup
@@ -58,12 +55,11 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                             style={{ margin: '.5em .25em 0 0' }}
                         >
                             <DatasourceSelect
-                                type={INDEXES}
+                                type={INDEX}
                                 url={indexUrl}
                                 value={form.index}
                                 setValue={handleFormChange}
                             />
-                            <Tooltip content="If no indexes are found then you must manually enter a value." />
                         </ControlGroup>
                         <ControlGroup
                             label="Host"
@@ -71,12 +67,11 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                             style={{ margin: '.5em .25em 0 0' }}
                         >
                             <DatasourceSelect
-                                type={HOSTS}
+                                type={HOST}
                                 url={hostUrl}
                                 value={form.host}
                                 setValue={handleFormChange}
                             />
-                            <Tooltip content="If no hosts are found then you must manually enter a value." />
                         </ControlGroup>
                         <ControlGroup
                             label="Sourcetype"
@@ -84,12 +79,11 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                             style={{ margin: '.5em .25em 0 0' }}
                         >
                             <DatasourceSelect
-                                type={SOURCETYPES}
+                                type={SOURCETYPE}
                                 url={sourcetypeUrl}
                                 value={form.sourcetype}
                                 setValue={handleFormChange}
                             />
-                            <Tooltip content="If no sourcetypes are found then you must manually enter a value." />
                         </ControlGroup>
                         <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
                         <ContactInput type={CONTACT} setSelected={handleFormChange} />

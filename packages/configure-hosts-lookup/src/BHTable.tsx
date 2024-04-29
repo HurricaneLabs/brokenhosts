@@ -422,6 +422,7 @@ export default class ReorderRows extends Component<{}, TableState> {
     };
 
     handleEditRequestOpen = (_, data) => {
+        console.log('selected data ::: ', data);
         // handles what happens when modal is open
         this.setState({
             openEditModal: true,

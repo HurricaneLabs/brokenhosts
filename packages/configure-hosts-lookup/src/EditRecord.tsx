@@ -2,6 +2,7 @@ import React, { useState, useReducer, useEffect } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import LateSecondsInput from './formFields/LateSecondsInput.tsx';
 import { editFormReducer } from './EditFormReducer.ts';
@@ -52,7 +53,7 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         onUpdate(form);
     };
 
-    const handleFormChange = (type: string, value: string) => {
+    const handleFormChange = (type: string, value: any[] | any) => {
         console.log('handleFormChange ::: ', { type, value });
         dispatchForm({ type, value });
     };
@@ -66,11 +67,13 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     };
 
     useEffect(() => {
-        if (!open) {
-            setOpenState(true);
-            populateForm();
-        }
+        setOpenState(true);
+        populateForm();
     }, [openState]);
+
+    useEffect(() => {
+        console.log('form changed ::: ', form);
+    }, [form]);
 
     return (
         <div>
@@ -78,44 +81,59 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 <Modal.Header onRequestClose={onClose} title="Edit Entry" />
                 <Modal.Body>
                     <form>
-                        {typeof selectedRowData.index !== 'undefined' ? (
-                            <DatasourceSelect
-                                type={INDEX}
-                                url={indexUrl}
-                                selected={form.index}
-                                editValue={selectedRowData.index}
-                                setSelected={handleFormChange}
-                            />
+                        {selectedRowData.index !== undefined && selectedRowData.index !== '' ? (
+                            <ControlGroup
+                                label="Index"
+                                labelPosition="top"
+                                style={{ margin: '.5em .25em 0 0' }}
+                            >
+                                <DatasourceSelect
+                                    type={INDEX}
+                                    url={indexUrl}
+                                    value={form.index}
+                                    setValue={handleFormChange}
+                                />
+                            </ControlGroup>
                         ) : (
                             'Loading...'
                         )}
                         {typeof selectedRowData.host !== 'undefined' ? (
-                            <DatasourceSelect
-                                type={HOST}
-                                url={hostUrl}
-                                selected={form.host}
-                                editValue={selectedRowData.host}
-                                setSelected={handleFormChange}
-                            />
+                            <ControlGroup
+                                label="Host"
+                                labelPosition="top"
+                                style={{ margin: '.5em .25em 0 0' }}
+                            >
+                                <DatasourceSelect
+                                    type={HOST}
+                                    url={hostUrl}
+                                    value={form.host}
+                                    setValue={handleFormChange}
+                                />
+                            </ControlGroup>
                         ) : (
                             'Loading...'
                         )}
                         {typeof selectedRowData.sourcetype !== 'undefined' ? (
-                            <DatasourceSelect
-                                type={SOURCETYPE}
-                                url={sourcetypeUrl}
-                                selected={form.sourcetype}
-                                editValue={selectedRowData.sourcetype}
-                                setSelected={handleFormChange}
-                            />
+                            <ControlGroup
+                                label="Sourcetype"
+                                labelPosition="top"
+                                style={{ margin: '.5em .25em 0 0' }}
+                            >
+                                <DatasourceSelect
+                                    type={SOURCETYPE}
+                                    url={sourcetypeUrl}
+                                    value={form.sourcetype}
+                                    setValue={handleFormChange}
+                                />
+                            </ControlGroup>
                         ) : (
                             'Loading'
                         )}
                         {typeof selectedRowData.lateSecs !== 'undefined' ? (
                             <LateSecondsInput
                                 type={LATE_SECONDS}
-                                editValue={selectedRowData.lateSecs}
                                 setSelected={handleFormChange}
+                                value={form.lateSecs}
                             />
                         ) : (
                             'Loading Woof...'
@@ -123,8 +141,8 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                         {typeof selectedRowData.contact !== 'undefined' ? (
                             <ContactInput
                                 type={CONTACT}
-                                editValue={selectedRowData.contact}
                                 setSelected={handleFormChange}
+                                value={form.contact}
                             />
                         ) : (
                             'Loading Wee...'
@@ -132,8 +150,8 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                         {typeof selectedRowData.comments !== 'undefined' ? (
                             <CommentsTextarea
                                 type={COMMENTS}
-                                editValue={selectedRowData.comments}
                                 setSelected={handleFormChange}
+                                value={form.comments}
                             />
                         ) : (
                             'Loading Woo...'
