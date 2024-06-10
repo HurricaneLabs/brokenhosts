@@ -6,11 +6,11 @@ import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
 import TextArea from '@splunk/react-ui/TextArea';
-import { epochNow } from './Helpers.ts';
+import { epochNow, isEmptyOrUndefined, isValidEmail } from './Helpers.ts';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
-import P from '@splunk/react-ui/Paragraph';
+import MessageBar from '@splunk/react-ui/MessageBar';
 
 interface Item {
     sourcetypes: string;
@@ -36,6 +36,10 @@ interface Props {
 interface State {
     items: any[];
     itemsValue: any[];
+    lateSecsNotValidError: boolean;
+    sourceIsEmptyError: boolean;
+    lateSecsEmptyError: boolean;
+    invalidEmailAddress: boolean;
 }
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
@@ -51,16 +55,94 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
         this.state = {
             items,
             itemsValue: [],
+            lateSecsNotValidError: false,
+            sourceIsEmptyError: false,
+            lateSecsEmptyError: false,
+            invalidEmailAddress: false,
         };
     }
 
-    submitData = () => {
-        console.log('FORM ??? ', this.state.itemsValue);
-        this.props.onSubmit(this.state.itemsValue);
-        this.props.onClose();
+    validate = async () => {
+        let hasError = false;
+
+        this.state.itemsValue.map((item, idx) => {
+            console.log('Current Item ::: ', item);
+
+            this.setState({ lateSecsNotValidError: false });
+            this.setState({ lateSecsEmptyError: false });
+            this.setState({ sourceIsEmptyError: false });
+            this.setState({ invalidEmailAddress: false });
+
+            console.log('is not a number??? ', isNaN(Number(item.value)));
+
+            console.log("item['host'] ", item['host']);
+            console.log("item['index'] ", item['index']);
+            console.log("item['sourcetype'] ", item['sourcetype']);
+
+            const emptySourceCount =
+                isEmptyOrUndefined(item['host']) &&
+                isEmptyOrUndefined(item['index']) &&
+                isEmptyOrUndefined(item['sourcetype']);
+
+            console.log('contact ::: ', item['contact']);
+
+            // Check if multiple emails
+            if (!isEmptyOrUndefined(item['contact']) && item['contact'].includes(',')) {
+                const validEmailCount = item['contact'].split(',').filter((email) => {
+                    return isValidEmail(email);
+                });
+
+                if (
+                    item['contact'].split(',').length > 0 &&
+                    validEmailCount !== item['contact'].split(',').length
+                ) {
+                    hasError = true;
+                    this.setState({ invalidEmailAddress: true });
+                }
+                // Or just one email
+            } else if (!isEmptyOrUndefined(item['contact'])) {
+                if (!isValidEmail(item['contact'])) {
+                    hasError = true;
+                    this.setState({ invalidEmailAddress: true });
+                }
+            }
+
+            if (isEmptyOrUndefined(item['lateSecs'])) {
+                hasError = true;
+                this.setState({ lateSecsEmptyError: true });
+            }
+
+            if (emptySourceCount) {
+                hasError = true;
+                this.setState({ sourceIsEmptyError: true });
+            }
+
+            if (!isEmptyOrUndefined(item['lateSecs']) && isNaN(item['lateSecs'])) {
+                hasError = true;
+                this.setState({ lateSecsNotValidError: true });
+            }
+
+            if (hasError) {
+                throw new Error('Validation has failed');
+            }
+        });
     };
 
-    handleFormChange = (type: string, value: string, index?: number | undefined): void => {
+    submitData = async () => {
+        await this.validate()
+            .then((_) => {
+                console.log('FORM ??? ', this.state.itemsValue);
+                console.log('STATE OF ITEMS ::: ', this.state.items);
+
+                this.props.onSubmit(this.state.itemsValue);
+                this.props.onClose();
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    handleFormChange = (type: string, value: any, index?: number | undefined): void => {
         console.log('current value ::: ', type, value, index);
         const currentItemsValueArray = this.state.itemsValue;
         if (index !== undefined) {
@@ -153,6 +235,9 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                     )
                                 }
                             />
+                            {state.itemsValue[state.itemsValue.length - 1]['hasError']
+                                ? 'UH OH'
+                                : ''}
                             <Tooltip content="Use seconds or SPL relative time format. 0 means always suppress." />
                         </ControlGroup>
                         <ControlGroup
@@ -252,6 +337,36 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                         title="Add Multiple Entries"
                     />
                     <Modal.Body>
+                        {this.state.lateSecsNotValidError ? (
+                            <MessageBar type="error">
+                                One or more row's 'Late Seconds' value is not valid. It must be a
+                                number.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
+                        {this.state.lateSecsEmptyError ? (
+                            <MessageBar type="error">
+                                One or more row's 'Late Seconds' is empty. It must be a number.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
+                        {this.state.sourceIsEmptyError ? (
+                            <MessageBar type="error">
+                                One or more row's Index, Sourcetype, or Host is missing a value. At
+                                least one value per row must be provided.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
+                        {this.state.invalidEmailAddress ? (
+                            <MessageBar type="error">
+                                One or more email address is not valid.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
                         <FormRows
                             onRequestAdd={this.handleRequestAdd}
                             onRequestMove={this.handleRequestMove}

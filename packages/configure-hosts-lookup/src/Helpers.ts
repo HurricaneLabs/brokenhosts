@@ -78,3 +78,12 @@ export const capitalize = function (str: string) {
 
     return str.split('')[0].toUpperCase() + str.slice(1, str.length);
 };
+
+export const isEmptyOrUndefined = (val: string) => {
+    return val === '' || val === undefined;
+};
+
+export const isValidEmail = (email) => {
+    var re = /\S+@\S+\.\S+/;
+    return re.test(email);
+};

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import T from 'prop-types';
 import Text, { TextChangeHandler } from '@splunk/react-ui/Text';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
-import { capitalize } from '../Helpers';
 import Tooltip from '@splunk/react-ui/Tooltip';
+import MessageBar from '@splunk/react-ui/MessageBar';
 import { Div } from '../BHStyles';
 
 interface Props {
     type: string;
     setSelected: (type: string, value: string) => void;
     value?: string;
+    hasError: boolean;
 }
 
-const LateSecondsInput = ({ type, setSelected, value: valueProps }: Props) => {
+const LateSecondsInput = ({ type, setSelected, value, hasError }: Props) => {
     const [lateSeconds, setLateSeconds] = useState<string>();
 
     const handleChange: TextChangeHandler = (e, { value }) => {
@@ -22,24 +22,31 @@ const LateSecondsInput = ({ type, setSelected, value: valueProps }: Props) => {
     };
 
     useEffect(() => {
-        console.log('lateSecs value ::: ', valueProps);
+        console.log('lateSecs value ::: ', value);
 
-        if (typeof valueProps !== 'undefined') {
-            setLateSeconds(valueProps);
-            setSelected(type, valueProps);
+        if (typeof value !== 'undefined') {
+            setLateSeconds(value);
+            setSelected(type, value);
         }
-    }, [valueProps]);
+    }, [value]);
 
     return (
         <Div $width="400px">
             <ControlGroup
-                label={capitalize(type)}
+                label="Late Seconds"
                 labelPosition="top"
                 style={{ margin: '.5em .25em 0 0' }}
             >
                 <Text canClear type="text" value={lateSeconds || ''} onChange={handleChange} />
                 <Tooltip content="Use seconds or SPL relative time format. 0 means always suppress." />
             </ControlGroup>
+            {hasError ? (
+                <MessageBar type="error">
+                    Late seconds must not be empty and must be a valid number.
+                </MessageBar>
+            ) : (
+                ''
+            )}
         </Div>
     );
 };
