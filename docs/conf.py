@@ -22,13 +22,13 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # -- Project information -----------------------------------------------------
 
 project = 'Broken Hosts App for Splunk'
-copyright = '2018, Hurricane Labs'
+copyright = '2024, Hurricane Labs'
 author = 'Hurricane Labs'
 
 # The short X.Y version
 version = '4.0'
 # The full version, including alpha/beta/rc tags
-release = '4.0.1'
+release = '4.3.1'
 
 
 # -- General configuration ---------------------------------------------------
