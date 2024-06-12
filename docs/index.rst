@@ -50,7 +50,6 @@ Known Issues
   ``Broken Hosts`` dashboard. Future host detection will be moved to a separate search in a
   future release of the Broken Hosts App.
 - search-time renaming of sourcetypes is not taken into account
-- "Configure Broken Hosts Lookup" doesn't handle additional fields added to expectedTime lookup
 
 Documentation
 -------------
@@ -64,7 +63,74 @@ Documentation
 Changelog
 ---------
 
-Version 4.0.5 (RELEASE PENDING)
+Version 4.3.1 (2024-03-25)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fixed an issue causing main dashboard not to display some panels
+
+Version 4.2.5 (2023-12-29)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fixes JS security issue and restores bh_stats_gen source tracking
+
+Version 4.2.3 (2023-09-14)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fixed search logic issues that were opened by ew426 on Github (Thank you!)
+
+Version 4.1.5 (2023-06-07)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix for broken configuration page on Splunk Cloud
+
+Version 4.1.4 (2022-08-31)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix app.manifest version number
+- Fix bug in Configure Broken Hosts Lookup dashboard where dropdowns for index, sourcetype, and host were not populating
+- Moved JS dependency into local appserver folder to fix AppInspect issue
+
+Version 4.1.3 (2022-07-15)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- This update removes the default suppression of Splunk Cloud hosts to reflect changes made to Splunk inputs as part of the Victoria experience.
+
+Version 4.1.2 (2022-01-25)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- outputlookup removed from configure_lookup.xml dashboard
+- Removed all use of outputlookup command to meet Splunk Cloud requirements. Replaced with API requests.
+- Bug fix on batch update - incorrect increment could cause limit to be hit when updating causing loss of data in KV
+- Better error handling - shows errors in UI if failure to edit or delete
+
+Version 4.1.1 (2022-01-13)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Updated app manifest to specify installation only on search heads in Cloud
+
+Version 4.1.0 (2021-12-15)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Improvements to the “Configure Broken Hosts Lookup” page
+- Bug fix: when results hit over 1k entries, it hits the default 1k limit in limits.conf resulting in the kv store being emptied out. The results are now batched to prevent this issue.
+
+Version 4.0.9 (2021-09-20)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix setup page not loading
+
+Version 4.0.8 (2021-09-17)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Setup page added for app configuration
+
+Version 4.0.6 (2021-09-07)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Updated dashboards to XML version 1.1 for jQuery 3.5 compatibility
+- Trigger stanza added to app.conf for bh.conf file
+
+Version 4.0.5 (2020-06-19)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - update bh_stats_gen to use a more meaningful time for the summary events
