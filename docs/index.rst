@@ -138,8 +138,7 @@ Version 4.0.5 (2020-06-19)
 - include wineventlog aggregation
 - make pfsense aggregation work with splunk web validation
 - make pfsense aggregation more generic to apply more broadly
-- dropdowns on Configure Broken Hosts lookup now paginate to help prevent against browser crashing when loading
-extremely large data-sets
+- dropdowns on Configure Broken Hosts lookup now paginate to help prevent against browser crashing when loading extremely large data-sets
 
 Version 4.0.4 (2018-12-12)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
