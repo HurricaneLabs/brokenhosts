@@ -51,7 +51,7 @@ const ContactInput = ({ type, setSelected, value, hasError }: Props) => {
                 <Tooltip content="Comma delimited list of emails" />
             </ControlGroup>
             {hasError ? (
-                <MessageBar type="error">
+                <MessageBar style={{ marginTop: '.5em' }} type="error">
                     Contacts must be a valid email, or a comma-delimited list of emails.
                 </MessageBar>
             ) : (

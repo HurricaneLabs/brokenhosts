@@ -67,10 +67,6 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 }
 
                 if (k === 'contact') {
-                    console.log(
-                        'contact is empty or udnefined ::: ',
-                        isEmptyOrUndefined(v as string)
-                    );
                     if (!isEmptyOrUndefined(v as string)) {
                         if ((v as string).includes(',')) {
                             const validEmailCount = (v as string).split(',').filter((email) => {

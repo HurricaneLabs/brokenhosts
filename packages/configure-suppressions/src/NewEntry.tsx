@@ -2,12 +2,12 @@ import React, { useState, useReducer } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
-import DatasourceSelect from './DatasourceSelect.tsx';
-import LateSecondsInput from './LateSecondsInput.tsx';
+import DatasourceSelect from './formFields/DatasourceSelect.tsx';
+import LateSecondsInput from './formFields/LateSecondsInput.tsx';
 import { formReducer } from './FormReducer.ts';
 import { epochNow } from './Helpers.ts';
-import ContactsInput from './ContactsInput.tsx';
-import CommentsTextarea from './CommentsTextarea.tsx';
+import ContactsInput from './formFields/ContactInput.tsx';
+import CommentsTextarea from './formFields/CommentsTextarea.tsx';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
 
 const initialForm = {
