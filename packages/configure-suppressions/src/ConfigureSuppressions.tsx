@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import SuppressionTable from './SuppressionTable';
-
-import { StyledContainer } from './ConfigureSuppressionsStyles';
+import BHTable from './BHTable';
 
 const propTypes = {
     name: PropTypes.string,
 };
 
 const ConfigureSuppressions = () => {
-    return <SuppressionTable />;
+    // const [counter, setCounter] = useState(0);
+
+    return <BHTable />;
 };
 
 ConfigureSuppressions.propTypes = propTypes;

@@ -1,104 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import Select, { SelectChangeHandler } from '@splunk/react-ui/Select';
-import Text, { TextChangeHandler } from '@splunk/react-ui/Text';
-import Heading from '@splunk/react-ui/Heading';
-import Tooltip from '@splunk/react-ui/Tooltip';
-import NoCacheDataFoundWarning from '../NoCacheDataFoundWarning';
-import { capitalize, sleep, getAvailableData } from '../Helpers';
+import Text from '@splunk/react-ui/Text';
+import { sleep, getAvailableData } from '../Helpers';
 import WaitSpinner from '@splunk/react-ui/WaitSpinner';
 
-interface Props {
+type Props = {
     type: string;
     url: string;
-    selected: string;
-    setSelected: (type: string, value: string) => void;
-    editValue?: string;
-}
+    value?: string;
+    setValue: (type: string, value: string, index?: number) => void;
+    index?: number;
+    inline?: boolean;
+};
 
-const DatasourceSelect = ({ type, url, selected, setSelected, editValue }: Props) => {
-    const [availableSourcetypes, setAvailableSourcetypes] = useState<string[]>([]);
-    const [dataEmpty, setDataEmpty] = useState<boolean>(false);
-    const [attempts, setAttempts] = useState<number>(1);
+const defaultProps = {
+    index: -1,
+};
+
+const DatasourceSelect = (props: Props) => {
+    props = { ...defaultProps, ...props };
+
+    const { type, url, value: valueProps, setValue: setValueProps, index } = props;
+
+    const [availableData, setAvailableData] = useState<string[]>([]);
+    const [dataEmpty, setDataEmpty] = useState<boolean>(true);
+    const [attempts, setAttempts] = useState<number>(0);
     const [pullingData, setPullingData] = useState<boolean>(false);
+    const [value, setValue] = useState<string | unknown>('');
 
-    const SelectOptions = availableSourcetypes.map((v) => (
-        <Select.Option key={v} label={v} value={v} />
-    ));
+    const selectOptions = availableData.map((v) => <Select.Option key={v} label={v} value={v} />);
 
     useEffect(() => {
-        console.log('what is selected ::: ', selected);
+        setValue(valueProps);
+    }, [valueProps]);
+
+    useEffect(() => {
         pullData();
-    }, []);
-
-    useEffect(() => {
-        if (typeof editValue !== 'undefined') {
-            setSelected(type, editValue);
-        }
     }, []);
 
     const pullData = () => {
         getAvailableData(url).then(async (data) => {
             setPullingData(true);
-            // Artificial delay otherwise users wont see any load state which may be confusing
             await sleep(1500);
-            if (data.length === 0) {
-                setDataEmpty(true);
+            if (data.length > 0) {
+                setDataEmpty(false);
+            } else if (attempts < 1) {
                 setAttempts((attempts) => attempts + 1);
             }
-            setAvailableSourcetypes(data);
+            console.log('data???? ', data);
+            setAvailableData(data);
             setPullingData(false);
         });
     };
 
-    const handleSelectChange: SelectChangeHandler = (_, { value }) => setSelected(`${type}`, value);
-    const handleInputChange: TextChangeHandler = (_, { value }) => setSelected(`${type}`, value);
+    // Handle value change when its a text input
+    const handleInputChange = (value: string) => {
+        // Index is passed in if we are dealing with a batch update
+        setValue(value);
+        if (index !== undefined && index > -1) {
+            setValueProps(`${type}`, value, index);
+        } else {
+            setValueProps(`${type}`, value);
+        }
+    };
 
+    // Handle value change when its a select input
+    const handleSelectChange = (_, { value }) => {
+        setValue(value);
+        setValueProps(`${type}`, value, index);
+    };
     const inputView = () => {
-        if (attempts === 1) {
+        if (attempts === 0 && dataEmpty) {
             return <WaitSpinner size="medium" />;
-        }
-        if (!editValue) {
+        } else if (!dataEmpty) {
             return (
-                <div>
+                <>
                     <Select
+                        style={{ width: '99%' }}
                         name="indexSelect"
-                        value={editValue}
+                        value={value}
                         onChange={handleSelectChange}
-                        inline
                     >
-                        {SelectOptions}
+                        {selectOptions}
                     </Select>
-                </div>
+                </>
             );
-        }
-        if (dataEmpty && editValue) {
+        } else if (dataEmpty) {
             return (
-                <div>
-                    <Text canClear defaultValue={editValue} onChange={handleInputChange} />
-                    <small>Manually enter a comma delimited list.</small>
-                </div>
+                <Text
+                    style={{ margin: '0 .25em 0 0' }}
+                    value={value}
+                    onChange={(e) => {
+                        handleInputChange((e.target as HTMLInputElement).value);
+                    }}
+                />
             );
         }
     };
 
-    return (
-        <>
-            <Heading level={4}>
-                Select {capitalize(type)} <Tooltip content="Add one or more value." />
-            </Heading>
-            {inputView()}
-            {dataEmpty ? (
-                <NoCacheDataFoundWarning
-                    type={type}
-                    refetchData={pullData}
-                    pullingData={pullingData}
-                    attempts={attempts}
-                />
-            ) : (
-                ''
-            )}
-        </>
-    );
+    return <>{inputView()}</>;
 };
 
 export default DatasourceSelect;

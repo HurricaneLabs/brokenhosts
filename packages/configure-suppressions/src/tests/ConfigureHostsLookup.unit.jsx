@@ -6,21 +6,21 @@ import { expect, test } from '@jest/globals';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import ConfigureSuppressions from '../ConfigureSuppressions';
+import ConfigureHostsLookup from '../ConfigureHostsLookup';
 
 test('renders with default name', async () => {
-    const { getByTestId } = render(<ConfigureSuppressions />);
+    const { getByTestId } = render(<ConfigureHostsLookup />);
     expect(getByTestId('greeting')).toHaveTextContent('Hello, User!');
 });
 
 test('renders with custom name', async () => {
     const name = 'World';
-    const { getByTestId } = render(<ConfigureSuppressions name={name} />);
+    const { getByTestId } = render(<ConfigureHostsLookup name={name} />);
     expect(getByTestId('greeting')).toHaveTextContent(`Hello, ${name}!`);
 });
 
 test('increases counter when button is clicked', async () => {
-    const { findByRole, findByText } = render(<ConfigureSuppressions />);
+    const { findByRole, findByText } = render(<ConfigureHostsLookup />);
     const button = await findByRole('button');
     button.click();
     const message = await findByText(/You've clicked the button/);
@@ -28,6 +28,6 @@ test('increases counter when button is clicked', async () => {
 });
 
 test('displays the correct message when counter is zero', () => {
-    const { getByTestId } = render(<ConfigureSuppressions />);
+    const { getByTestId } = render(<ConfigureHostsLookup />);
     expect(getByTestId('greeting')).toHaveTextContent(/You should try clicking the button./);
 });

@@ -31,8 +31,8 @@ const ConfirmRemoveSelected = ({ openState, onClose, confirmRemoval, selectedRow
 
 ConfirmRemoveSelected.propTypes = {
     onClose: T.func,
-    selectedRows: T.object,
+    selectedRows: T.array,
     openState: T.bool,
-    confirmRemoval: T.bool,
+    confirmRemoval: T.func,
 };
 export default ConfirmRemoveSelected;

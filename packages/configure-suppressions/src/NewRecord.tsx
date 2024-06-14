@@ -1,27 +1,28 @@
-import React, { useState, useReducer } from 'react';
+import React, { useReducer } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
-import DatasourceSelect from './formFields/DatasourceSelect.tsx';
-import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import { newFormReducer } from './NewFormReducer.ts';
 import { epochNow } from './Helpers.ts';
 import ContactInput from './formFields/ContactInput.tsx';
 import CommentsTextarea from './formFields/CommentsTextarea.tsx';
+import DatasourceSelect from './formFields/DatasourceSelect.tsx';
+import LateSecondsInput from './formFields/LateSecondsInput.tsx';
 
 const initialForm = {
     sourcetypes: [],
     indexes: [],
     hosts: [],
     lateSeconds: null,
-    CONTACT: null,
+    contact: null,
     comments: null,
 };
 
 const INDEX = 'index';
 const SOURCETYPE = 'sourcetype';
 const HOST = 'host';
-const LATE_SECONDS = 'late_seconds';
+const LATE_SECONDS = 'lateSecs';
 const CONTACT = 'contact';
 const COMMENTS = 'comments';
 
@@ -33,13 +34,13 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
     const [form, dispatchForm] = useReducer(newFormReducer, initialForm);
 
     const submitData = () => {
-        onSubmit();
+        console.log('FORM ??? ', form);
+        onSubmit(form);
         onClose();
     };
 
-    const handleFormChange = (type: string, value: string[] | string) => {
-        console.log('current value ::: ', value);
-        dispatchForm(type, value });
+    const handleFormChange = (type: string, value: any[] | any) => {
+        dispatchForm({ type, value });
     };
 
     return (
@@ -48,25 +49,43 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                 <Modal.Header onRequestClose={onClose} title="New Entry" />
                 <Modal.Body>
                     <form>
-                        <DatasourceSelect
-                            type={INDEX}
-                            url={indexUrl}
-                            selected={form.indexes}
-                            setSelected={handleFormChange}
-                        />
-                        <DatasourceSelect
-                            type={HOST}
-                            url={hostUrl}
-                            selected={form.indexes}
-                            setSelected={handleFormChange}
-                        />
-                        <DatasourceSelect
-                            type={SOURCETYPE}
-                            url={sourcetypeUrl}
-                            selected={form.indexes}
-                            setSelected={handleFormChange}
-                        />
-                        <SuppressUntilInput type={LATE_SECONDS} setSelected={handleFormChange} />
+                        <ControlGroup
+                            label="Index"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={INDEX}
+                                url={indexUrl}
+                                value={form.index}
+                                setValue={handleFormChange}
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Host"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={HOST}
+                                url={hostUrl}
+                                value={form.host}
+                                setValue={handleFormChange}
+                            />
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Sourcetype"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={SOURCETYPE}
+                                url={sourcetypeUrl}
+                                value={form.sourcetype}
+                                setValue={handleFormChange}
+                            />
+                        </ControlGroup>
+                        <LateSecondsInput type={LATE_SECONDS} setSelected={handleFormChange} />
                         <ContactInput type={CONTACT} setSelected={handleFormChange} />
                         <CommentsTextarea type={COMMENTS} setSelected={handleFormChange} />
                     </form>

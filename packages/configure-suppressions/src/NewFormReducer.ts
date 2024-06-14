@@ -4,8 +4,8 @@ type Action = {
     value: string;
     type: string;
 };
-
-export function formReducer(state: InitialForm, action: Action) {
+export function newFormReducer(state: InitialForm, action: Action) {
+    console.log('action.type ::: ', action.type);
     switch (action.type) {
         case 'sourcetype':
             console.log('UPDATE  SOURCETYPES ', action.value);
@@ -31,17 +31,25 @@ export function formReducer(state: InitialForm, action: Action) {
                 ...state,
                 lateSecs: action.value,
             };
-        case 'comment':
-            console.log('COMMENT ', action.value);
+        case 'comments':
+            console.log('COMMENTS ', action.value);
             return {
                 ...state,
-                comment: action.value,
+                comments: action.value,
             };
         case 'contact':
-            console.log('CONTACT ', action.value);
+            console.log('contact ', action.value);
             return {
                 ...state,
                 contact: action.value,
+            };
+        case 'all':
+            console.log('ALL ', action.value[0]);
+            const form = action.value[0];
+            const { ...allFields } = form;
+            return {
+                ...state,
+                ...allFields,
             };
     }
     throw Error('Unknown action occurred.');

@@ -1,30 +1,25 @@
-import React, { useState, useReducer, useEffect } from 'react';
+import React, { useState, useReducer, useEffect, isValidElement } from 'react';
 import T from 'prop-types';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
+import ControlGroup from '@splunk/react-ui/ControlGroup';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
-import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
 import { editFormReducer } from './EditFormReducer.ts';
-import { epochNow } from './Helpers.ts';
-import ContactInput from './formFields/ContactInput.tsx';
-import CommentsTextarea from './formFields/CommentsTextarea.tsx';
-import { SelectedRow } from './types.ts';
+import { epochNow, isEmptyOrUndefined, isValidEmail } from './Helpers.ts';
+import MessageBar from '@splunk/react-ui/MessageBar';
+import { SelectedRow, InitialForm } from './types.ts';
+import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
 
 const initialForm = {
-    sourcetypes: [],
-    indexes: [],
-    hosts: [],
-    lateSecs: null,
-    contact: null,
-    comments: null,
-};
+    sourcetypes: '',
+    indexes: '',
+    hosts: '',
+    suppressUntil: '',
+} as InitialForm;
 
 const INDEX = 'index';
 const SOURCETYPE = 'sourcetype';
 const HOST = 'host';
-const LATE_SECONDS = 'late_seconds';
-const CONTACT = 'contact';
-const COMMENTS = 'comments';
 
 const sourcetypeUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
 const indexUrl = `storage/collections/data/bh_index_cache?query={"last_seen":{"$gt":${epochNow}}}`;
@@ -32,13 +27,54 @@ const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt
 
 const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     const [form, dispatchForm] = useReducer(editFormReducer, initialForm);
+    const [, setOpenState] = useState(false);
+    const [, setErrorState] = useState(false);
+    const [atLeastOneSourceProvided, setAtLeastOneSourceProvided] = useState(true);
 
-    const submitData = () => {
-        onUpdate();
-        onClose();
+    const validate = (): Promise<boolean> => {
+        // Always reset the value when re-validating
+        let hasErrors = false;
+        setAtLeastOneSourceProvided(false);
+        setErrorState(false);
+        return new Promise((res, rej) => {
+            for (const [k, v] of Object.entries(form)) {
+                console.log(`validate form ${k} ::: ${v}`);
+
+                const sources = ['host', 'index', 'sourcetype'];
+
+                if (sources.includes(k) && !isEmptyOrUndefined(v as string)) {
+                    console.log(`Empty ??? ${k} ::: ${v}`);
+                    setAtLeastOneSourceProvided(true);
+                }
+            }
+
+            res(hasErrors);
+        });
     };
-    ('');
-    const handleFormChange = (type: string, value: string[] | string) => {
+
+    const submitData = async () => {
+        await validate().then((hasErrors) => {
+            console.log('FORM ??? ', hasErrors);
+            if (!hasErrors) {
+                updateRecord(form);
+                onClose();
+            }
+        });
+    };
+
+    const updateRecord = (form) => {
+        console.log('updateRecord ::: ', form);
+        // Updates UI before sending it off to the API
+        dispatchForm({
+            value: [form as SelectedRow],
+            type: 'all',
+        });
+
+        onUpdate(form);
+    };
+
+    const handleFormChange = (type: string, value: any[] | any) => {
+        console.log('handleFormChange ::: ', { type, value });
         dispatchForm({ type, value });
     };
 
@@ -51,8 +87,17 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     };
 
     useEffect(() => {
+        console.log('selectedRowData ::: ', selectedRowData);
+        setOpenState(true);
         populateForm();
     }, [openState]);
+
+    const indexHasValue = selectedRowData.index !== undefined && selectedRowData.index !== '';
+    const hostHasValue = selectedRowData.host !== undefined && selectedRowData.host !== '';
+    const sourcetypeHasValue =
+        selectedRowData.sourcetype !== undefined && selectedRowData.sourcetype !== '';
+    const suppressUntilHasValue =
+        selectedRowData.suppressUntil !== undefined && selectedRowData.suppressUntil !== '';
 
     return (
         <div>
@@ -60,66 +105,63 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 <Modal.Header onRequestClose={onClose} title="Edit Entry" />
                 <Modal.Body>
                     <form>
-                        {typeof selectedRowData.index !== 'undefined' ? (
+                        {sourcetypeHasValue &&
+                        hostHasValue &&
+                        indexHasValue &&
+                        !atLeastOneSourceProvided ? (
+                            <MessageBar type="error">
+                                You must provide a value for index, sourcetype, or host.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
+                        <ControlGroup
+                            label="Index"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
                             <DatasourceSelect
                                 type={INDEX}
                                 url={indexUrl}
-                                selected={form.index}
-                                editValue={selectedRowData.index}
-                                setSelected={handleFormChange}
+                                value={form.index}
+                                setValue={handleFormChange}
                             />
-                        ) : (
-                            'Loading...'
-                        )}
-                        {typeof selectedRowData.host !== 'undefined' ? (
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Host"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
                             <DatasourceSelect
                                 type={HOST}
                                 url={hostUrl}
-                                selected={form.host}
-                                editValue={selectedRowData.host}
-                                setSelected={handleFormChange}
+                                value={form.host}
+                                setValue={handleFormChange}
                             />
-                        ) : (
-                            'Loading...'
-                        )}
-                        {typeof selectedRowData.sourcetype !== 'undefined' ? (
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Sourcetype"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
                             <DatasourceSelect
                                 type={SOURCETYPE}
                                 url={sourcetypeUrl}
-                                selected={form.sourcetype}
-                                editValue={selectedRowData.sourcetype}
-                                setSelected={handleFormChange}
+                                value={form.sourcetype}
+                                setValue={handleFormChange}
                             />
-                        ) : (
-                            'Loading'
-                        )}
-                        {typeof selectedRowData.lateSecs !== 'undefined' ? (
+                        </ControlGroup>
+                        <ControlGroup
+                            label="Suppress Until"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
                             <SuppressUntilInput
-                                type={LATE_SECONDS}
-                                editValue={selectedRowData.lateSecs}
-                                setSelected={handleFormChange}
+                                type="suppressUntil"
+                                value={form.suppressUntil}
+                                setValue={handleFormChange}
                             />
-                        ) : (
-                            'Loading Woof...'
-                        )}
-                        {typeof selectedRowData.contact !== 'undefined' ? (
-                            <ContactInput
-                                type={CONTACT}
-                                editValue={selectedRowData.contact}
-                                setSelected={handleFormChange}
-                            />
-                        ) : (
-                            'Loading Wee...'
-                        )}
-                        {typeof selectedRowData.comments !== 'undefined' ? (
-                            <CommentsTextarea
-                                type={COMMENTS}
-                                editValue={selectedRowData.comments}
-                                setSelected={handleFormChange}
-                            />
-                        ) : (
-                            'Loading Woo...'
-                        )}
+                        </ControlGroup>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

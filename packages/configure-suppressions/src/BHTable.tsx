@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { cloneDeep, find } from 'lodash';
+import { cloneDeep, find, update } from 'lodash';
 import SplunkThemeProvider from '@splunk/themes/SplunkThemeProvider';
 import Table, {
     TableRequestMoveRowHandler,
@@ -12,13 +12,16 @@ import Button from '@splunk/react-ui/Button';
 import Pencil from '@splunk/react-icons/Pencil';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import { handleError, handleResponse, defaultFetchInit } from '@splunk/splunk-utils/fetch';
-import EditEntry from './EditEntry';
-import NewEntry from './NewEntry';
+import EditRecord from './EditRecord';
+import NewRecord from './NewRecord';
+import NewBatchRecords from './NewBatchRecords';
 import ConfirmRemoveSelected from './ConfirmRemoveSelected';
+import SearchJob from '@splunk/search-job';
+import { keysToOmit } from './Searches';
 
 interface Row {
     _key: string;
-    comments: string;
+    email: string;
     index: string;
     sourcetype: string;
     host: string;
@@ -39,25 +42,22 @@ interface TableState {
     headers: Header[];
     openEditModal: boolean;
     openNewModal: boolean;
+    openNewBatchModal: boolean;
     openConfirmRemoveModal: boolean;
     selected: Row;
     initialFetch: boolean;
 }
 
-type TableData = {
-    _key: '';
-    comments: '';
-    index: '';
-    sourcetype: '';
-    host: '';
-    suppressUntil: '';
-};
-
 const themeToVariant = {
     prisma: { colorScheme: 'light', family: 'prisma' },
 };
 
-const kvUrl = createRESTURL(`storage/collections/data/bh_suppressions`, {
+const kvUrl = createRESTURL(`storage/collections/data/expectedTime`, {
+    app: config.app,
+    sharing: 'app',
+});
+
+const kvBatchUrl = createRESTURL(`storage/collections/data/expectedTime/batch_save`, {
     app: config.app,
     sharing: 'app',
 });
@@ -118,44 +118,21 @@ async function readCollection() {
     });
 }
 
-async function updateRecord(key, value) {
-    // update the KV record for the key that is selected
+async function addNewRecord(record) {
+    // delete the KV record for the key that is selected
 
     const fetchInit = defaultFetchInit;
     fetchInit.method = 'POST';
-    const n = await fetch(`${kvUrl}/${key}`, {
+
+    const updatedData = await fetch(kvUrl, {
         ...fetchInit,
         headers: {
             'X-Splunk-Form-Key': config.CSRFToken,
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(value),
+        body: JSON.stringify(record),
     })
-        .then(handleResponse(200))
-        .catch(handleError('error'))
-        .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
-    return n;
-}
-
-async function addNewRecord() {
-    // delete the KV record for the key that is selected
-
-    const fetchInit = defaultFetchInit;
-    fetchInit.method = 'POST';
-
-    const updatedData = await fetch(
-        `/servicesNS/nobody/${config.app}/storage/collections/data/expectedTime/`,
-        {
-            ...fetchInit,
-            headers: {
-                'X-Splunk-Form-Key': config.CSRFToken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(''),
-        }
-    )
         .then(handleResponse(200))
         .catch(() => {
             handleError('error');
@@ -164,12 +141,33 @@ async function addNewRecord() {
     return updatedData;
 }
 
-async function removeSelectedRecords() {
-    console.log(
-        'selected rows to remove ::: ',
-        this.state.data.filter((row) => row.selected)
-    );
-    return;
+async function addNewRecords(records: any[]) {
+    // delete the KV record for the key that is selected
+
+    console.log('addNewRecords: ', records);
+
+    const fetchInit = defaultFetchInit;
+    fetchInit.method = 'POST';
+
+    const updatedData = await fetch(kvBatchUrl, {
+        ...fetchInit,
+        headers: {
+            'X-Splunk-Form-Key': config.CSRFToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(records),
+    })
+        .then(handleResponse(200))
+        .catch(() => {
+            handleError('error');
+        });
+
+    // this.setState((prevState) => ({
+    //     data: [...prevState.data, ...records],
+    // }));
+
+    return updatedData;
 }
 
 async function deleteRecord(key) {
@@ -199,26 +197,24 @@ export default class ReorderRows extends Component<{}, TableState> {
 
         this.state = {
             headers: [
-                { label: 'Comments', key: 'comments' },
+                { label: 'Email', key: 'email' },
                 { label: 'Index', key: 'index' },
                 { label: 'Sourcetype', key: 'sourcetype' },
                 { label: 'Host', key: 'host' },
-                { label: 'Late Seconds', key: 'lateSecs' },
+                { label: 'Suppress Until', key: 'suppressUntil' },
             ],
             data: [],
             initialFetch: false,
             openEditModal: false,
             openNewModal: false,
+            openNewBatchModal: false,
             openConfirmRemoveModal: false,
             selected: {
                 _key: '',
-                comments: '',
-                contact: '',
-                email: '',
                 index: '',
                 sourcetype: '',
                 host: '',
-                lateSecs: '',
+                suppressUntil: '0',
                 selected: false,
                 disabled: false,
             },
@@ -234,21 +230,158 @@ export default class ReorderRows extends Component<{}, TableState> {
         );
     }
 
-    handleNewRequestOpen = (e, data) => {
+    updateSelectedRecord = async (updatedData) => {
+        Object.assign(updatedData, { _key: this.state.selected._key });
+        console.log('updated row data ::: ', updatedData);
+        console.log('selected row to update ::: ', this.state.selected);
+
+        this.setState((prevState) => ({
+            data: prevState.data.map((row) => {
+                if (row._key === this.state.selected._key) {
+                    const { email, index, sourcetype, host, selected, disabled, suppressUntil } =
+                        updatedData;
+
+                    console.log('updatedData ::: ', updatedData);
+
+                    return {
+                        _key: row._key,
+                        email,
+                        index,
+                        sourcetype,
+                        host,
+                        suppressUntil,
+                        selected,
+                        disabled,
+                    } as Row;
+                }
+                return row;
+            }),
+        }));
+
+        const fetchInit = defaultFetchInit;
+        fetchInit.method = 'POST';
+        const n = await fetch(`${kvUrl}/${this.state.selected._key}`, {
+            ...fetchInit,
+            headers: {
+                'X-Splunk-Form-Key': config.CSRFToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedData),
+        })
+            .then(handleResponse(200))
+            .catch(handleError('error'))
+            .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
+        return n;
+    };
+
+    addNewRow = async (row) => {
+        await addNewRecord(row);
+        // this.setState((prevState) => ({
+        //     data: [...prevState.data, row],
+        // }));
+        readCollection().then((data) =>
+            this.setState({
+                data,
+                initialFetch: true,
+            })
+        );
+    };
+
+    addNewRows = async (rows: any[]) => {
+        await addNewRecords(rows);
+        // this.setState((prevState) => ({
+        //     data: [...prevState.data, ...rows],
+        // }));
+        readCollection().then((data) =>
+            this.setState({
+                data,
+                initialFetch: true,
+            })
+        );
+    };
+
+    removeSelectedRecords = () => {
+        console.log(
+            'selected rows to remove ::: ',
+            this.state.data.filter((row) => row.selected)
+        );
+
+        console.log('row count before ::: ', this.state.data.length);
+
+        const _keysOfRows = this.state.data.filter((row) => row.selected).map((row) => row._key);
+
+        console.log('_keysOfRows ::: ', _keysOfRows);
+        console.log(
+            'post filtered rows ::: ',
+            this.state.data.filter((row) => !_keysOfRows.includes(row._key))
+        );
+
+        this.setState((prevState) => ({
+            data: prevState.data.filter((row) => !_keysOfRows.includes(row._key)),
+        }));
+
+        // If more than one row has been selected for removal we will do a batch update
+        // to the collection
+        if (_keysOfRows.length > 1) {
+            const keys = keysToOmit(_keysOfRows);
+
+            console.log(`
+                | inputlookup expectedTime 
+                | eval k=_key 
+                | fields k, * 
+                | search ${keys}
+                | outputlookup expectedTime
+            `);
+
+            const keysToRemoveSearch = SearchJob.create({
+                search: `
+                    | inputlookup expectedTime 
+                    | eval k=_key 
+                    | fields k, * 
+                    | search ${keys}
+                    | outputlookup expectedTime
+                `,
+                earliest_time: '-1m',
+                latest_time: 'now',
+            });
+
+            keysToRemoveSearch.getProgress().subscribe({
+                next: (response) => {
+                    console.log('keysToRemove response ::: ', response);
+                },
+                complete: () => {
+                    console.log('keysToRemove done');
+                },
+            });
+        } else {
+            deleteRecord(_keysOfRows[0]);
+        }
+    };
+
+    handleNewRequestOpen = () => {
         // handles what happens when modal is open
         this.setState({
             openNewModal: true,
         });
     };
 
-    handleRemoveRequestOpen = (e, data) => {
+    handleNewBatchRequestOpen = () => {
+        // handles what happens when modal is open
+        this.setState({
+            openNewBatchModal: true,
+        });
+    };
+
+    handleRemoveRequestOpen = () => {
         // handles what happens when modal is open
         this.setState({
             openConfirmRemoveModal: true,
         });
     };
 
-    handleEditRequestOpen = (e, data) => {
+    handleEditRequestOpen = (_, data) => {
+        console.log('selected data ::: ', data);
         // handles what happens when modal is open
         this.setState({
             openEditModal: true,
@@ -270,6 +403,13 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
+    handleRequestNewBatchClose = () => {
+        // handles what happens when modal is closed
+        this.setState({
+            openNewBatchModal: false,
+        });
+    };
+
     handleRequestConfirmRemoveClose = () => {
         this.setState({
             openConfirmRemoveModal: false,
@@ -286,26 +426,11 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    handleRequestMoveRow: TableRequestMoveRowHandler = ({ fromIndex, toIndex }) => {
-        this.setState((state) => {
-            const data = cloneDeep(state.data);
-            const rowToMove = data[fromIndex];
-
-            const insertionIndex = toIndex < fromIndex ? toIndex : toIndex + 1;
-            data.splice(insertionIndex, 0, rowToMove);
-
-            const removalIndex = toIndex < fromIndex ? fromIndex + 1 : fromIndex;
-            data.splice(removalIndex, 1);
-
-            return { data };
-        });
-    };
-
-    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs }) => {
+    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, suppressUntil }) => {
         this.setState((state) => {
             const data = cloneDeep(state.data);
 
-            const selectedRow = find(data, { index, sourcetype, host, lateSecs });
+            const selectedRow = find(data, { index, sourcetype, host, suppressUntil });
             if (selectedRow) {
                 selectedRow.selected = !selectedRow.selected;
                 return { data };
@@ -315,6 +440,7 @@ export default class ReorderRows extends Component<{}, TableState> {
     };
 
     handleRowClick: RowClickHandler = (_, data) => {
+        console.log('handleRowClick!!!! ', data);
         this.setState({ activeRow: data.name, activeRowData: JSON.stringify(data) });
     };
 
@@ -337,10 +463,6 @@ export default class ReorderRows extends Component<{}, TableState> {
         }
         return 'some';
     }
-
-    handleAdditionalRecord = () => {
-        console.log('TO DO!');
-    };
 
     render() {
         const { headers, data } = this.state;
@@ -373,6 +495,11 @@ export default class ReorderRows extends Component<{}, TableState> {
                             appearance="primary"
                             onClick={this.handleNewRequestOpen}
                         />
+                        <Button
+                            label="Add Multiple Entries"
+                            appearance="primary"
+                            onClick={this.handleNewBatchRequestOpen}
+                        />
                         {this.state.data.filter((row) => row.selected).length > 0 ? (
                             <Button
                                 label="Remove Selected"
@@ -384,11 +511,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                         )}
                     </div>
                     <div>
-                        <Table
-                            stripeRows
-                            onRequestMoveRow={this.handleRequestMoveRow}
-                            rowSelection={this.rowSelectionState(data)}
-                        >
+                        <Table stripeRows rowSelection={this.rowSelectionState(data)}>
                             <Table.Head>
                                 <Table.HeadCell></Table.HeadCell>
                                 {headers.map((header) => (
@@ -407,7 +530,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                                         selected={row.selected}
                                         disabled={row.disabled}
                                     >
-                                        <Table.Cell>{row.comments}</Table.Cell>
+                                        <Table.Cell>{row.email}</Table.Cell>
                                         <Table.Cell>{row.index}</Table.Cell>
                                         <Table.Cell>{row.sourcetype}</Table.Cell>
                                         <Table.Cell>{row.host}</Table.Cell>
@@ -416,17 +539,21 @@ export default class ReorderRows extends Component<{}, TableState> {
                                 ))}
                             </Table.Body>
                         </Table>
-                        <EditEntry
-                            remove={deleteRecord}
-                            update={updateRecord}
+                        <EditRecord
+                            onUpdate={this.updateSelectedRecord}
                             openState={this.state.openEditModal}
                             onClose={this.handleRequestEditClose}
-                            selectedRow={this.state.selected}
+                            selectedRowData={this.state.selected}
                         />
-                        <NewEntry
+                        <NewRecord
                             openState={this.state.openNewModal}
                             onClose={this.handleRequestNewClose}
-                            onSubmit={addNewRecord}
+                            onSubmit={this.addNewRow}
+                        />
+                        <NewBatchRecords
+                            openState={this.state.openNewBatchModal}
+                            onClose={this.handleRequestNewBatchClose}
+                            onSubmit={this.addNewRows}
                         />
                         <ConfirmRemoveSelected
                             openState={this.state.openConfirmRemoveModal}
@@ -434,7 +561,7 @@ export default class ReorderRows extends Component<{}, TableState> {
                             selectedRows={this.state.data.filter((row) =>
                                 row.selected ? row : false
                             )}
-                            confirmRemoval={removeSelectedRecords}
+                            confirmRemoval={this.removeSelectedRecords}
                         />
                     </div>
                 </SplunkThemeProvider>

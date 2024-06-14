@@ -63,7 +63,6 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
 
                 if (sources.includes(k) && !isEmptyOrUndefined(v as string)) {
                     setAtLeastOneSourceProvided(true);
-                    hasErrors = true;
                 }
 
                 if (k === 'contact') {
@@ -168,81 +167,64 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                         ) : (
                             ''
                         )}
-                        {indexHasValue ? (
-                            <ControlGroup
-                                label="Index"
-                                labelPosition="top"
-                                style={{ margin: '.5em .25em 0 0' }}
-                            >
-                                <DatasourceSelect
-                                    type={INDEX}
-                                    url={indexUrl}
-                                    value={form.index}
-                                    setValue={handleFormChange}
-                                />
-                            </ControlGroup>
-                        ) : (
-                            'Loading...'
-                        )}
-                        {hostHasValue ? (
-                            <ControlGroup
-                                label="Host"
-                                labelPosition="top"
-                                style={{ margin: '.5em .25em 0 0' }}
-                            >
-                                <DatasourceSelect
-                                    type={HOST}
-                                    url={hostUrl}
-                                    value={form.host}
-                                    setValue={handleFormChange}
-                                />
-                            </ControlGroup>
-                        ) : (
-                            'Loading'
-                        )}
-                        {sourcetypeHasValue ? (
-                            <ControlGroup
-                                label="Sourcetype"
-                                labelPosition="top"
-                                style={{ margin: '.5em .25em 0 0' }}
-                            >
-                                <DatasourceSelect
-                                    type={SOURCETYPE}
-                                    url={sourcetypeUrl}
-                                    value={form.sourcetype}
-                                    setValue={handleFormChange}
-                                />
-                            </ControlGroup>
-                        ) : (
-                            'Loading'
-                        )}
-                        {typeof selectedRowData.lateSecs !== 'undefined' ? (
-                            <LateSecondsInput
-                                hasError={
-                                    lateSecsErrorState.empty || lateSecsErrorState.invalidNumber
-                                }
-                                type={LATE_SECONDS}
-                                setSelected={handleFormChange}
-                                value={form.lateSecs}
+
+                        <ControlGroup
+                            label="Index"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={INDEX}
+                                url={indexUrl}
+                                value={form.index}
+                                setValue={handleFormChange}
                             />
-                        ) : (
-                            'Loading'
-                        )}
-                        {
-                            <ContactInput
-                                hasError={contactErrorState}
-                                type={CONTACT}
-                                setSelected={handleFormChange}
-                                value={form.contact}
+                        </ControlGroup>
+
+                        <ControlGroup
+                            label="Host"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={HOST}
+                                url={hostUrl}
+                                value={form.host}
+                                setValue={handleFormChange}
                             />
-                        }
-                        {
-                            <CommentsTextarea
-                                type={COMMENTS}
-                                setSelected={handleFormChange}
-                                value={form.comments}
+                        </ControlGroup>
+
+                        <ControlGroup
+                            label="Sourcetype"
+                            labelPosition="top"
+                            style={{ margin: '.5em .25em 0 0' }}
+                        >
+                            <DatasourceSelect
+                                type={SOURCETYPE}
+                                url={sourcetypeUrl}
+                                value={form.sourcetype}
+                                setValue={handleFormChange}
                             />
-                        }
+                        </ControlGroup>
+
+                        <LateSecondsInput
+                            hasError={lateSecsErrorState.empty || lateSecsErrorState.invalidNumber}
+                            type={LATE_SECONDS}
+                            setSelected={handleFormChange}
+                            value={form.lateSecs}
+                        />
+
+                        <ContactInput
+                            hasError={contactErrorState}
+                            type={CONTACT}
+                            setSelected={handleFormChange}
+                            value={form.contact}
+                        />
+                        <CommentsTextarea
+                            type={COMMENTS}
+                            setSelected={handleFormChange}
+                            value={form.comments}
+                        />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

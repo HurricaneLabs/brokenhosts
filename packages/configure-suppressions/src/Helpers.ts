@@ -29,11 +29,13 @@ export const getAvailableData = async (url: string) => {
         })
         .catch((err) => (err instanceof Object ? 'error' : err)); // handleError sometimes returns an Object;
 
+    console.log('data??? ', data);
+
     if (data.length === 0) {
         return [];
     }
 
-    return data.entry.map((item) => item.name);
+    return data.map((item) => item[item.type]);
 };
 
 export const handleMultiSelectClose = (state, stateSetter) => {
@@ -75,4 +77,18 @@ export const capitalize = function (str: string) {
     }
 
     return str.split('')[0].toUpperCase() + str.slice(1, str.length);
+};
+
+export const isEmptyOrUndefined = (val: string) => {
+    console.log(
+        `isEmptyOrUndefined ??? val === undefined ${val === undefined}, val === '' ${
+            val === ''
+        }, val ::: ${val}`
+    );
+    return val === '' || val === undefined;
+};
+
+export const isValidEmail = (email) => {
+    var re = /\S+@\S+\.\S+/;
+    return re.test(email);
 };
