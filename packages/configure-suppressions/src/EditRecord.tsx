@@ -5,7 +5,7 @@ import Modal from '@splunk/react-ui/Modal';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import { editFormReducer } from './EditFormReducer.ts';
-import { epochNow, isEmptyOrUndefined, isValidEmail } from './Helpers.ts';
+import { epochNow, isEmptyOrUndefined, isDateInPast } from './Helpers.ts';
 import MessageBar from '@splunk/react-ui/MessageBar';
 import { SelectedRow, InitialForm } from './types.ts';
 import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
@@ -30,11 +30,13 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     const [, setOpenState] = useState(false);
     const [, setErrorState] = useState(false);
     const [atLeastOneSourceProvided, setAtLeastOneSourceProvided] = useState(true);
+    const [suppressUntilValueIsInPast, setSuppressUntilValueIsInPast] = useState(false);
 
     const validate = (): Promise<boolean> => {
         // Always reset the value when re-validating
         let hasErrors = false;
         setAtLeastOneSourceProvided(false);
+        setSuppressUntilValueIsInPast(false);
         setErrorState(false);
         return new Promise((res, rej) => {
             for (const [k, v] of Object.entries(form)) {
@@ -45,6 +47,11 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 if (sources.includes(k) && !isEmptyOrUndefined(v as string)) {
                     console.log(`Empty ??? ${k} ::: ${v}`);
                     setAtLeastOneSourceProvided(true);
+                }
+
+                if (isDateInPast(form.suppressUntil) && form.suppressUntil !== '0') {
+                    console.log('DATE IS IN THE PAST!!! ', form.suppressUntil);
+                    setSuppressUntilValueIsInPast(true);
                 }
             }
 
@@ -162,6 +169,13 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                                 setValue={handleFormChange}
                             />
                         </ControlGroup>
+                        {suppressUntilValueIsInPast ? (
+                            <MessageBar type="error">
+                                'Suppress Until' date cannot be in the past.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

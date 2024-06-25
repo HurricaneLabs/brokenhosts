@@ -92,3 +92,12 @@ export const isValidEmail = (email) => {
     var re = /\S+@\S+\.\S+/;
     return re.test(email);
 };
+
+export const isDateInPast = (val: string) => {
+    if (val === '0') return false;
+    let providedDate = new Date(val);
+    let now = new Date().getTime();
+    let diff = now - providedDate.getTime();
+    diff = diff - (diff % 86400000);
+    return diff > 0;
+};

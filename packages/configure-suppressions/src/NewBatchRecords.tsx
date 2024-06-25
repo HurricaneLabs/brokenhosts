@@ -6,7 +6,7 @@ import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
 import TextArea from '@splunk/react-ui/TextArea';
-import { epochNow, isEmptyOrUndefined, isValidEmail } from './Helpers.ts';
+import { epochNow, isEmptyOrUndefined, isDateInPast } from './Helpers.ts';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
@@ -28,9 +28,9 @@ interface Props {
 interface State {
     items: any[];
     itemsValue: any[];
-    lateSecsNotValidError: boolean;
+    suppressUntilValueInPast: boolean;
     sourceIsEmptyError: boolean;
-    lateSecsEmptyError: boolean;
+    suppressUntilEmptyError: boolean;
     invalidEmailAddress: boolean;
 }
 
@@ -47,9 +47,9 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
         this.state = {
             items,
             itemsValue: [],
-            lateSecsNotValidError: false,
+            suppressUntilValueInPast: false,
             sourceIsEmptyError: false,
-            lateSecsEmptyError: false,
+            suppressUntilEmptyError: false,
             invalidEmailAddress: false,
         };
     }
@@ -60,8 +60,9 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
         this.state.itemsValue.map((item, idx) => {
             console.log('Current Item ::: ', item);
 
-            this.setState({ lateSecsNotValidError: false });
-            this.setState({ lateSecsEmptyError: false });
+            this.setState({ suppressUntilEmptyError: false });
+            this.setState({ suppressUntilValueInPast: false });
+            this.setState({ suppressUntilEmptyError: false });
             this.setState({ sourceIsEmptyError: false });
             this.setState({ invalidEmailAddress: false });
 
@@ -79,19 +80,19 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
 
             console.log('contact ::: ', item['contact']);
 
-            if (isEmptyOrUndefined(item['lateSecs'])) {
+            if (isEmptyOrUndefined(item['suppressUntil'])) {
                 hasError = true;
-                this.setState({ lateSecsEmptyError: true });
+                this.setState({ suppressUntilEmptyError: true });
+            }
+
+            if (isDateInPast(item['suppressUntil'])) {
+                hasError = true;
+                this.setState({ suppressUntilValueInPast: true });
             }
 
             if (emptySourceCount) {
                 hasError = true;
                 this.setState({ sourceIsEmptyError: true });
-            }
-
-            if (!isEmptyOrUndefined(item['lateSecs']) && isNaN(item['lateSecs'])) {
-                hasError = true;
-                this.setState({ lateSecsNotValidError: true });
             }
 
             if (hasError) {
@@ -158,7 +159,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                 url={indexUrl}
                                 setValue={this.handleFormChange}
                                 index={state.items.length}
-                                value={state.itemsValue[state.itemsValue.length - 1]['index']}
+                                value=""
                             />
                         </ControlGroup>
                         <ControlGroup
@@ -171,7 +172,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                 url={indexUrl}
                                 setValue={this.handleFormChange}
                                 index={state.items.length}
-                                value={state.itemsValue[state.itemsValue.length - 1]['sourcetype']}
+                                value=""
                             />
                         </ControlGroup>
                         <ControlGroup
@@ -184,7 +185,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                 url={hostUrl}
                                 setValue={this.handleFormChange}
                                 index={state.items.length}
-                                value={state.itemsValue[state.itemsValue.length - 1]['host']}
+                                value=""
                             />
                         </ControlGroup>
                     </div>
@@ -197,9 +198,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                             <SuppressUntilInput
                                 type="suppressUntil"
                                 index={state.items.length}
-                                value={
-                                    state.itemsValue[state.itemsValue.length - 1]['suppressUntil']
-                                }
+                                value="0"
                                 setValue={this.handleFormChange}
                             />
                         </ControlGroup>
@@ -234,14 +233,8 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                 <span style={{ display: 'inline-block', width: 100 }} id="header-host">
                     Host
                 </span>
-                <span style={{ display: 'inline-block', width: 100 }} id="header-lateSecs">
-                    Late Seconds
-                </span>
-                <span style={{ display: 'inline-block', width: 100 }} id="header-contacts">
-                    Contacts
-                </span>
-                <span style={{ display: 'inline-block', width: 100 }} id="header-comments">
-                    Comments
+                <span style={{ display: 'inline-block', width: 100 }} id="header-suppressUntil">
+                    Suppress Until
                 </span>
             </div>
         );
@@ -258,17 +251,16 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                         title="Add Multiple Entries"
                     />
                     <Modal.Body>
-                        {this.state.lateSecsNotValidError ? (
+                        {this.state.suppressUntilValueInPast ? (
                             <MessageBar type="error">
-                                One or more row's 'Late Seconds' value is not valid. It must be a
-                                number.
+                                One or more Suppress Until values are in the past.
                             </MessageBar>
                         ) : (
                             ''
                         )}
-                        {this.state.lateSecsEmptyError ? (
+                        {this.state.suppressUntilEmptyError ? (
                             <MessageBar type="error">
-                                One or more row's 'Late Seconds' is empty. It must be a number.
+                                One or more 'Suppress Until' values are empty. It must be a date.
                             </MessageBar>
                         ) : (
                             ''
