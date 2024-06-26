@@ -1,0 +1,136 @@
+<form version="1.1">
+  <label>Broken Hosts Tuning</label>
+  <description>Fill out the at least the Index input to return results. Multiple selections are supported.</description>
+  <fieldset submitButton="true">
+    <input type="time" token="time_tok" searchWhenChanged="true">
+      <label>Time Picker</label>
+      <default>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="index_tok" searchWhenChanged="true">
+      <label>Index</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
+      <fieldForLabel>index</fieldForLabel>
+      <fieldForValue>index</fieldForValue>
+      <search>
+        <query>| tstats summariesonly=true allow_old_summaries=true count by index
+| sort 0 + index
+| table index</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="multiselect" token="sourcetype_tok" searchWhenChanged="true">
+      <label>Sourcetype (Requires Index Selection)</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
+      <fieldForLabel>sourcetype</fieldForLabel>
+      <fieldForValue>sourcetype</fieldForValue>
+      <search>
+        <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) by sourcetype
+| sort 0 + sourcetype
+| table sourcetype</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="multiselect" token="host_tok" searchWhenChanged="true">
+      <label>Host (Requires Sourcetype Selection)</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) by host
+| sort 0 + host
+| table host</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="multiselect" token="source_tok" searchWhenChanged="true">
+      <label>Source (Requires Host Selection)</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>| tstats count summariesonly=true allow_old_summaries=true where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) by source
+| sort 0 + source
+| table source</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="checkbox" token="metadata_filter_tok" searchWhenChanged="true">
+      <label>Initial stats filter (determines what fields are valid for charting)</label>
+      <choice value="index">Index</choice>
+      <choice value="sourcetype">Sourcetype</choice>
+      <choice value="host">Host</choice>
+      <choice value="source">Source</choice>
+      <default>host</default>
+      <initialValue>host</initialValue>
+      <delimiter>, </delimiter>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Historical Logging Pattern for Index: $index_tok$, Sourcetype: $sourcetype_tok$, Host: $host_tok$, Source: $source_tok$ Charted by $timechart_filter_tok$</title>
+      <input type="dropdown" token="timechart_filter_tok" searchWhenChanged="true">
+        <label>Field to Chart By</label>
+        <choice value="index">Index</choice>
+        <choice value="sourcetype">Sourcetype</choice>
+        <choice value="host">Host</choice>
+        <choice value="source">Source</choice>
+        <default>host</default>
+        <initialValue>host</initialValue>
+      </input>
+      <chart>
+        <title>Make sure the field you are charting by is selected in the initial stats filter! Look for gaps to determine outages.</title>
+        <search>
+          <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) source IN ($source_tok$) by $metadata_filter_tok$, _time span=30m
+| makecontinuous _time span=30m
+| fillnull value=0
+| timechart span=30m useother=false sum(count) by $timechart_filter_tok$</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Count</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Time Between Events Statistics for Index: $index_tok$, Sourcetype: $sourcetype_tok$, Host: $host_tok$, Source: $source_tok$ , Filtered By $metadata_filter_tok$</title>
+      <table>
+        <title>Determine the value to set lateSecs in expectedTime, based on the the frequency of outages and the below results. Consider aggregation or permanent suppression if the time between events for some entries are outliers compared to the rest of the results. Sort by Maximum Time Between Events column for possible threshold for aggregation given the current data source selection.</title>
+        <search>
+          <query>| tstats count WHERE index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) source IN ($source_tok$) by $metadata_filter_tok$, _time span=1s | streamstats window=2 range(_time) as duration by $metadata_filter_tok$ | stats p95(duration) as p95_gap, p99(duration) as p99_gap, avg(duration) as avg_gap, max(duration) as max_gap by $metadata_filter_tok$
+| eval index=if(isnull(index), $index_tok$, index), sourcetype=if(isnull(sourcetype), $sourcetype_tok$, sourcetype), host=if(isnull(host), $host_tok$, host), source=if(isnull(source), $source_tok$, source) 
+| eval avg_gap=tostring(round(avg_gap,2))+" seconds", p95_gap=tostring(round(p95_gap,2))+" seconds", p99_gap=tostring(round(p99_gap,2))+" seconds", max_gap=tostring(max_gap)+" seconds"| table index, sourcetype, host, source, avg_gap, p95_gap, p99_gap, max_gap
+| rename index as Index, sourcetype AS Sourcetype, host AS Host, source AS Source, avg_gap AS "Average Time Between Events", p95_gap AS "95th Percentile Time Between Events", p99_gap AS "99th Percentile Time Between Events", max_gap AS "Maximum Time Between Events"</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>
