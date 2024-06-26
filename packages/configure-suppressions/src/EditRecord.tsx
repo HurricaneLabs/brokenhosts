@@ -35,7 +35,8 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     const validate = (): Promise<boolean> => {
         // Always reset the value when re-validating
         let hasErrors = false;
-        setAtLeastOneSourceProvided(false);
+        let sourceValueCount = 0;
+        setAtLeastOneSourceProvided(true);
         setSuppressUntilValueIsInPast(false);
         setErrorState(false);
         return new Promise((res, rej) => {
@@ -45,14 +46,18 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 const sources = ['host', 'index', 'sourcetype'];
 
                 if (sources.includes(k) && !isEmptyOrUndefined(v as string)) {
-                    console.log(`Empty ??? ${k} ::: ${v}`);
-                    setAtLeastOneSourceProvided(true);
+                    sourceValueCount++;
                 }
 
                 if (isDateInPast(form.suppressUntil) && form.suppressUntil !== '0') {
-                    console.log('DATE IS IN THE PAST!!! ', form.suppressUntil);
                     setSuppressUntilValueIsInPast(true);
+                    hasErrors = true;
                 }
+            }
+
+            if (sourceValueCount === 0) {
+                setAtLeastOneSourceProvided(false);
+                hasErrors = true;
             }
 
             res(hasErrors);
@@ -87,6 +92,8 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
 
     const populateForm = () => {
         console.log('populate form ::: ', selectedRowData);
+        selectedRowData = Object.assign(initialForm, selectedRowData);
+        console.log('selectedRowData ??? ', selectedRowData);
         dispatchForm({
             value: [selectedRowData as SelectedRow],
             type: 'all',

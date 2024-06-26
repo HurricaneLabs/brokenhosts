@@ -21,7 +21,6 @@ import { keysToOmit } from './Searches';
 
 interface Row {
     _key: string;
-    email: string;
     index: string;
     sourcetype: string;
     host: string;
@@ -69,6 +68,19 @@ const defaultDataUrl = createRESTURL(`/servicesNS/nobody/${config.app}/bhosts/bh
 
 const buttonStyle = {
     padding: '10px',
+};
+
+const date: Date = new Date();
+let day = date.getDate();
+let month = date.getMonth() + 1;
+let year = date.getFullYear();
+let currentDate = `${year}-${month}-${day}`;
+
+const initialRow = {
+    sourcetype: '',
+    index: '',
+    host: '',
+    suppressUntil: currentDate,
 };
 
 async function populateTableWithDefaultData() {
@@ -197,7 +209,6 @@ export default class ReorderRows extends Component<{}, TableState> {
 
         this.state = {
             headers: [
-                { label: 'Email', key: 'email' },
                 { label: 'Index', key: 'index' },
                 { label: 'Sourcetype', key: 'sourcetype' },
                 { label: 'Host', key: 'host' },
@@ -238,14 +249,13 @@ export default class ReorderRows extends Component<{}, TableState> {
         this.setState((prevState) => ({
             data: prevState.data.map((row) => {
                 if (row._key === this.state.selected._key) {
-                    const { email, index, sourcetype, host, selected, disabled, suppressUntil } =
+                    const { index, sourcetype, host, selected, disabled, suppressUntil } =
                         updatedData;
 
                     console.log('updatedData ::: ', updatedData);
 
                     return {
                         _key: row._key,
-                        email,
                         index,
                         sourcetype,
                         host,
@@ -381,7 +391,11 @@ export default class ReorderRows extends Component<{}, TableState> {
     };
 
     handleEditRequestOpen = (_, data) => {
+        console.log('??? selected data ::: ', data);
+        console.log('??? initalRow ::: ', initialRow);
+        data = Object.assign({}, initialRow, data);
         console.log('selected data ::: ', data);
+
         // handles what happens when modal is open
         this.setState({
             openEditModal: true,
@@ -530,7 +544,6 @@ export default class ReorderRows extends Component<{}, TableState> {
                                         selected={row.selected}
                                         disabled={row.disabled}
                                     >
-                                        <Table.Cell>{row.email}</Table.Cell>
                                         <Table.Cell>{row.index}</Table.Cell>
                                         <Table.Cell>{row.sourcetype}</Table.Cell>
                                         <Table.Cell>{row.host}</Table.Cell>

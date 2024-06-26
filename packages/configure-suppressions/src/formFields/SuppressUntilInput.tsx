@@ -27,7 +27,13 @@ const SuppressUntilInput = (props: Props) => {
 
     props = { ...defaultProps, ...props };
 
-    const { setValue: setValueProps, type, index } = props;
+    const { setValue: setValueProps, type, value: valueProp, index } = props;
+
+    useEffect(() => {
+        if (valueProp !== '0') {
+            setsuppressIndefinitely(false);
+        }
+    }, [props]);
 
     useEffect(() => {
         console.log('suppressIndefinitely ::: ', suppressIndefinitely);
@@ -84,7 +90,11 @@ const SuppressUntilInput = (props: Props) => {
 
     return (
         <Div $width="400px">
-            suppressIndefinitely {suppressIndefinitely}
+            {suppressIndefinitely ? (
+                ''
+            ) : (
+                <SplunkUIDate defaultValue={date as string} value={date} onChange={handleChange} />
+            )}
             <Switch
                 value={suppressIndefinitely}
                 onClick={(e) => handleClick(e, { suppress: !suppressIndefinitely })}
@@ -93,11 +103,6 @@ const SuppressUntilInput = (props: Props) => {
             >
                 Suppress Indefinitely
             </Switch>
-            {suppressIndefinitely ? (
-                ''
-            ) : (
-                <SplunkUIDate defaultValue={date as string} value={date} onChange={handleChange} />
-            )}
         </Div>
     );
 };

@@ -80,11 +80,6 @@ export const capitalize = function (str: string) {
 };
 
 export const isEmptyOrUndefined = (val: string) => {
-    console.log(
-        `isEmptyOrUndefined ??? val === undefined ${val === undefined}, val === '' ${
-            val === ''
-        }, val ::: ${val}`
-    );
     return val === '' || val === undefined;
 };
 

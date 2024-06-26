@@ -47,7 +47,6 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         console.log('VALIDATE!!!');
         // Always reset the value when re-validating
         let hasErrors = false;
-        let atLeastOneSource = false;
         setcontactErrorState(false);
         setLateSecsErrorState({
             invalidNumber: false,
