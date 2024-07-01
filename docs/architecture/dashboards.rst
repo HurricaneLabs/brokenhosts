@@ -13,14 +13,14 @@ timestamp in the future, Eventtype Aggregations and Suppressions, and your "supp
 Clicking on any of the broken or future hosts will take you to the ``Investigation Dashboard``
 where you can get additional information in order to troubleshoot the data.
 
-Investigation Dashboard
+Tuning/Investigation Dashboard
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: ../_static/investigation_dashboard.png
 
-The ``Investigation`` dashboard can be used to troubleshoot why data has stopped coming in for a
-particular ``index``/``sourcetype``/``host`` combination. The filters let you select the data you
-are interested in, and you can also select the field to aggregate by. This is useful to
+The ``Tuning/Investigation`` dashboard can be used to troubleshoot why data has stopped coming in for a
+particular ``index``/``sourcetype``/``host``/``source`` combination, or help figure out the appropriate time to set lateSecs in expectedTime. 
+The filters let you select the data you are interested in, and you can also select the field to aggregate by. This is useful to
 determine whether a particular host or source is having issues. You can also identify the
 frequency at which data comes into Splunk in order to determine an appropriate ``lateSecs`` value,
 and quickly see whether Splunk, or the host itself, was recently stopped or restarted.

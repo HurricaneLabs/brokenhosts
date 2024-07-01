@@ -47,6 +47,14 @@ defined in the lookup. The ``lateSecs`` value tells Broken Hosts how long a spec
 is allowed to go without sending data before an alert should be triggered. This setting is in
 seconds, and defaults to 14400 (4 hours).
 
+bh_linuxoslog_index
+-------------------
+Sets the default index for Linux OS logs for the Tuning/Investigation Dashboard. Defaults to index=os
+
+bh_wineventlog_index
+--------------------
+Sets the default index for Windows for the Tuning/Investigation Dashboard. Defaults to index=wineventlog
+
 bh_volume_alerting_indexes
 --------------------------
 

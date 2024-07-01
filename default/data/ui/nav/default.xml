@@ -1,7 +1,6 @@
 <nav search_view="search" color="#2ca888">
   <view name="broken_hosts" default="true" />
   <view name="investigation" />
-  <view name="tuning"
   <view name="configure_lookup" />
   <view name="search" />
   <view name="setup" />
