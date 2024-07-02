@@ -53,7 +53,7 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
             invalidNumber: false,
             empty: false,
         });
-        setAtLeastOneSourceProvided(false);
+        setAtLeastOneSourceProvided(true);
         setErrorState(false);
         return new Promise((res, rej) => {
             for (const [k, v] of Object.entries(form)) {

@@ -34,7 +34,6 @@ const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt
 const NewRecord = ({ onSubmit, onClose, openState }) => {
     const [form, dispatchForm] = useReducer(newFormReducer, initialForm);
     const [, setOpenState] = useState(false);
-    const [, setErrorState] = useState(false);
     const [lateSecsErrorState, setLateSecsErrorState] = useState({
         invalidNumber: false,
         empty: false,
@@ -57,8 +56,7 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
             empty: false,
         });
         setAtLeastOneSourceProvided(true);
-        setErrorState(false);
-        return new Promise((res, rej) => {
+        return new Promise((res) => {
             for (const [k, v] of Object.entries(form)) {
                 console.log(`validate form ${k} ::: ${v}`);
 
@@ -103,8 +101,6 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
                 }
             }
 
-            console.log('sourceValueCount ::: ', sourceValueCount);
-
             if (sourceValueCount === 0) {
                 setAtLeastOneSourceProvided(false);
                 hasErrors = true;
@@ -128,6 +124,7 @@ const NewRecord = ({ onSubmit, onClose, openState }) => {
             if (!hasErrors) {
                 onSubmit(form);
                 onClose();
+                dispatchForm({ type: 'all', value: initialForm });
             }
         });
     };

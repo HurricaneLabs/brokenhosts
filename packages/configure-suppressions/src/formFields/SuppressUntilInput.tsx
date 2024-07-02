@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { default as SplunkUIDate } from '@splunk/react-ui/Date';
+import Text, { TextChangeHandler } from '@splunk/react-ui/Text';
 import Switch from '@splunk/react-ui/Switch';
 
 import { Div } from '../BHStyles';
@@ -8,7 +9,7 @@ type Props = {
     setValue: (type: string, value: string, index?: number) => void;
     index?: number;
     type: string;
-    value: string | number;
+    value: string;
 };
 
 const defaultProps = {
@@ -23,15 +24,15 @@ let currentDate = `${year}-${month}-${day}`;
 
 const SuppressUntilInput = (props: Props) => {
     const [date, setDate] = useState<string | number>('0');
-    const [suppressIndefinitely, setsuppressIndefinitely] = useState<boolean>(true);
+    const [suppressIndefinitely, setSuppressIndefinitely] = useState<boolean>(true);
 
     props = { ...defaultProps, ...props };
 
-    const { setValue: setValueProps, type, value: valueProp, index } = props;
+    const { setValue: setValueProps, type, value, index } = props;
 
     useEffect(() => {
-        if (valueProp !== '0') {
-            setsuppressIndefinitely(false);
+        if (value !== '0') {
+            setSuppressIndefinitely(false);
         }
     }, [props]);
 
@@ -40,21 +41,26 @@ const SuppressUntilInput = (props: Props) => {
     }, [suppressIndefinitely]);
 
     useEffect(() => {
-        console.log('>>> props.value ::: ', props.value === '0' || props.value === 0);
+        console.log('>>> props.value ::: ', props.value === '0');
         console.log('>>> props.value ::: ', props.value);
         if (index !== undefined && index > -1) {
+            handleChange(_, value);
+            setDate(value);
             currentDate = suppressIndefinitely ? '0' : currentDate;
             setValueProps(`${type}`, currentDate, index);
-        }
-        if (props.value === '0' || props.value === 0 || props.value === undefined) {
-            setsuppressIndefinitely(true);
-            setDate(currentDate);
+        } else if (value !== undefined && value !== null) {
+            handleChange(_, value);
+            setDate(value);
+            setValueProps(type, value);
         } else {
-            setDate(props.value);
+            handleChange(_, '0');
+            setDate('0');
+            setValueProps(type, '0');
+            setSuppressIndefinitely(true);
         }
-    }, [props.value]);
+    }, [value]);
 
-    const handleChange = (e, { value }) => {
+    const handleChange: TextChangeHandler = (e, { value }) => {
         // Index is passed in if we are dealing with a batch update
         setDate(value);
         if (index !== undefined && index > -1) {
@@ -73,7 +79,7 @@ const SuppressUntilInput = (props: Props) => {
             } else {
                 setValueProps(`${type}`, '0');
             }
-            setsuppressIndefinitely(true);
+            setSuppressIndefinitely(true);
         } else {
             // Set it back to default
             currentDate = `${year}-${month}-${day}`;
@@ -84,7 +90,7 @@ const SuppressUntilInput = (props: Props) => {
             } else {
                 setValueProps(`${type}`, currentDate);
             }
-            setsuppressIndefinitely(false);
+            setSuppressIndefinitely(false);
         }
     };
 

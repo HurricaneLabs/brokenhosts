@@ -35,17 +35,13 @@ const LateSecondsInput = (props: Props) => {
     };
 
     useEffect(() => {
-        if (value === undefined) console.log('lateSecs value :: ', value);
+        console.log('VALUE CHANGED ::: ', value);
+        let checkedValue = '0';
+        if (value !== '' && value !== undefined && value !== null) checkedValue = value;
 
-        if (value !== undefined && value !== null) {
-            handleChange(_, value);
-            setLateSeconds(value);
-            setValueProps(type, value);
-        } else {
-            handleChange(_, '0');
-            setLateSeconds('0');
-            setValueProps(type, '0');
-        }
+        handleChange(_, checkedValue);
+        setLateSeconds(checkedValue);
+        setValueProps(type, checkedValue);
     }, [value]);
 
     return (

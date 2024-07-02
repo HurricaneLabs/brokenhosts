@@ -89,7 +89,7 @@ const initialRow = {
     index: '',
     sourcetype: '',
     host: '',
-    lateSecs: '',
+    lateSecs: '0',
 };
 
 async function populateTableWithDefaultData() {

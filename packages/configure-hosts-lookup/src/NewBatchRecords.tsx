@@ -11,16 +11,6 @@ import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import MessageBar from '@splunk/react-ui/MessageBar';
-import LateSecondsInput from './formFields/LateSecondsInput.tsx';
-
-interface Item {
-    sourcetypes: string;
-    indexes: string;
-    hosts: string;
-    lateSeconds: unknown | string;
-    contact: unknown | string;
-    comments: unknown | string;
-}
 
 interface Form {
     items: any[];

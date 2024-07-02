@@ -1,7 +1,7 @@
 import { InitialForm } from './types';
 
 type Action = {
-    value: string;
+    value: any;
     type: string;
 };
 export function newFormReducer(state: InitialForm, action: Action) {
@@ -44,8 +44,8 @@ export function newFormReducer(state: InitialForm, action: Action) {
                 contact: action.value,
             };
         case 'all':
-            console.log('ALL ', action.value[0]);
-            const form = action.value[0];
+            console.log('ALL ', action.value);
+            const form = action.value;
             const { ...allFields } = form;
             return {
                 ...state,

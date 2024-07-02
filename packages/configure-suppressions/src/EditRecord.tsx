@@ -14,7 +14,7 @@ const initialForm = {
     sourcetype: '',
     index: '',
     host: '',
-    suppressUntil: '',
+    suppressUntil: '0',
 } as InitialForm;
 
 const INDEX = 'index';
@@ -106,23 +106,13 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         populateForm();
     }, [openState]);
 
-    const indexHasValue = selectedRowData.index !== undefined && selectedRowData.index !== '';
-    const hostHasValue = selectedRowData.host !== undefined && selectedRowData.host !== '';
-    const sourcetypeHasValue =
-        selectedRowData.sourcetype !== undefined && selectedRowData.sourcetype !== '';
-    const suppressUntilHasValue =
-        selectedRowData.suppressUntil !== undefined && selectedRowData.suppressUntil !== '';
-
     return (
         <div>
             <Modal onRequestClose={onClose} open={openState} style={{ width: '450px' }}>
                 <Modal.Header onRequestClose={onClose} title="Edit Entry" />
                 <Modal.Body>
                     <form>
-                        {sourcetypeHasValue &&
-                        hostHasValue &&
-                        indexHasValue &&
-                        !atLeastOneSourceProvided ? (
+                        {!atLeastOneSourceProvided ? (
                             <MessageBar type="error">
                                 You must provide a value for index, sourcetype, or host.
                             </MessageBar>

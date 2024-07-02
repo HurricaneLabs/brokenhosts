@@ -25,23 +25,11 @@ export function newFormReducer(state: InitialForm, action: Action) {
                 ...state,
                 host: action.value,
             };
-        case 'lateSecs':
-            console.log('LATE SECONDS ', action.value);
+        case 'suppressUntil':
+            console.log('SUPPRESS UNTIL ', action.value);
             return {
                 ...state,
-                lateSecs: action.value,
-            };
-        case 'comments':
-            console.log('COMMENTS ', action.value);
-            return {
-                ...state,
-                comments: action.value,
-            };
-        case 'contact':
-            console.log('contact ', action.value);
-            return {
-                ...state,
-                contact: action.value,
+                suppressUntil: action.value,
             };
         case 'all':
             console.log('ALL ', action.value[0]);

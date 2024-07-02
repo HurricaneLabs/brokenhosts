@@ -1,15 +1,12 @@
 import React from 'react';
 import FormRows from '@splunk/react-ui/FormRows';
 import { createDOMID } from '@splunk/ui-utils/id';
-import Text from '@splunk/react-ui/Text';
 import Button from '@splunk/react-ui/Button';
 import Modal from '@splunk/react-ui/Modal';
 import ControlGroup from '@splunk/react-ui/ControlGroup';
-import TextArea from '@splunk/react-ui/TextArea';
 import { epochNow, isEmptyOrUndefined, isDateInPast } from './Helpers.ts';
 import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import Heading from '@splunk/react-ui/Heading';
-import Tooltip from '@splunk/react-ui/Tooltip';
 import MessageBar from '@splunk/react-ui/MessageBar';
 import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
 
@@ -55,16 +52,20 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
     }
 
     validate = async () => {
-        let hasError = false;
+        let errorCount = 0;
 
-        this.state.itemsValue.map((item, idx) => {
+        console.log('VALIDATE!!!');
+
+        this.setState({ suppressUntilEmptyError: false });
+        this.setState({ suppressUntilValueInPast: false });
+        this.setState({ suppressUntilEmptyError: false });
+        this.setState({ sourceIsEmptyError: false });
+        this.setState({ invalidEmailAddress: false });
+
+        console.log(`this.state.itemsValue ::: ${this.state.itemsValue}`);
+
+        this.state.itemsValue.forEach((item, idx) => {
             console.log('Current Item ::: ', item);
-
-            this.setState({ suppressUntilEmptyError: false });
-            this.setState({ suppressUntilValueInPast: false });
-            this.setState({ suppressUntilEmptyError: false });
-            this.setState({ sourceIsEmptyError: false });
-            this.setState({ invalidEmailAddress: false });
 
             console.log('is not a number??? ', isNaN(Number(item.value)));
 
@@ -81,34 +82,44 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
             console.log('contact ::: ', item['contact']);
 
             if (isEmptyOrUndefined(item['suppressUntil'])) {
-                hasError = true;
+                errorCount++;
                 this.setState({ suppressUntilEmptyError: true });
             }
 
             if (isDateInPast(item['suppressUntil'])) {
-                hasError = true;
+                errorCount++;
                 this.setState({ suppressUntilValueInPast: true });
             }
 
             if (emptySourceCount) {
-                hasError = true;
+                errorCount++;
                 this.setState({ sourceIsEmptyError: true });
             }
 
-            if (hasError) {
+            console.error('errorCount ::: ', errorCount);
+
+            if (errorCount > 0) {
                 throw new Error('Validation has failed');
             }
         });
     };
 
     submitData = async () => {
+        console.log('WHAT IS GOING ON');
         await this.validate()
             .then((_) => {
-                console.log('FORM ??? ', this.state.itemsValue);
-                console.log('STATE OF ITEMS ::: ', this.state.items);
-
                 this.props.onSubmit(this.state.itemsValue);
-                this.props.onClose();
+                this.setState(
+                    {
+                        itemsValue: [],
+                        items: [],
+                    },
+                    () => {
+                        console.log('STATE OF ITEMS ::: ', this.state.items);
+                        console.log('ITEMS VALUE AFTER SUBMIT ::: ', this.state.itemsValue);
+                        this.props.onClose();
+                    }
+                );
             })
             .catch((err) => {
                 console.error(err);
@@ -122,7 +133,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
             currentItemsValueArray[index][type] = value;
             console.log('currentItemsValueArray ::: ', currentItemsValueArray);
             this.setState((_) => {
-                itemsValue: currentItemsValueArray;
+                itemsValue: currentItemsValueArray || [];
             });
         }
     };
@@ -290,7 +301,12 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button appearance="default" onClick={this.props.onClose} label="Cancel" />
-                        <Button appearance="primary" onClick={this.submitData} label="Submit" />
+                        <Button
+                            appearance="primary"
+                            disabled={this.state.itemsValue.length === 0}
+                            onClick={this.submitData}
+                            label="Submit"
+                        />
                     </Modal.Footer>
                 </Modal>
             </div>

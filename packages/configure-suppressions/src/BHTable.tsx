@@ -80,7 +80,7 @@ const initialRow = {
     sourcetype: '',
     index: '',
     host: '',
-    suppressUntil: currentDate,
+    suppressUntil: '0',
 };
 
 async function populateTableWithDefaultData() {
@@ -391,11 +391,9 @@ export default class ReorderRows extends Component<{}, TableState> {
     };
 
     handleEditRequestOpen = (_, data) => {
-        console.log('??? selected data ::: ', data);
-        console.log('??? initalRow ::: ', initialRow);
-        data = Object.assign({}, initialRow, data);
         console.log('selected data ::: ', data);
-
+        data = Object.assign({}, initialRow, data);
+        data.suppressUntil = data.suppressUntil === '' ? '0' : data.suppressUntil;
         // handles what happens when modal is open
         this.setState({
             openEditModal: true,
@@ -440,11 +438,11 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, suppressUntil }) => {
+    handleToggle: RowRequestToggleHandler = (_, { _key }) => {
         this.setState((state) => {
             const data = cloneDeep(state.data);
 
-            const selectedRow = find(data, { index, sourcetype, host, suppressUntil });
+            const selectedRow = find(data, { _key });
             if (selectedRow) {
                 selectedRow.selected = !selectedRow.selected;
                 return { data };
