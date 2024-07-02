@@ -49,7 +49,7 @@ build:
         - git clone https://code.hurricanelabs.net/dev/broken_hosts_splunk_ui_toolkit.git
         - cd broken_hosts_splunk_ui_toolkit
         - yarn run setup
-        - cd packages/broken_hosts
+        - cd packages/broken-hosts
         - yarn run link:app
         - cd stage
         - cp -r appserver $CI_PROJECT_DIR
