@@ -3,9 +3,9 @@ export type DataType = {
 };
 
 export type InitialForm = {
-    sourcetypes: string | unknown;
-    indexes: string | unknown;
-    hosts: string | unknown;
+    sourcetype: string | unknown;
+    index: string | unknown;
+    host: string | unknown;
 };
 
 export type RowsOfData = InitialForm[];

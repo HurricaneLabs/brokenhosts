@@ -8,19 +8,19 @@ export function newFormReducer(state: InitialForm, action: Action) {
     console.log('action.type ::: ', action.type);
     switch (action.type) {
         case 'sourcetype':
-            console.log('UPDATE  SOURCETYPES ', action.value);
+            console.log('UPDATE  sourcetype ', action.value);
             return {
                 ...state,
                 sourcetype: action.value,
             };
         case 'index':
-            console.log('UPDATE INDEXES ', action.value);
+            console.log('UPDATE index ', action.value);
             return {
                 ...state,
                 index: action.value,
             };
         case 'host':
-            console.log('UPDATE HOSTS ', action.value);
+            console.log('UPDATE host ', action.value);
             return {
                 ...state,
                 host: action.value,

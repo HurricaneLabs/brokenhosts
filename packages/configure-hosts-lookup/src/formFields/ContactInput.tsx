@@ -23,7 +23,7 @@ const ContactInput = ({ type, setSelected, value, hasError }: Props) => {
     };
 
     useEffect(() => {
-        if (typeof value !== 'undefined') {
+        if (typeof value !== 'undefined' && value !== null) {
             let v = value;
             // Remove any uneccessary spaces
             // Handle comma delimited list of emails or single email

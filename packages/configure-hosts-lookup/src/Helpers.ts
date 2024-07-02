@@ -80,6 +80,7 @@ export const capitalize = function (str: string) {
 };
 
 export const isEmptyOrUndefined = (val: string) => {
+    console.log('configure host lookup :: isEmptyOrUndefined :: ', val);
     return val === '' || val === undefined;
 };
 

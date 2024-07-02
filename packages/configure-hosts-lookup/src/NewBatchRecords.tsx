@@ -11,6 +11,7 @@ import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import Heading from '@splunk/react-ui/Heading';
 import Tooltip from '@splunk/react-ui/Tooltip';
 import MessageBar from '@splunk/react-ui/MessageBar';
+import LateSecondsInput from './formFields/LateSecondsInput.tsx';
 
 interface Item {
     sourcetypes: string;
@@ -38,7 +39,6 @@ interface State {
     itemsValue: any[];
     lateSecsNotValidError: boolean;
     sourceIsEmptyError: boolean;
-    lateSecsEmptyError: boolean;
     invalidEmailAddress: boolean;
 }
 
@@ -57,21 +57,21 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
             itemsValue: [],
             lateSecsNotValidError: false,
             sourceIsEmptyError: false,
-            lateSecsEmptyError: false,
             invalidEmailAddress: false,
         };
     }
 
     validate = async () => {
-        let hasError = false;
+        let errorCount = 0;
 
-        this.state.itemsValue.map((item, idx) => {
+        this.setState({ lateSecsNotValidError: false });
+        this.setState({ sourceIsEmptyError: false });
+        this.setState({ invalidEmailAddress: false });
+
+        this.state.itemsValue.forEach((item, idx) => {
             console.log('Current Item ::: ', item);
 
-            this.setState({ lateSecsNotValidError: false });
-            this.setState({ lateSecsEmptyError: false });
-            this.setState({ sourceIsEmptyError: false });
-            this.setState({ invalidEmailAddress: false });
+            console.log('item ::: ', item);
 
             console.log('is not a number??? ', isNaN(Number(item.value)));
 
@@ -84,8 +84,6 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                 isEmptyOrUndefined(item['index']) &&
                 isEmptyOrUndefined(item['sourcetype']);
 
-            console.log('contact ::: ', item['contact']);
-
             // Check if multiple emails
             if (!isEmptyOrUndefined(item['contact']) && item['contact'].includes(',')) {
                 const validEmailCount = item['contact'].split(',').filter((email) => {
@@ -96,46 +94,77 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                     item['contact'].split(',').length > 0 &&
                     validEmailCount !== item['contact'].split(',').length
                 ) {
-                    hasError = true;
+                    errorCount++;
+                    console.error(`invalid email ${idx} :: ${item['contact']}`);
                     this.setState({ invalidEmailAddress: true });
                 }
                 // Or just one email
             } else if (!isEmptyOrUndefined(item['contact'])) {
                 if (!isValidEmail(item['contact'])) {
-                    hasError = true;
+                    errorCount++;
+                    console.error(`invalid email ${idx} :: ${item['contact']}`);
                     this.setState({ invalidEmailAddress: true });
                 }
             }
 
             if (isEmptyOrUndefined(item['lateSecs'])) {
-                hasError = true;
-                this.setState({ lateSecsEmptyError: true });
+                this.setState({ lateSecsNotValidError: true });
+                console.error(
+                    `invalid lateSecs - undefined or empty - ${idx} :: ${item['lateSecs']}`
+                );
+                errorCount++;
+            } else if (
+                !isEmptyOrUndefined(item['lateSecs']) &&
+                (isNaN(item['lateSecs']) || item['lateSecs'] < 0)
+            ) {
+                this.setState({ lateSecsNotValidError: true });
+                console.error(
+                    `invalid lateSecs - not a valid value - ${idx} :: ${item['lateSecs']}`
+                );
+                errorCount++;
             }
 
             if (emptySourceCount) {
-                hasError = true;
+                errorCount++;
+                console.error(
+                    `invalid source - none provided ${idx} :: host : ${item['host']}, index : ${item['index']}, sourcetype: ${item['sourcetype']}`
+                );
+
                 this.setState({ sourceIsEmptyError: true });
             }
 
             if (!isEmptyOrUndefined(item['lateSecs']) && isNaN(item['lateSecs'])) {
-                hasError = true;
+                console.error(`invalid lateSecs ${idx} :: ${item['lateSecs']}`);
+                errorCount++;
                 this.setState({ lateSecsNotValidError: true });
             }
-
-            if (hasError) {
-                throw new Error('Validation has failed');
-            }
         });
+
+        console.error('errorCount ::: ', errorCount);
+        console.log(`invalid lateSecsNotValidError ::: ${this.state.lateSecsNotValidError}`);
+
+        if (errorCount > 0) {
+            throw new Error('Validation has failed');
+        }
     };
 
     submitData = async () => {
         await this.validate()
             .then((_) => {
                 console.log('FORM ??? ', this.state.itemsValue);
-                console.log('STATE OF ITEMS ::: ', this.state.items);
 
                 this.props.onSubmit(this.state.itemsValue);
-                this.props.onClose();
+                this.setState(
+                    {
+                        itemsValue: [],
+                        items: [],
+                    },
+                    () => {
+                        console.log('STATE OF ITEMS ::: ', this.state.items);
+                        console.log('ITEMS VALUE AFTER SUBMIT ::: ', this.state.itemsValue);
+                        this.props.onClose();
+                    }
+                );
             })
             .catch((err) => {
                 console.error(err);
@@ -149,7 +178,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
             currentItemsValueArray[index][type] = value;
             console.log('currentItemsValueArray ::: ', currentItemsValueArray);
             this.setState((_) => {
-                itemsValue: currentItemsValueArray;
+                itemsValue: currentItemsValueArray || [];
             });
         }
     };
@@ -226,6 +255,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                 style={{ margin: '0 .25em 0 0' }}
                                 defaultValue="Late Seconds"
                                 describedBy="header-lateSecs"
+                                setValue={this.handleFormChange}
                                 value={state.itemsValue[state.itemsValue.length - 1]['lateSecs']}
                                 onChange={(e) =>
                                     this.handleFormChange(
@@ -235,9 +265,6 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                                     )
                                 }
                             />
-                            {state.itemsValue[state.itemsValue.length - 1]['hasError']
-                                ? 'UH OH'
-                                : ''}
                             <Tooltip content="Use seconds or SPL relative time format. 0 means always suppress." />
                         </ControlGroup>
                         <ControlGroup
@@ -340,14 +367,7 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                         {this.state.lateSecsNotValidError ? (
                             <MessageBar type="error">
                                 One or more row's 'Late Seconds' value is not valid. It must be a
-                                number.
-                            </MessageBar>
-                        ) : (
-                            ''
-                        )}
-                        {this.state.lateSecsEmptyError ? (
-                            <MessageBar type="error">
-                                One or more row's 'Late Seconds' is empty. It must be a number.
+                                number that is 0 or greater.
                             </MessageBar>
                         ) : (
                             ''
@@ -377,7 +397,12 @@ class NewBatchRecords extends React.PureComponent<Props, State> {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button appearance="default" onClick={this.props.onClose} label="Cancel" />
-                        <Button appearance="primary" onClick={this.submitData} label="Submit" />
+                        <Button
+                            appearance="primary"
+                            disabled={this.state.itemsValue.length === 0}
+                            onClick={this.submitData}
+                            label="Submit"
+                        />
                     </Modal.Footer>
                 </Modal>
             </div>

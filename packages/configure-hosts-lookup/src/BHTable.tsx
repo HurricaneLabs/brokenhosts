@@ -83,6 +83,15 @@ const buttonStyle = {
     padding: '10px',
 };
 
+const initialRow = {
+    comments: '',
+    contact: '',
+    index: '',
+    sourcetype: '',
+    host: '',
+    lateSecs: '',
+};
+
 async function populateTableWithDefaultData() {
     // read in theKV store collection of interest
 
@@ -246,19 +255,6 @@ export default class ReorderRows extends Component<{}, TableState> {
             })
         );
     }
-
-    // interface Row {
-    //     _key: string;
-    //     comments: string;
-    //     contact: string;
-    //     email: string;
-    //     index: string;
-    //     sourcetype: string;
-    //     host: string;
-    //     lateSecs: string;
-    //     selected: boolean;
-    //     disabled: boolean;
-    // }
 
     updateSelectedRecord = async (updatedData) => {
         Object.assign(updatedData, { _key: this.state.selected._key });
@@ -424,6 +420,7 @@ export default class ReorderRows extends Component<{}, TableState> {
     handleEditRequestOpen = (_, data) => {
         console.log('selected data ::: ', data);
         // handles what happens when modal is open
+        data = Object.assign({}, initialRow, data);
         this.setState({
             openEditModal: true,
             selected: data,
@@ -467,11 +464,12 @@ export default class ReorderRows extends Component<{}, TableState> {
         });
     };
 
-    handleToggle: RowRequestToggleHandler = (_, { index, sourcetype, host, lateSecs, contact }) => {
+    handleToggle: RowRequestToggleHandler = (_, { _key }) => {
         this.setState((state) => {
-            const data = cloneDeep(state.data);
+            let data = cloneDeep(state.data);
 
-            const selectedRow = find(data, { index, sourcetype, host, lateSecs, contact });
+            const selectedRow = find(data, { _key });
+
             if (selectedRow) {
                 selectedRow.selected = !selectedRow.selected;
                 return { data };

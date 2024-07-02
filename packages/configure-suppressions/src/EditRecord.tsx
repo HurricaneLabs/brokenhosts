@@ -11,9 +11,9 @@ import { SelectedRow, InitialForm } from './types.ts';
 import SuppressUntilInput from './formFields/SuppressUntilInput.tsx';
 
 const initialForm = {
-    sourcetypes: '',
-    indexes: '',
-    hosts: '',
+    sourcetype: '',
+    index: '',
+    host: '',
     suppressUntil: '',
 } as InitialForm;
 

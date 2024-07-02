@@ -11,9 +11,9 @@ import DatasourceSelect from './formFields/DatasourceSelect.tsx';
 import LateSecondsInput from './formFields/LateSecondsInput.tsx';
 
 const initialForm = {
-    sourcetypes: [],
-    indexes: [],
-    hosts: [],
+    sourcetype: '',
+    index: '',
+    host: '',
     lateSeconds: null,
     contact: null,
     comments: null,

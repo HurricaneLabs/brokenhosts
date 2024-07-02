@@ -34,8 +34,8 @@ const hostUrl = `storage/collections/data/bh_host_cache?query={"last_seen":{"$gt
 
 const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     const [form, dispatchForm] = useReducer(editFormReducer, initialForm);
-    const [open, setOpenState] = useState(false);
-    const [hasError, setErrorState] = useState(false);
+    const [, setOpenState] = useState(false);
+    const [, setErrorState] = useState(false);
     const [lateSecsErrorState, setLateSecsErrorState] = useState({
         invalidNumber: false,
         empty: false,
@@ -47,6 +47,7 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
         console.log('VALIDATE!!!');
         // Always reset the value when re-validating
         let hasErrors = false;
+        let sourceValueCount = 0;
         setcontactErrorState(false);
         setLateSecsErrorState({
             invalidNumber: false,
@@ -61,10 +62,10 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 const sources = ['host', 'index', 'sourcetype'];
 
                 if (sources.includes(k) && !isEmptyOrUndefined(v as string)) {
-                    setAtLeastOneSourceProvided(true);
+                    sourceValueCount++;
                 }
 
-                if (k === 'contact') {
+                if (k === 'contact' && v !== undefined && v !== null) {
                     if (!isEmptyOrUndefined(v as string)) {
                         if ((v as string).includes(',')) {
                             const validEmailCount = (v as string).split(',').filter((email) => {
@@ -84,13 +85,13 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                     }
                 }
 
-                if (k === 'lateSecs' && isEmptyOrUndefined(v)) {
+                if (k === 'lateSecs' && isEmptyOrUndefined(v as string)) {
                     setLateSecsErrorState({
                         ...lateSecsErrorState,
                         empty: true,
                     });
                     hasErrors = true;
-                } else if (k === 'lateSecs' && isNaN(v as number)) {
+                } else if (k === 'lateSecs' && (isNaN(v as number) || (v as number) < 0)) {
                     setLateSecsErrorState({
                         ...lateSecsErrorState,
                         invalidNumber: true,
@@ -99,17 +100,31 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 }
             }
 
+            if (sourceValueCount === 0) {
+                console.log('sourceValueCount is empty!');
+                setAtLeastOneSourceProvided(false);
+                hasErrors = true;
+            }
+
             res(hasErrors);
+        });
+    };
+
+    const clearAllErrors = () => {
+        setAtLeastOneSourceProvided(true);
+        setLateSecsErrorState({
+            empty: false,
+            invalidNumber: false,
         });
     };
 
     const submitData = async () => {
         await validate().then((hasErrors) => {
             console.log('FORM ??? ', hasErrors);
-            // if (!hasErrors) {
-            //     updateRecord(form);
-            //     onClose();
-            // }
+            if (!hasErrors) {
+                updateRecord(form);
+                onClose();
+            }
         });
     };
 
@@ -137,18 +152,10 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
     };
 
     useEffect(() => {
+        if (!openState) clearAllErrors();
         setOpenState(true);
         populateForm();
     }, [openState]);
-
-    useEffect(() => {
-        console.log('form changed ::: ', form);
-    }, [form]);
-
-    const indexHasValue = selectedRowData.index !== undefined && selectedRowData.index !== '';
-    const hostHasValue = selectedRowData.host !== undefined && selectedRowData.host !== '';
-    const sourcetypeHasValue =
-        selectedRowData.sourcetype !== undefined && selectedRowData.sourcetype !== '';
 
     return (
         <div>
@@ -156,10 +163,7 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                 <Modal.Header onRequestClose={onClose} title="Edit Entry" />
                 <Modal.Body>
                     <form>
-                        {sourcetypeHasValue &&
-                        hostHasValue &&
-                        indexHasValue &&
-                        !atLeastOneSourceProvided ? (
+                        {!atLeastOneSourceProvided ? (
                             <MessageBar type="error">
                                 You must provide a value for index, sourcetype, or host.
                             </MessageBar>
@@ -212,7 +216,13 @@ const EditRecord = ({ onUpdate, onClose, openState, selectedRowData }) => {
                             setSelected={handleFormChange}
                             value={form.lateSecs}
                         />
-
+                        {lateSecsErrorState.empty || lateSecsErrorState.invalidNumber ? (
+                            <MessageBar style={{ marginTop: '.5em' }} type="error">
+                                Late Seconds must not be empty. Must be a value of 0 or greater.
+                            </MessageBar>
+                        ) : (
+                            ''
+                        )}
                         <ContactInput
                             hasError={contactErrorState}
                             type={CONTACT}
