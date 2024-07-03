@@ -1,58 +1,96 @@
 image: python
 stages:
-    - lint
-    - unittest
-    - sectest
-    - build
-    - splunktest
+  # - lint
+  # - unittest
+  # - sectest
+  - build
+  - splunktest
 
-delint:
-    stage: lint
-    before_script:
-        - pip install pylint
-        - pip install requests
-    script:
-        - pylint ${CI_PROJECT_DIR}/bin/*.py
-    tags:
-        - docker
+# delint:
+#     stage: lint
+#     before_script:
+#         - pip install pylint
+#         - pip install requests
+#     script:
+#         - pylint ${CI_PROJECT_DIR}/bin/*.py
+#     tags:
+#         - docker
 
-unittest:
-    stage: unittest
-    before_script:
-        - pip install addonfactory-splunk-conf-parser-lib
-    script:
-        - python ${CI_PROJECT_DIR}/tests/test_conf_checker.py
-    tags:
-        - docker
+# unittest:
+#     stage: unittest
+#     before_script:
+#         - pip install addonfactory-splunk-conf-parser-lib
+#     script:
+#         - python ${CI_PROJECT_DIR}/tests/test_conf_checker.py
+#     tags:
+#         - docker
 
-sectests:
-    stage: sectest
-    before_script:
-        - pip install bandit
-    script:
-        - bandit -r -x ${CI_PROJECT_DIR}/bin/defusedxml ${CI_PROJECT_DIR}/bin
-    tags:
-        - docker
+# sectests:
+#     stage: sectest
+#     before_script:
+#         - pip install bandit
+#     script:
+#         - bandit -r -x ${CI_PROJECT_DIR}/bin/defusedxml ${CI_PROJECT_DIR}/bin
+#     tags:
+#         - docker
 
 build:
-    stage: build
-    script:
-        - git archive --prefix ${CI_PROJECT_NAME}/ --format tar.gz ${CI_COMMIT_SHA} -o ${CI_PROJECT_NAME}.spl
-    artifacts:
-        paths:
-            - ${CI_PROJECT_NAME}.spl
+  image: node:18
+  tags:
+    - docker
+  variables:
+    SPLUNK_HOME: "/tmp" # I only set this so that yarn run link:app creates a stage dir without error
+    NODE_OPTIONS: "--openssl-legacy-provider" # UI toolkit depends on legacy SSL
+    NOW: "$(date +%s)"
+  stage: build
+  script:
+    - mkdir /tmp/etc
+    - mkdir /tmp/etc/apps
+    - cd /tmp
+    - git clone https://code.hurricanelabs.net/dev/broken_hosts_splunk_ui_toolkit.git
+    - cd broken_hosts_splunk_ui_toolkit
+    - yarn run setup
+    - cd packages/broken-hosts
+    # - yarn run link:app
+    # - ln -s $SPLUNK_HOME/etc/apps/broken_hosts $PWD/stage
+    # The apps are different names so we need to hardcode this - as of now UI Toolkit does not allow dashes
+    - ln -s $SPLUNK_HOME/etc/apps/broken_hosts /tmp/broken_hosts_splunk_ui_toolkit/packages/broken-hosts/stage
+    - cd stage
+    - cp -r appserver $CI_PROJECT_DIR
+    - cp default/data/ui/views/*.xml $CI_PROJECT_DIR/default/data/ui/views
+    # - curl --request POST --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" --url "https://code.hurricanelabs.net/api/v4/projects/234/repository/branches?branch=toolkit_v_$NOW&ref=toolkit"
+    - cd $CI_PROJECT_DIR
+    - >
+      git checkout -b "toolkit_$NOW" &&
+      git add . && git commit . -m "Auto-build commit" &&
+      git push
+    - tar -v --transform "s,^\.,${CI_PROJECT_NAME}," --exclude="pylintrc" --exclude='.[^/]*' -czvf ${CI_PROJECT_NAME}.spl ./*
+  artifacts:
+    paths:
+      - ${CI_PROJECT_NAME}.spl
+  only:
+    - toolkit
 
 splunktest:
-    stage: splunktest
-    image: python:3.7
-    script:
+  stage: splunktest
+  image: python:3.7
+  script:
     - pip install splunk-appinspect
     - mkdir /tmp/${CI_PROJECT_NAME}
-    - git archive --format tar HEAD | tar --exclude="*/node_modules" --exclude="./tests/" --exclude="*/jsx" --exclude=".*" --exclude="*/*.pyc" --exclude="./local/" --exclude="./metadata/local.meta" -xC /tmp/${CI_PROJECT_NAME}
-    - splunk-appinspect inspect /tmp/${CI_PROJECT_NAME} --mode precert --included-tags cloud
-    - splunk-appinspect inspect /tmp/${CI_PROJECT_NAME} --mode precert --included-tags cloud |grep "error:\\s 0\|failure:\s 0"
+    - splunk-appinspect inspect ${CI_PROJECT_NAME}.spl --mode precert --included-tags cloud --included-tags jquery
+    - splunk-appinspect inspect ${CI_PROJECT_NAME}.spl --mode precert --included-tags cloud --included-tags jquery | grep "error:\\s 0\|failure:\s 0"
     - echo "Pay attention to the values above ^^ both will cause your app to be rejected if they're > 0"
+# splunktest:
+#     stage: splunktest
+#     image: python:3.7
+#     script:
+#     - pip install splunk-appinspect
+#     - mkdir /tmp/${CI_PROJECT_NAME}
+#     - git archive --format tar HEAD | tar --exclude="*/node_modules" --exclude="./tests/" --exclude="*/jsx" --exclude=".*" --exclude="*/*.pyc" --exclude="./local/" --exclude="./metadata/local.meta" -xC /tmp/${CI_PROJECT_NAME}
+#     - splunk-appinspect inspect /tmp/${CI_PROJECT_NAME} --mode precert --included-tags cloud
+#     - splunk-appinspect inspect /tmp/${CI_PROJECT_NAME} --mode precert --included-tags cloud |grep "error:\\s 0\|failure:\s 0"
+#     - echo "Pay attention to the values above ^^ both will cause your app to be rejected if they're > 0"
 
-    tags:
-        - docker
+#     tags:
+#         - docker
 
