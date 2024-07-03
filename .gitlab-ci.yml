@@ -41,7 +41,6 @@ build:
   variables:
     SPLUNK_HOME: "/tmp" # I only set this so that yarn run link:app creates a stage dir without error
     NODE_OPTIONS: "--openssl-legacy-provider" # UI toolkit depends on legacy SSL
-    NOW: $(date +%s)
   stage: build
   script:
     - mkdir /tmp/etc
@@ -58,14 +57,14 @@ build:
     - cd stage
     - cp -r appserver $CI_PROJECT_DIR
     - cp default/data/ui/views/*.xml $CI_PROJECT_DIR/default/data/ui/views
-    # - curl --request POST --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" --url "https://code.hurricanelabs.net/api/v4/projects/234/repository/branches?branch=toolkit_v_$NOW&ref=toolkit"
+    # - curl --request POST --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" --url "https://code.hurricanelabs.net/api/v4/projects/234/repository/branches?branch=toolkit_v_$CI_JOB_ID&ref=toolkit"
     - cd $CI_PROJECT_DIR
     - >
       git config --global user.email "ian@hurricanelabs.com" &&
       git config --global user.name "Ian" &&
-      git checkout -b toolkit_$NOW &&
+      git checkout -b toolkit_$CI_JOB_ID &&
       git add . && git commit . -m "Auto-build commit" &&
-      git push -u origin toolkit_$NOW
+      git push -u origin toolkit_$CI_JOB_ID
     - tar -v --transform "s,^\.,${CI_PROJECT_NAME}," --exclude="pylintrc" --exclude='.[^/]*' -czvf ${CI_PROJECT_NAME}.spl ./*
   artifacts:
     paths:
