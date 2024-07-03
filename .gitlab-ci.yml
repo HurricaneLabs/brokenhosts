@@ -37,9 +37,12 @@ build:
     paths:
       - ${CI_PROJECT_NAME}.spl
   only:
-    - toolkit
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
-workflow: 
-    rules:
-        # On merge to main run this job
-        - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+# workflow: 
+#     rules:
+#         # On merge to main run this job
+#         - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_PIPELINE_SOURCE == "merge_request_event"'
