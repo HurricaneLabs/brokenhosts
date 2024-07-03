@@ -61,7 +61,7 @@ build:
     # - curl --request POST --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" --url "https://code.hurricanelabs.net/api/v4/projects/234/repository/branches?branch=toolkit_v_$NOW&ref=toolkit"
     - cd $CI_PROJECT_DIR
     - >
-      git checkout -b "toolkit_$NOW" &&
+      git checkout -b toolkit_$NOW &&
       git add . && git commit . -m "Auto-build commit" &&
       git push
     - tar -v --transform "s,^\.,${CI_PROJECT_NAME}," --exclude="pylintrc" --exclude='.[^/]*' -czvf ${CI_PROJECT_NAME}.spl ./*
