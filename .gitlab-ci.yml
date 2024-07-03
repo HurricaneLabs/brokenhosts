@@ -1,6 +1,11 @@
 stages:
     - build
 
+workflow:
+    rules:
+        # On merge to main run this job
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
 build:
     image: node:18
     tags:
@@ -36,12 +41,8 @@ build:
     artifacts:
         paths:
             - ${CI_PROJECT_NAME}.spl
-    only:
-        refs:
-            - merge_requests
-        variables:
-            - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-# workflow:
-#     rules:
-#         # On merge to main run this job
-#         - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_PIPELINE_SOURCE == "merge_request_event"'
+    # only:
+    #     refs:
+    #         - merge_requests
+    #     variables:
+    #         - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
