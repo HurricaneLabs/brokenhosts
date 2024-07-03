@@ -1,11 +1,11 @@
 stages:
     - build
 
-workflow:
-    rules:
-        # On merge to main run this job
-        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-        - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "main"
+# workflow:
+#     rules:
+#         # On merge to main run this job
+#         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#         - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "main"
 
 build:
     image: node:18
@@ -37,13 +37,13 @@ build:
             git config --global user.name "Ian" &&
             git checkout -b toolkit &&
             git add -f ./appserver ./default/data && git commit ./appserver ./default/data -m "Auto-build commit" &&
-            git push -u https://a:$GITLAB_ACCESS_TOKEN@code.hurricanelabs.net/splunk/broken_hosts.git toolkit
+            git push -u https://a:$GITLAB_ACCESS_TOKEN@code.hurricanelabs.net/splunk/broken_hosts.git toolkit --force
         # - tar -v --transform "s,^\.,${CI_PROJECT_NAME}," --exclude="pylintrc" --exclude='.[^/]*' -czvf ${CI_PROJECT_NAME}.spl ./*
     artifacts:
         paths:
             - ${CI_PROJECT_NAME}.spl
-    # only:
-    #     refs:
-    #         - merge_requests
-    #     variables:
-    #         - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+    only:
+        refs:
+            - merge_requests
+        variables:
+            - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
