@@ -25,7 +25,7 @@ build:
         - cd packages/broken-hosts
         # - yarn run link:app
         # - ln -s $SPLUNK_HOME/etc/apps/broken_hosts $PWD/stage
-        # The apps are different names so we need to hardcode this - as of now UI Toolkit does not allow dashes
+        # The apps are different names so we need to hardcode this - as of now UI Toolkit does not allow dashes - creates stage symlink
         - ln -s $SPLUNK_HOME/etc/apps/broken_hosts /tmp/broken_hosts_splunk_ui_toolkit/packages/broken-hosts/stage
         - cd stage
         # - cp -r appserver $CI_PROJECT_DIR
@@ -33,6 +33,8 @@ build:
         # - curl --request POST --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" --url "https://code.hurricanelabs.net/api/v4/projects/234/repository/branches?branch=toolkit_v_$CI_JOB_ID&ref=toolkit"
         # - cd $CI_PROJECT_DIR
         - >
+            find ./appserver -type d -exec sed -i 's/broken-hosts/broken_hosts/g' {} \; &&
+            find ./default/data -type d -exec sed -i 's/broken-hosts/broken_hosts/g' {} \; &&
             git config --global user.email "ian@hurricanelabs.com" &&
             git config --global user.name "Ian" &&
             git checkout -b toolkit &&
