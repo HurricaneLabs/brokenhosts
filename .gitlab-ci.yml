@@ -64,7 +64,7 @@ build:
       git config --global user.name "Ian" &&
       git checkout -b toolkit_$CI_JOB_ID &&
       git add . && git commit . -m "Auto-build commit" &&
-      git push -u origin toolkit_$CI_JOB_ID
+      git push -u https://a:$GITLAB_ACCESS_TOKEN@code.hurricanelabs.net/splunk/broken_hosts.git toolkit_$CI_JOB_ID
     - tar -v --transform "s,^\.,${CI_PROJECT_NAME}," --exclude="pylintrc" --exclude='.[^/]*' -czvf ${CI_PROJECT_NAME}.spl ./*
   artifacts:
     paths:
