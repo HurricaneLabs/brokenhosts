@@ -44,32 +44,31 @@ class BrokenHostsSetup(admin.MConfigHandler):
             "expectedTime.csv.default")
         with open(default_file, "r", encoding='utf-8') as opened_file:
             rows = csv.DictReader(opened_file)
-
-            """
-            The following logic determines if a row is sent to a specific KV Store:
-                1. Any comment with 'default entry' AND lateSecs is a non-zero value - will be sent to the expectedTime KV Store
-                2. Any comment with 'default entry' AND lateSecs is a zero value - Youwill be sent to bh_suppressions KV Store
-            """
+            # The following logic determines if a row is sent to a specific KV Store:
+            #    1. Any comment with 'default entry' AND lateSecs is a non-zero value
+            #       - will be sent to the expectedTime KV Store
+            #    2. Any comment with 'default entry' AND lateSecs is a zero value
+            #       - You will be sent to bh_suppressions KV Store
             for row in rows:
                 if "default entry" in row["comments"] and int(row["lateSecs"]) > 0:
                     self.write_to_kv(session_key, row, "expected_time_value")
                 if "default entry" in row["comments"] and int(row["lateSecs"]) == 0:
                     self.write_to_kv(session_key, row, "bh_suppressions_value")
 
-    def write_to_kv(self, session_key, line, type):
+    def write_to_kv(self, session_key, line, entry_type):
         """
         Writes line to KVStore, called in handleEdit()
         """
 
         url = None
 
-        if (type == "expected_time_value"):
+        if entry_type == "expected_time_value":
             url = "/servicesNS/nobody/broken_hosts/storage/collections/data/expectedTime"
 
-        if (type == "bh_suppressions_value"):
+        if entry_type == "bh_suppressions_value":
             url = "/servicesNS/nobody/broken_hosts/storage/collections/data/bh_suppressions"
 
-        if url != None:
+        if url is not None:
             splunk.rest.simpleRequest(
                 url,
                 method='POST',
