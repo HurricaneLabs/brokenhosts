@@ -41,7 +41,7 @@ build:
   variables:
     SPLUNK_HOME: "/tmp" # I only set this so that yarn run link:app creates a stage dir without error
     NODE_OPTIONS: "--openssl-legacy-provider" # UI toolkit depends on legacy SSL
-    NOW: "$(date_+%s)"
+    NOW: $(date +%s)
   stage: build
   script:
     - mkdir /tmp/etc
