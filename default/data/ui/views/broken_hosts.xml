@@ -80,7 +80,7 @@
       <table>
         <title>This panel shows log sources that are suppressed in expectedTime that have received logs within the time range selected above.</title>
         <search>
-          <query>index=summary source="bh_stats_gen" | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+          <query>index=summary source="bh_stats_gen" [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
 | lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil
 | fillnull comments contact value=""
@@ -117,9 +117,9 @@
       <table>
         <title>This panel lists all suppressions found in expectedTime, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
         <search>
-          <query>| inputlookup expectedTime
+          <query>|inputlookup bh_suppressions 
 | eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
-| where lateSecs=0 OR suppressUntil_epoch&gt;now() 
+| where suppressUntil_epoch&gt;now() 
 | eval suppressUntil=if(suppressUntil=0,"Permanent Suppression",suppressUntil)
 | eval comments=suppressUntil + " - " + comments
 | fields index, sourcetype, host, suppressUntil, comments 
@@ -152,7 +152,7 @@
       <table>
         <title>This panel will show all non-suppressed log sources that have received data within the time range selected. Additional log sources may appear a longer time range is selected above.</title>
         <search>
-          <query>index=summary source="bh_stats_gen" | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+          <query>index=summary source="bh_stats_gen" NOT [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
 | lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil
 | fillnull comments contact value=""
