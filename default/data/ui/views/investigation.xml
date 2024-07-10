@@ -1,6 +1,12 @@
-<form version="1.1" theme="dark">
+<form version="1.1">
+  <init>
+    <unset token="index_tok_other"></unset>
+    <unset token="sourcetype_tok_other"></unset>
+    <unset token="host_tok_other"></unset>
+    <unset token="source_tok_other"></unset>
+  </init>
   <label>Broken Hosts Tuning/Investigation</label>
-  <description>Fill out the at least the Index input to return results. Multiple selections are supported.</description>
+  <description>Fill out the at least the Index input to return results. Multiple selections are supported. Note: for performance reasons all inputs only return the first 300 results in alphabetical order. If your desired selection does not appear, select Other at the bottom of the list and a text input will appear. Text inputs support wildcards and need to be comma separate to include multiple selections.</description>
   <fieldset submitButton="true">
     <input type="time" token="time_tok" searchWhenChanged="true">
       <label>Time Picker</label>
@@ -9,7 +15,7 @@
         <latest>now</latest>
       </default>
     </input>
-    <input type="multiselect" token="index_tok" searchWhenChanged="true">
+    <input type="multiselect" token="indexdropdown" searchWhenChanged="true">
       <label>Index</label>
       <choice value="*">All</choice>
       <valuePrefix>"</valuePrefix>
@@ -20,12 +26,35 @@
       <search>
         <query>| tstats summariesonly=true allow_old_summaries=true count by index
 | sort 0 + index
-| table index</query>
+| head 300
+| table index
+| append [|makeresults | eval index="Other"]
+        </query>
         <earliest>-30d@d</earliest>
         <latest>now</latest>
       </search>
+      <change>
+        <condition label="Other">
+          <set token="index_tok_other">*</set>
+          <set token="index_tok">$index_tok_other$</set>
+        </condition>
+        <condition match="'indexdropdown' != &quot;Other&quot;">
+          <unset token="index_tok_other"></unset>
+          <set token="index_tok">$indexdropdown$</set>
+        </condition>
+      </change>
     </input>
-    <input type="multiselect" token="sourcetype_tok" searchWhenChanged="true">
+    <input type="text" token="index_tok_other" searchWhenChanged="true" depends="$index_tok_other$">
+      <label>Other (Index)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <change>
+        <condition>
+          <set token="index_tok">$index_tok_other$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="multiselect" token="sourcetypedropdown" searchWhenChanged="true">
       <label>Sourcetype (Requires Index Selection)</label>
       <choice value="*">All</choice>
       <valuePrefix>"</valuePrefix>
@@ -36,12 +65,35 @@
       <search>
         <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) by sourcetype
 | sort 0 + sourcetype
-| table sourcetype</query>
+| head 300
+| table sourcetype
+| append [|makeresults | eval sourcetype="Other"]
+        </query>
         <earliest>-30d@d</earliest>
         <latest>now</latest>
       </search>
+    <change>
+        <condition label="Other">
+          <set token="sourcetype_tok_other">*</set>
+          <set token="sourcetype_tok">$sourcetype_tok_other$</set>
+        </condition>
+        <condition match="'sourcetypedropdown' != &quot;Other&quot;">
+          <unset token="sourcetype_tok_other"></unset>
+          <set token="sourcetype_tok">$sourcetypedropdown$</set>
+        </condition>
+      </change>
     </input>
-    <input type="multiselect" token="host_tok" searchWhenChanged="true">
+    <input type="text" token="sourcetype_tok_other" searchWhenChanged="true" depends="$sourcetype_tok_other$">
+      <label>Other (sourcetype)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <change>
+        <condition>
+          <set token="sourcetype_tok">$sourcetype_tok_other$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="multiselect" token="hostdropdown" searchWhenChanged="true">
       <label>Host (Requires Sourcetype Selection)</label>
       <choice value="*">All</choice>
       <valuePrefix>"</valuePrefix>
@@ -52,12 +104,35 @@
       <search>
         <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) by host
 | sort 0 + host
-| table host</query>
+| head 300
+| table host
+| append [|makeresults | eval host="Other"]
+        </query>
         <earliest>-30d@d</earliest>
         <latest>now</latest>
       </search>
+     <change>
+        <condition label="Other">
+          <set token="host_tok_other">*</set>
+          <set token="host_tok">$host_tok_other$</set>
+        </condition>
+        <condition match="'hostdropdown' != &quot;Other&quot;">
+          <unset token="host_tok_other"></unset>
+          <set token="host_tok">$hostdropdown$</set>
+        </condition>
+      </change>
     </input>
-    <input type="multiselect" token="source_tok" searchWhenChanged="true">
+    <input type="text" token="host_tok_other" searchWhenChanged="true" depends="$host_tok_other$">
+      <label>Other (host)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <change>
+        <condition>
+          <set token="host">$host_tok_other$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="multiselect" token="sourcedropdown" searchWhenChanged="true">
       <label>Source (Requires Host Selection)</label>
       <choice value="*">All</choice>
       <valuePrefix>"</valuePrefix>
@@ -68,10 +143,33 @@
       <search>
         <query>| tstats count summariesonly=true allow_old_summaries=true where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) by source
 | sort 0 + source
-| table source</query>
+| head 300
+| table source
+| append [|makeresults | eval source="Other"]
+        </query>
         <earliest>-30d@d</earliest>
         <latest>now</latest>
       </search>
+     <change>
+        <condition label="Other">
+          <set token="source_tok_other">*</set>
+          <set token="source_tok">$source_tok_other$</set>
+        </condition>
+        <condition match="'sourcedropdown' != &quot;Other&quot;">
+          <unset token="source_tok_other"></unset>
+          <set token="source_tok">$sourcedropdown$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="text" token="source_tok_other" searchWhenChanged="true" depends="$source_tok_other$">
+      <label>Other (Source)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <change>
+        <condition>
+          <set token="source_tok">$source_tok_other$</set>
+        </condition>
+      </change>
     </input>
     <input type="checkbox" token="metadata_filter_tok" searchWhenChanged="true">
       <label>Initial stats filter (determines what fields are valid for charting)</label>
