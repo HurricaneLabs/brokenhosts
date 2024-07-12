@@ -1,8 +1,8 @@
 image: python
 stages:
-    # - lint
-    # - unittest
-    # - sectest
+    - lint
+    - unittest
+    - sectest
     - build
     - splunktest
 
