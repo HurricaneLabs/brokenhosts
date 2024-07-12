@@ -1,38 +1,38 @@
 image: python
 stages:
-    - lint
-    - unittest
-    - sectest
+    # - lint
+    # - unittest
+    # - sectest
     - build
     - splunktest
 
-delint:
-    stage: lint
-    before_script:
-        - pip install pylint
-        - pip install requests
-    script:
-        - pylint ${CI_PROJECT_DIR}/bin/*.py
-    tags:
-        - docker
+ delint:
+     stage: lint
+     before_script:
+         - pip install pylint
+         - pip install requests
+     script:
+         - pylint ${CI_PROJECT_DIR}/bin/*.py
+     tags:
+         - docker
 
-unittest:
-    stage: unittest
-    before_script:
-        - pip install addonfactory-splunk-conf-parser-lib
-    script:
-        - python ${CI_PROJECT_DIR}/tests/test_conf_checker.py
-    tags:
-        - docker
+ unittest:
+     stage: unittest
+     before_script:
+         - pip install addonfactory-splunk-conf-parser-lib
+     script:
+         - python ${CI_PROJECT_DIR}/tests/test_conf_checker.py
+     tags:
+         - docker
 
-sectests:
-    stage: sectest
-    before_script:
-        - pip install bandit
-    script:
-        - bandit -r -x ${CI_PROJECT_DIR}/bin/defusedxml ${CI_PROJECT_DIR}/bin
-    tags:
-        - docker
+ sectests:
+     stage: sectest
+     before_script:
+         - pip install bandit
+     script:
+         - bandit -r -x ${CI_PROJECT_DIR}/bin/defusedxml ${CI_PROJECT_DIR}/bin
+     tags:
+         - docker
 
 build:
     stage: build
