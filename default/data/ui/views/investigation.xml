@@ -4,6 +4,7 @@
     <unset token="sourcetype_tok_other"></unset>
     <unset token="host_tok_other"></unset>
     <unset token="source_tok_other"></unset>
+    <unset token="hostother"></unset>
   </init>
   <label>Broken Hosts Tuning/Investigation</label>
   <description>Fill out the at least the Index input to return results. Multiple selections are supported. Note: for performance reasons all inputs only return the first 300 results in alphabetical order. If your desired selection does not appear, select Other at the bottom of the list and a text input will appear. Text inputs support wildcards and need to be comma separate to include multiple selections.</description>
@@ -241,18 +242,40 @@
           <latest>now</latest>
         </default>
       </input>
-      <input type="dropdown" token="host" searchWhenChanged="true">
+      <input type="dropdown" token="hostdropdown2" searchWhenChanged="true">
         <label>Host Selection (Requires Index/Sourcetype to be filled above)</label>
         <fieldForLabel>host</fieldForLabel>
         <fieldForValue>host</fieldForValue>
         <search>
           <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) by host
 | sort 0 + host
-| table host</query>
+| head 300
+| table host
+| append [|makeresults | eval host="Other"]</query>
           <earliest>-30d@d</earliest>
           <latest>now</latest>
         </search>
-      </input>
+       <change>
+        <condition label="Other">
+          <set token="hostother">*</set>
+          <set token="host">$hostother$</set>
+        </condition>
+        <condition match="'hostdropdown2' != &quot;Other&quot;">
+          <unset token="hostother"></unset>
+          <set token="host">$hostdropdown2$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="text" token="hostother" searchWhenChanged="true" depends="$hostother$">
+      <label>Other (host)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <change>
+        <condition>
+          <set token="host">$hostother$</set>
+        </condition>
+      </change>
+    </input>
     </panel>
   </row>
   <row>
