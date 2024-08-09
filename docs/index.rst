@@ -35,10 +35,10 @@ If you're an existing Broken Hosts user, please be sure to review our :ref:`upgr
 documentation.
 
 1. Install the `Broken Hosts App for Splunk`__ on your ad-hoc search head.
-2. Use the ``Broken Hosts`` dashboard to determine appropriate baselines for all of your critical
+2. Use the ``Broken Hosts - Tuning/Investigation`` dashboard to determine appropriate time thresholds for all of your critical
    data.
-3. Use the ``Configure Broken Hosts Lookup`` dashboard to configure your baselines and create
-   suppressions.
+3. Use the ``Configure Broken Hosts Lookup`` dashboard to configure your alerting time thresholds.
+4. Use the ``Configure Suppressions`` dashboard to configure data sources that should be suppressed from alerting.
 4. Configure alert actions on the ``Broken Hosts Alert Search`` saved search in the Broken Hosts
    App for Splunk.
 5. Enable the ``Broken Hosts Alert Search`` saved search in the Broken Hosts App for Splunk.
@@ -46,9 +46,6 @@ documentation.
 Known Issues
 ------------
 
-- Future hosts in the ``Broken Hosts Alert Search`` may not match the future hosts displayed on the
-  ``Broken Hosts`` dashboard. Future host detection will be moved to a separate search in a
-  future release of the Broken Hosts App.
 - search-time renaming of sourcetypes is not taken into account
 
 Documentation
@@ -66,7 +63,12 @@ Changelog
 Version 5.0.0 (2024-xx-xx)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- TODO
+- Separated data source suppressions from expectedTime. Please read the readme for further details on how to port your existing expectedTime into the new framework.
+- Fixed an issue caused by a KV Service change in Cloud implementations that would prevent expectedTime lookup from working correctly.
+- Reformatted main dashboard.
+- All new Tuning/Investigation dashboard used for both configuring new data source alerting thresholds and investigating outages.
+- New Configure Broken Hosts Lookup dashboard which now supports adding multiple entries at once.
+- New Configure Suppressions dashboard which is used for removing data sources from alerting.
 
 Version 4.3.1 (2024-03-25)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

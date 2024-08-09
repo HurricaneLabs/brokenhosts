@@ -29,9 +29,14 @@ Upgrading
 
 1. On the Splunk toolbar, select **Apps > Manage Apps**.
 2. Find the Broken Hosts App for Splunk.
-3. Under the Version column, select **Update to 4.0.x**.
+3. Under the Version column, select **Update to 5.0.x**.
 4. Follow the prompts and, if necessary, restart Splunk.
 5. Follow any version-specific upgrade instructions below.
+
+Upgrading to 5.x.x from 4.x.x
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Starting with Broken Hosts 5.0.0 data source alert threshold tunings and suppressions have been separated into separate lookups.
+
 
 Upgrading to 4.0.x from 3.x or below
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

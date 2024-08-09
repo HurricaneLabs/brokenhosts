@@ -5,7 +5,7 @@ The Broken Hosts App for Splunk is a useful tool for monitoring data going into 
 If the arrival of the final log for the index/sourcetype/host combination is later than expected, the Broken Hosts App will send an alert. This allows for quick status detection of the hosts and fast issue resolution.
 
 The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk. The app’s three main objectives include:
-1. Alerting when data is missing from Splunk in order to determine the cause.
+1. Alerting when data has stopped sending to Splunk.
 2. Utilizing saved searches to facilitate rapid detection of the missing data.
 3. Creating dashboards for visualization to help with further investigations.
 
@@ -15,7 +15,10 @@ The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk
 - Generates statistics about data being collected into Splunk for other uses
 - Includes dashboards for investigating broken data sources
 - Use Splunk modular alert actions for sending alerts
-- Lookup- and Eventtype-based configuration
+- Lookup and Eventtype-based configuration
+
+## IMPORTANT - Upgrading from pre-5.0 Broken Hosts
+
 
 ## Quickstart
 
