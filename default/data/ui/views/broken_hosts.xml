@@ -15,7 +15,7 @@
       <table>
         <title>Shows all currently alerting data sources.</title>
         <search>
-          <query>index=summary source="bh_stats_gen"| `bh_alert_additions` | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+          <query>index=summary source="bh_stats_gen" NOT [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions` | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
 | eval host=lower(host),index=lower(index),sourcetype=lower(sourcetype)
 | `bh_expectedTime_lookup`
@@ -98,7 +98,7 @@
     <panel>
       <title>All Suppressions</title>
       <table>
-        <title>This panel lists all suppressions found in expectedTime, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
+        <title>This panel lists all suppressions found in bh_suppressions, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
         <search>
           <query>|inputlookup bh_suppressions 
 | eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)

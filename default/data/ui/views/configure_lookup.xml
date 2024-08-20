@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <view template="broken_hosts:/templates/configure_lookup.html" type="html">
-	<label>Configure Lookup</label>
+	<label>Configure Tunings</label>
 </view>
