@@ -22,13 +22,13 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # -- Project information -----------------------------------------------------
 
 project = 'Broken Hosts App for Splunk'
-copyright = '2018, Hurricane Labs'
+copyright = '2024, Hurricane Labs'
 author = 'Hurricane Labs'
 
 # The short X.Y version
 version = '4.0'
 # The full version, including alpha/beta/rc tags
-release = '4.0.1'
+release = '4.3.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -60,7 +60,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

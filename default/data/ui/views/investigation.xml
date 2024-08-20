@@ -1,93 +1,268 @@
 <form version="1.1">
-  <label>Investigation</label>
-  <description>Broken Hosts Investigation Dashboard</description>
-  <fieldset submitButton="false" autoRun="true">
-    <input type="dropdown" token="indexdropdown" searchWhenChanged="true">
+  <init>
+    <unset token="index_tok_other"></unset>
+    <unset token="sourcetype_tok_other"></unset>
+    <unset token="host_tok_other"></unset>
+    <unset token="source_tok_other"></unset>
+    <unset token="hostother"></unset>
+  </init>
+  <label>Broken Hosts Tuning/Investigation</label>
+  <description>Fill out the at least the Index input to return results. Multiple selections are supported. Note: for performance reasons all inputs only return the first 300 results in alphabetical order. If your desired selection does not appear, select Other at the bottom of the list and a text input will appear. Text inputs support wildcards and need to be comma separate to include multiple selections.</description>
+  <fieldset submitButton="true">
+    <input type="time" token="time_tok" searchWhenChanged="true">
+      <label>Time Picker</label>
+      <default>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="indexdropdown" searchWhenChanged="true">
       <label>Index</label>
-      <choice value="*">*</choice>
-      <default>*</default>
-      <initialValue>*</initialValue>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
       <fieldForLabel>index</fieldForLabel>
       <fieldForValue>index</fieldForValue>
       <search>
-        <query>| tstats count where index=* by index | fields index | append [|makeresults | eval index="Other"]</query>
-        <earliest>0</earliest>
-        <latest></latest>
+        <query>| tstats summariesonly=true allow_old_summaries=true count by index
+| sort 0 + index
+| head 300
+| table index
+| append [|makeresults | eval index="Other"]
+        </query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
       </search>
       <change>
         <condition label="Other">
-          <set token="indexother">*</set>
-          <set token="index">$indexother$</set>
+          <set token="index_tok_other">*</set>
+          <set token="index_tok">$index_tok_other$</set>
         </condition>
         <condition match="'indexdropdown' != &quot;Other&quot;">
-          <unset token="indexother"></unset>
-          <set token="index">$indexdropdown$</set>
+          <unset token="index_tok_other"></unset>
+          <set token="index_tok">$indexdropdown$</set>
         </condition>
       </change>
     </input>
-    <input type="text" token="indexother" searchWhenChanged="true" depends="$indexother$">
-      <label>Other (index)</label>
+    <input type="text" token="index_tok_other" searchWhenChanged="true" depends="$index_tok_other$">
+      <label>Other (Index)</label>
       <default>*</default>
       <initialValue>*</initialValue>
       <change>
         <condition>
-          <set token="index">$indexother$</set>
+          <set token="index_tok">$index_tok_other$</set>
         </condition>
       </change>
     </input>
-    <input type="dropdown" token="sourcetypedropdown" searchWhenChanged="true">
-      <label>Sourcetype</label>
-      <choice value="*">*</choice>
-      <default>*</default>
-      <initialValue>*</initialValue>
+    <input type="multiselect" token="sourcetypedropdown" searchWhenChanged="true">
+      <label>Sourcetype (Requires Index Selection)</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
       <fieldForLabel>sourcetype</fieldForLabel>
       <fieldForValue>sourcetype</fieldForValue>
       <search>
-        <query>| tstats count where index=$index$ by sourcetype | fields sourcetype | append [|makeresults | eval sourcetype="Other"]</query>
-        <earliest>0</earliest>
-        <latest></latest>
+        <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) by sourcetype
+| sort 0 + sourcetype
+| head 300
+| table sourcetype
+| append [|makeresults | eval sourcetype="Other"]
+        </query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
       </search>
-      <change>
+    <change>
         <condition label="Other">
-          <set token="sourcetypeother">*</set>
-          <set token="sourcetype">$sourcetypeother$</set>
+          <set token="sourcetype_tok_other">*</set>
+          <set token="sourcetype_tok">$sourcetype_tok_other$</set>
         </condition>
         <condition match="'sourcetypedropdown' != &quot;Other&quot;">
-          <unset token="sourcetypeother"></unset>
-          <set token="sourcetype">$sourcetypedropdown$</set>
+          <unset token="sourcetype_tok_other"></unset>
+          <set token="sourcetype_tok">$sourcetypedropdown$</set>
         </condition>
       </change>
     </input>
-    <input type="text" token="sourcetypeother" searchWhenChanged="true" depends="$sourcetypeother$">
+    <input type="text" token="sourcetype_tok_other" searchWhenChanged="true" depends="$sourcetype_tok_other$">
       <label>Other (sourcetype)</label>
       <default>*</default>
       <initialValue>*</initialValue>
       <change>
         <condition>
-          <set token="sourcetype">$sourcetypeother$</set>
+          <set token="sourcetype_tok">$sourcetype_tok_other$</set>
         </condition>
       </change>
     </input>
-    <input type="dropdown" token="hostdropdown" searchWhenChanged="true">
-      <label>Host</label>
-      <choice value="*">*</choice>
-      <default>*</default>
-      <initialValue>*</initialValue>
+    <input type="multiselect" token="hostdropdown" searchWhenChanged="true">
+      <label>Host (Requires Sourcetype Selection)</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
       <fieldForLabel>host</fieldForLabel>
       <fieldForValue>host</fieldForValue>
       <search>
-        <query>| tstats count where index=$index$ sourcetype=$sourcetype$ by host | fields host | append [|makeresults | eval host="Other"]</query>
-        <earliest>0</earliest>
-        <latest></latest>
+        <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) by host
+| sort 0 + host
+| head 300
+| table host
+| append [|makeresults | eval host="Other"]
+        </query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
       </search>
+     <change>
+        <condition label="Other">
+          <set token="host_tok_other">*</set>
+          <set token="host_tok">$host_tok_other$</set>
+        </condition>
+        <condition match="'hostdropdown' != &quot;Other&quot;">
+          <unset token="host_tok_other"></unset>
+          <set token="host_tok">$hostdropdown$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="text" token="host_tok_other" searchWhenChanged="true" depends="$host_tok_other$">
+      <label>Other (host)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
       <change>
+        <condition>
+          <set token="host">$host_tok_other$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="multiselect" token="sourcedropdown" searchWhenChanged="true">
+      <label>Source (Requires Host Selection)</label>
+      <choice value="*">All</choice>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>| tstats count summariesonly=true allow_old_summaries=true where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) by source
+| sort 0 + source
+| head 300
+| table source
+| append [|makeresults | eval source="Other"]
+        </query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+     <change>
+        <condition label="Other">
+          <set token="source_tok_other">*</set>
+          <set token="source_tok">$source_tok_other$</set>
+        </condition>
+        <condition match="'sourcedropdown' != &quot;Other&quot;">
+          <unset token="source_tok_other"></unset>
+          <set token="source_tok">$sourcedropdown$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="text" token="source_tok_other" searchWhenChanged="true" depends="$source_tok_other$">
+      <label>Other (Source)</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <change>
+        <condition>
+          <set token="source_tok">$source_tok_other$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="checkbox" token="metadata_filter_tok" searchWhenChanged="true">
+      <label>Initial stats filter (determines what fields are valid for charting)</label>
+      <choice value="index">Index</choice>
+      <choice value="sourcetype">Sourcetype</choice>
+      <choice value="host">Host</choice>
+      <choice value="source">Source</choice>
+      <default>host</default>
+      <initialValue>host</initialValue>
+      <delimiter>, </delimiter>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Historical Logging Pattern for Index: $index_tok$, Sourcetype: $sourcetype_tok$, Host: $host_tok$, Source: $source_tok$ Charted by $timechart_filter_tok$</title>
+      <input type="dropdown" token="timechart_filter_tok" searchWhenChanged="true">
+        <label>Field to Chart By</label>
+        <choice value="index">Index</choice>
+        <choice value="sourcetype">Sourcetype</choice>
+        <choice value="host">Host</choice>
+        <choice value="source">Source</choice>
+        <default>host</default>
+        <initialValue>host</initialValue>
+      </input>
+      <chart>
+        <title>Make sure the field you are charting by is selected in the initial stats filter! Look for gaps to determine outages.</title>
+        <search>
+          <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) source IN ($source_tok$) by $metadata_filter_tok$, _time span=30m
+| makecontinuous _time span=30m
+| fillnull value=0
+| timechart span=30m useother=false sum(count) by $timechart_filter_tok$</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Count</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Time Between Events Statistics for Index: $index_tok$, Sourcetype: $sourcetype_tok$, Host: $host_tok$, Source: $source_tok$ , Filtered By $metadata_filter_tok$</title>
+      <table>
+        <title>Determine the value to set lateSecs in expectedTime, based on the the frequency of outages and the below results. Consider aggregation or permanent suppression if the time between events for some entries are outliers compared to the rest of the results. Sort by Maximum Time Between Events column for possible threshold for aggregation given the current data source selection.</title>
+        <search>
+          <query>| tstats count WHERE index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) host IN ($host_tok$) source IN ($source_tok$) by $metadata_filter_tok$, _time span=1s | streamstats window=2 range(_time) as duration by $metadata_filter_tok$ | stats p95(duration) as p95_gap, p99(duration) as p99_gap, avg(duration) as avg_gap, max(duration) as max_gap by $metadata_filter_tok$
+| eval index=if(isnull(index), $index_tok$, index), sourcetype=if(isnull(sourcetype), $sourcetype_tok$, sourcetype), host=if(isnull(host), $host_tok$, host), source=if(isnull(source), $source_tok$, source) 
+| eval avg_gap=tostring(round(avg_gap,2))+" seconds", p95_gap=tostring(round(p95_gap,2))+" seconds", p99_gap=tostring(round(p99_gap,2))+" seconds", max_gap=tostring(max_gap)+" seconds"| table index, sourcetype, host, source, avg_gap, p95_gap, p99_gap, max_gap
+| rename index as Index, sourcetype AS Sourcetype, host AS Host, source AS Source, avg_gap AS "Average Time Between Events", p95_gap AS "95th Percentile Time Between Events", p99_gap AS "99th Percentile Time Between Events", max_gap AS "Maximum Time Between Events"</query>
+          <earliest>$time_tok.earliest$</earliest>
+          <latest>$time_tok.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Host Shutdown Investigation</title>
+      <input type="time" token="latest_time" searchWhenChanged="true">
+        <label>Shutdown Investigation Timerange</label>
+        <default>
+          <earliest>-4h@m</earliest>
+          <latest>now</latest>
+        </default>
+      </input>
+      <input type="dropdown" token="hostdropdown2" searchWhenChanged="true">
+        <label>Host Selection (Requires Index/Sourcetype to be filled above)</label>
+        <fieldForLabel>host</fieldForLabel>
+        <fieldForValue>host</fieldForValue>
+        <search>
+          <query>| tstats summariesonly=true allow_old_summaries=true count where index IN ($index_tok$) sourcetype IN ($sourcetype_tok$) by host
+| sort 0 + host
+| head 300
+| table host
+| append [|makeresults | eval host="Other"]</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+       <change>
         <condition label="Other">
           <set token="hostother">*</set>
           <set token="host">$hostother$</set>
         </condition>
-        <condition match="'hostdropdown' != &quot;Other&quot;">
+        <condition match="'hostdropdown2' != &quot;Other&quot;">
           <unset token="hostother"></unset>
-          <set token="host">$hostdropdown$</set>
+          <set token="host">$hostdropdown2$</set>
         </condition>
       </change>
     </input>
@@ -101,32 +276,11 @@
         </condition>
       </change>
     </input>
-    <input type="dropdown" token="aggregator" searchWhenChanged="true">
-      <label>Aggregation Field</label>
-      <choice value="index">index</choice>
-      <choice value="sourcetype">sourcetype</choice>
-      <choice value="host">host</choice>
-      <default>host</default>
-      <initialValue>host</initialValue>
-    </input>
-    <input type="time" token="investigation" searchWhenChanged="true">
-      <label>Time range for investigation</label>
-      <default>
-        <earliest>-30d@d</earliest>
-        <latest>+7d@d</latest>
-      </default>
-    </input>
-    <input type="time" token="latest_time" searchWhenChanged="true" depends="$hidden$">
-      <label>Time of Last data received</label>
-      <default>
-        <earliest>-5h@h</earliest>
-        <latest>-3h@h</latest>
-      </default>
-    </input>
-  </fieldset>
+    </panel>
+  </row>
   <row>
     <panel>
-      <title>Was splunk stopped/restarted on $host$?</title>
+      <title>Was Splunk stopped/restarted on $host$?</title>
       <single>
         <search>
           <query>index=_internal host=$host$ sourcetype=splunkd component=ShutDownHandler | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search index=_internal host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "Splunk was restarted", shutdown&gt;0 AND count=1, "Splunk was stopped", shutdown=0 AND count=1, "No Splunk internal logs from $host$", shutdown=0 AND count&gt;1, "Splunk was not stopped or restarted", true(), "unknown") | fields result | eval range=case(result=="Splunk was stopped","severe",result=="Splunk was restarted","high",result=="No Splunk internal logs from $host$","guarded",result=="Splunk was not stopped or restarted","low",result=="unknown","other",true(),"unknown")</query>
@@ -135,27 +289,15 @@
         </search>
         <option name="field">result</option>
         <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
         <option name="useColors">0</option>
       </single>
     </panel>
     <panel>
-      <title>Was $host$ shut down/rebooted (windows)?</title>
+      <title>Did $host$ have a Windows shut down/reboot event?</title>
       <single>
         <search>
-          <query>`wineventlog_index` host=$host$ EventCode=6005 OR EventCode=6006 OR EventCode=6008 OR EventCode=1074 | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search `wineventlog_index` host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "$host$ was rebooted", shutdown&gt;0 AND count=1, "$host$ was shut down", shutdown=0 AND count=1, "No windows eventlog from $host$", shutdown=0 AND count&gt;1, "$host$ was not shut down or rebooted", true(), "unknown") | fields result | eval range=case(result=="$host$ was shut down","severe",result=="$host$ was rebooted","high",result=="No windows eventlog from $host$","guarded",result=="$host$ was not shut down or rebooted","low",result=="unknown","other",true(),"unknown")</query>
-          <earliest>$latest_time.earliest$</earliest>
-          <latest>$latest_time.latest$</latest>
-        </search>
-        <option name="field">result</option>
-        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
-        <option name="useColors">0</option>
-      </single>
-    </panel>
-    <panel>
-      <title>Was $host$ shut down/rebooted (linux)?</title>
-      <single>
-        <search>
-          <query>`linuxoslog_index` sourcetype=linux_* host=$host$ "shut*down" OR reboot* | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search `linuxoslog_index` host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "$host$ was rebooted", shutdown&gt;0 AND count=1, "$host$ was shut down", shutdown=0 AND count=1, "No linux logs from $host$", shutdown=0 AND count&gt;1, "$host$ was not shut down or rebooted", true(), "unknown") | fields result | eval range=case(result=="$host$ was shut down","severe",result=="$host$ was rebooted","high",result=="No linux logs from host","guarded",result=="$host$ was not shut down or rebooted","low",result=="unknown","other",true(),"unknown")</query>
+          <query>`bh_wineventlog_index` host=$host$ EventCode=6005 OR EventCode=6006 OR EventCode=6008 OR EventCode=1074 | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search `wineventlog_index` host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "$host$ was rebooted", shutdown&gt;0 AND count=1, "$host$ was shut down", shutdown=0 AND count=1, "No windows eventlog from $host$", shutdown=0 AND count&gt;1, "$host$ was not shut down or rebooted", true(), "unknown") | fields result | eval range=case(result=="$host$ was shut down","severe",result=="$host$ was rebooted","high",result=="No windows eventlog from $host$","guarded",result=="$host$ was not shut down or rebooted","low",result=="unknown","other",true(),"unknown")</query>
           <earliest>$latest_time.earliest$</earliest>
           <latest>$latest_time.latest$</latest>
         </search>
@@ -165,41 +307,19 @@
         <option name="useColors">0</option>
       </single>
     </panel>
-  </row>
-  <row>
     <panel>
-      <title>Latency by $aggregator$</title>
-      <table>
+      <title>Did $host$ have a Linux shut down/reboot event?</title>
+      <single>
         <search>
-          <query>index=$index$ sourcetype=$sourcetype$ host=$host$ | eval latency=round((_indextime-_time)/1000,0)*1000 | stats count min(latency) mode(latency) max(latency) by $aggregator$</query>
-          <earliest>$investigation.earliest$</earliest>
-          <latest>$investigation.latest$</latest>
+          <query>`bh_linuxoslog_index` sourcetype=linux_* host=$host$ "shut*down" OR reboot* | eval min_time=if(_time&gt;now()-600,_time,_time+600) | eval max_time=_time+3600 | eval shutdown=1 | append [|makeresults | eval count=0 | eval host="$host$" | eval shutdown=0 | addinfo | eval min_time=$$info_min_time$$ | eval max_time=$$info_max_time$$] | stats count max(shutdown) as shutdown max(min_time) as min_time max(max_time) as max_time by host | map search="search `linuxoslog_index` host=$$host$$ earliest=$$min_time$$ latest=$$max_time$$ | head 100 | append [|makeresults | eval host=\"$$host$$\"] | eval host=\"$$host$$\" | stats count by host | eval shutdown=\"$$shutdown$$\"" | eval result=case(shutdown&gt;0 AND count&gt;1, "$host$ was rebooted", shutdown&gt;0 AND count=1, "$host$ was shut down", shutdown=0 AND count=1, "No linux logs from $host$", shutdown=0 AND count&gt;1, "$host$ was not shut down or rebooted", true(), "unknown") | fields result | eval range=case(result=="$host$ was shut down","severe",result=="$host$ was rebooted","high",result=="No linux logs from host","guarded",result=="$host$ was not shut down or rebooted","low",result=="unknown","other",true(),"unknown")</query>
+          <earliest>$latest_time.earliest$</earliest>
+          <latest>$latest_time.latest$</latest>
         </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Frequency by $aggregator$ (Scale $scale$)</title>
-      <input type="radio" token="scale" searchWhenChanged="true">
-        <label>Scale</label>
-        <choice value="linear">linear</choice>
-        <choice value="log">log</choice>
-        <default>linear</default>
-        <initialValue>linear</initialValue>
-      </input>
-      <chart>
-        <search>
-          <query>| tstats prestats=true count where index=$index$ sourcetype=$sourcetype$ host=$host$ by $aggregator$ _time span=4h | append [search index=_internal sourcetype=splunkd component=ShutDownHandler [| metadata type=hosts index=$index$ | search host="$host$" | fields host] | eval host=if("$aggregator$"=="host","splunk restart/shutdown on ".host,host) | eval sourcetype=if("$aggregator$"=="sourcetype","splunk restart/shutdown on ".host,sourcetype)| eval index=if("$aggregator$"=="index","splunk restart/shutdown on ".host,index)] | timechart count by $aggregator$</query>
-          <earliest>$investigation.earliest$</earliest>
-          <latest>$investigation.latest$</latest>
-        </search>
-        <option name="charting.axisY.scale">$scale$</option>
-        <option name="charting.chart">line</option>
-        <option name="charting.drilldown">none</option>
+        <option name="field">result</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
         <option name="refresh.display">progressbar</option>
-      </chart>
+        <option name="useColors">0</option>
+      </single>
     </panel>
   </row>
 </form>
