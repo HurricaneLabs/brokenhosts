@@ -34,6 +34,8 @@ can also set the ``contact`` field if you're using the ``Broken Hosts Alert - by
 Configure Suppressions
 ~~~~~~~~~~~~~~~~~~~~~~
 
+.. image:: ../_static/configure_broken_hosts_suppressions.png
+
 The ``Configure Suppressions`` dashboard is where you configure the temporary or permanent suppression for
 particular ``index``/``sourcetype``/``host`` combinations. You can also provide comments and an
 expiration time for the suppression (if, for example, you have a maintenance window for a
