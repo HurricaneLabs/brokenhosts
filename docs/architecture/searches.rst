@@ -16,8 +16,8 @@ wish to monitor, this time range will need to be adjusted.
 Broken Hosts - Auto Sort
 ------------------------
 
-The ``Broken Hosts - Auto Sort`` search was implemented in order to optimize the ordering of the
-Broken Hosts Lookup. Because the lookup is evaluated in a first-match fashion, the ordering of the
+The ``Broken Hosts - Auto Sort`` and ``Broken Hosts - Auto Sort v5`` searches were implemented in order to optimize 
+the ordering of the Broken Hosts Lookup. Because the lookup is evaluated in a first-match fashion, the ordering of the
 lookup is critical to preventing incorrect matches. You can view more information about the
 ordering of the lookup in the :ref:`searches` documentation.
 

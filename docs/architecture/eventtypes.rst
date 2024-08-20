@@ -39,8 +39,8 @@ alert if **any** sourcetype stopped coming in for that firewall.
 Suppressions
 ------------
 
-In addition to setting ``lateSecs`` to ``0`` in the Broken Hosts Lookup, the Broken Hosts app also
-supports an eventtype-based suppression mechanism. This allows you to access all of the fields
+In addition to adding suppressions in the ``bh_suppressions`` lookup via the ``Configure Suppressions`` dashboard, 
+the Broken Hosts app also supports an eventtype-based suppression mechanism. This allows you to access all of the fields
 available in the summary data, including the ``date_*`` fields, allowing you to create some very
 complex suppressions using eventtypes that would otherwise be impossible with just the lookup. The
 naming scheme for these eventtypes is ``bh_suppress-label``, where label can be any arbitrary text

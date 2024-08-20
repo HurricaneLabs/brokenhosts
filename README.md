@@ -18,7 +18,21 @@ The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk
 - Lookup and Eventtype-based configuration
 
 ## IMPORTANT - Upgrading from pre-5.0 Broken Hosts
+Starting with Broken Hosts 5.0.0 data source alert threshold tunings and suppressions have been separated into separate lookups.
 
+Existing alerting will still function until the following steps are completed, but issues may arise if the following steps are not followed.
+Additionally, you will not be able to add new suppressions to expectedTime after updating.
+
+Steps to upgrade to version 5.0.0:
+1. Run the search `Broken Hosts - Populate bh_suppressions from expectedTime`
+2. Run the search `Broken Hosts - Clear Permanent Suppressions expectedTime`
+3. Enable the search `Broken Hosts - Auto Sort v5`
+4. Disable the search `Broken Hosts - Auto Sort`
+5. Enable the search `Broken Hosts - Purge and Sort bh_suppressions`
+
+The above searches will automatically populate the new bh_suppressions lookup with currently used suppression entries in expectedTime,
+clear expectedTime of all permanent suppressions, enable new expectedTime sorting logic, and schedule a search to automatically remove
+outddated entries from bh_suppressions.
 
 ## Quickstart
 
