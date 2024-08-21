@@ -32,7 +32,7 @@ Steps to upgrade to version 5.0.0:
 
 The above searches will automatically populate the new bh_suppressions lookup with currently used suppression entries in expectedTime,
 clear expectedTime of all permanent suppressions, enable new expectedTime sorting logic, and schedule a search to automatically remove
-outddated entries from bh_suppressions.
+outdated entries from bh_suppressions.
 
 ## Quickstart
 
@@ -44,6 +44,7 @@ outddated entries from bh_suppressions.
 4. Configure alert actions on the `Broken Hosts Alert Search` saved search in the Broken Hosts
    App for Splunk.
 5. Enable the `Broken Hosts Alert Search` saved search in the Broken Hosts App for Splunk.
+6. Run the search `Broken Hosts - Clear Permanent Suppressions from expectedTime`
 
 ## Documentation
 https://brokenhosts.hurricanelabs.com
