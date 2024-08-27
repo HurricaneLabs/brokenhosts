@@ -41,7 +41,6 @@ Note that the below searches use the ``| outputlookup`` command to update the lo
 and a warning message will be displayed if this has not been changed. Users can safely click through this warning. If you wish to permanently disable it,
 Cloud customers can open a support case to remove it from the list of risky commands. Enterprise customers can add a commands.conf file to the
 default/ directory in the Broken Hosts app to prevent the warning from popping up.
-
 Existing alerting will still function until the following steps are completed, but issues may arise if the following steps are not followed.
 Additionally, you will not be able to add new suppressions to expectedTime after updating.
 
