@@ -29,9 +29,34 @@ Upgrading
 
 1. On the Splunk toolbar, select **Apps > Manage Apps**.
 2. Find the Broken Hosts App for Splunk.
-3. Under the Version column, select **Update to 4.0.x**.
+3. Under the Version column, select **Update to 5.0.x**.
 4. Follow the prompts and, if necessary, restart Splunk.
 5. Follow any version-specific upgrade instructions below.
+
+Upgrading to 5.x.x from 4.x.x
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Starting with Broken Hosts 5.0.0 data source alert threshold tunings and suppressions have been separated into separate lookups.
+
+Note that the below searches use the ``| outputlookup`` command to update the lookups used by Broken Hosts. This command is labled as risky by default in Splunk,
+and a warning message will be displayed if this has not been changed. Users can safely click through this warning. If you wish to permanently disable it,
+Cloud customers can open a support case to remove it from the list of risky commands. Enterprise customers can add a commands.conf file to the
+default/ directory in the Broken Hosts app to prevent the warning from popping up.
+
+Existing alerting will still function until the following steps are completed, but issues may arise if the following steps are not followed.
+Additionally, you will not be able to add new suppressions to expectedTime after updating.
+
+Steps to upgrade to version 5.0.0:
+1. Run the search ``Broken Hosts - Populate bh_suppressions from expectedTime``
+2. Run the search ``Broken Hosts - Clear Permanent Suppressions expectedTime``
+3. Enable the search ``Broken Hosts - Auto Sort v5``
+4. Disable the search ``Broken Hosts - Auto Sort``
+5. Enable the search ``Broken Hosts - Purge and Sort bh_suppressions``
+6. Run the search ``Broken Hosts - Clear Permanent Suppressions from expectedTime``
+
+The above searches will automatically populate the new bh_suppressions lookup with currently used suppression entries in expectedTime,
+clear expectedTime of all permanent suppressions, enable new expectedTime sorting logic, and schedule a search to automatically remove
+outdated entries from bh_suppressions.
+
 
 Upgrading to 4.0.x from 3.x or below
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -15,18 +15,10 @@
       <table>
         <title>Shows all currently alerting data sources.</title>
         <search>
-          <query>index=summary source="bh_stats_gen"| `bh_alert_additions` | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+          <query>index=summary source="bh_stats_gen" NOT [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions` | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
 | eval host=lower(host),index=lower(index),sourcetype=lower(sourcetype)
-| lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil 
-| fillnull value="-" comments, contact
-| fillnull value="0" lateSecs, suppressUntil
-| eval output=mvzip(key, mvzip(suppressUntil, mvzip(comments, mvzip(contact, lateSecs, "|||"), "|||"), "|||"), "|||")
-| mvexpand output
-| eval key=mvindex(split(output, "|||"), 0), suppressUntil=mvindex(split(output, "|||"), 1), comments=mvindex(split(output, "|||"), 2), contact=mvindex(split(output, "|||"), 3), lateSecs=mvindex(split(output, "|||"), 4)
-| sort 0 + key
-| fields - key, output
-| stats first(*) AS * by index, host, sourcetype
+| `bh_expectedTime_lookup`
 | convert auto(suppressUntil) 
 | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
@@ -48,22 +40,41 @@
   </row>
   <row>
     <panel>
+      <title>Data Sources Reporting from the Future</title>
+      <table>
+        <title>Shows all data sources that are reporting timestamps in the future.</title>
+        <search>
+          <query>| tstats max(_time) as latest_time where index=* by _time, index, sourcetype, host span=1d
+| eval host=lower(host) | eval index=lower(index) | eval sourcetype=trim(lower(sourcetype), "\"") | `search_additions`
+| stats max(latest_time) as latest_time by _time index, sourcetype, host
+| lookup expectedTime index,host,sourcetype OUTPUT | convert auto(suppressUntil)
+| eval suppressUntil=mvindex(suppressUntil,0)
+| eval howLateSecs=now() - latest_time | eval h=host | eval i=index | eval s=sourcetype
+| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S") | eval Last=strftime(latest_time, "%D %H:%M:%S")
+| stats min(howLateSecs) as howLateSecs max(latest_time) as latest_time by host sourcetype index h i s
+| where (latest_time &gt; now() + 100) AND (now() - latest_time &lt; `ignore_after`) | sort 0 - howLateSecs
+| eval howLate=if(howLateSecs&lt;0,tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
+| eval h=host | eval i=index | eval s=sourcetype
+| convert ctime(latest_time) AS latest_time
+| table i, s, h, howLate, latest_time
+| rename howLate AS "Time Ahead" i AS "Event Index" s AS "Event Sourcetype" h AS "Event Host", latest_time AS "Latest Reported Timestamp"</query>
+          <earliest>now</earliest>
+          <latest>+7d@d</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>Suppressed Log Sources Receiving Data</title>
       <table>
         <title>This panel shows log sources that are suppressed in expectedTime that have received logs within the time range selected above.</title>
         <search>
-          <query>index=summary source="bh_stats_gen" | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+          <query>index=summary source="bh_stats_gen" [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
-| lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil
-| fillnull comments contact value=""
-| fillnull suppressUntil value=0
-| fillnull value=`default_expected_time` lateSecs
-| eval output=mvzip(key, mvzip(suppressUntil, mvzip(comments, mvzip(contact, lateSecs, "|||"), "|||"), "|||"), "|||")
-| mvexpand output
-| eval key=mvindex(split(output, "|||"), 0), suppressUntil=mvindex(split(output, "|||"), 1), comments=mvindex(split(output, "|||"), 2), contact=mvindex(split(output, "|||"), 3), lateSecs=mvindex(split(output, "|||"), 4)
-| sort 0 + key
-| fields - key, output
-| stats first(*) AS * by index, host, sourcetype
+| `bh_expectedTime_lookup`
 | convert auto(suppressUntil)
 | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 
@@ -87,11 +98,11 @@
     <panel>
       <title>All Suppressions</title>
       <table>
-        <title>This panel lists all suppressions found in expectedTime, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
+        <title>This panel lists all suppressions found in bh_suppressions, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
         <search>
-          <query>| inputlookup expectedTime
+          <query>|inputlookup bh_suppressions 
 | eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
-| where lateSecs=0 OR suppressUntil_epoch&gt;now() 
+| where suppressUntil_epoch&gt;now() 
 | eval suppressUntil=if(suppressUntil=0,"Permanent Suppression",suppressUntil)
 | eval comments=suppressUntil + " - " + comments
 | fields index, sourcetype, host, suppressUntil, comments 
@@ -124,18 +135,9 @@
       <table>
         <title>This panel will show all non-suppressed log sources that have received data within the time range selected. Additional log sources may appear a longer time range is selected above.</title>
         <search>
-          <query>index=summary source="bh_stats_gen" | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
+          <query>index=summary source="bh_stats_gen" NOT [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
-| lookup expectedTime index,host,sourcetype OUTPUT _key AS key, lateSecs, comments, contact, suppressUntil
-| fillnull comments contact value=""
-| fillnull suppressUntil value=0
-| fillnull value=`default_expected_time` lateSecs
-| eval output=mvzip(key, mvzip(suppressUntil, mvzip(comments, mvzip(contact, lateSecs, "|||"), "|||"), "|||"), "|||")
-| mvexpand output
-| eval key=mvindex(split(output, "|||"), 0), suppressUntil=mvindex(split(output, "|||"), 1), comments=mvindex(split(output, "|||"), 2), contact=mvindex(split(output, "|||"), 3), lateSecs=mvindex(split(output, "|||"), 4)
-| sort 0 + key
-| fields - key, output
-| stats first(*) AS * by index, host, sourcetype
+| `bh_expectedTime_lookup`
 | convert auto(suppressUntil)
 | fillnull value=`default_expected_time` lateSecs
 | eval lateSecs=if(suppressUntil &gt; now(),0,lateSecs) 

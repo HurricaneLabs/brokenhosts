@@ -47,6 +47,14 @@ defined in the lookup. The ``lateSecs`` value tells Broken Hosts how long a spec
 is allowed to go without sending data before an alert should be triggered. This setting is in
 seconds, and defaults to 14400 (4 hours).
 
+bh_linuxoslog_index
+-------------------
+Sets the default index for Linux OS logs for the Tuning/Investigation Dashboard. Defaults to index=os
+
+bh_wineventlog_index
+--------------------
+Sets the default index for Windows for the Tuning/Investigation Dashboard. Defaults to index=wineventlog
+
 bh_volume_alerting_indexes
 --------------------------
 
@@ -54,3 +62,15 @@ The ``bh_volume_alerting_indexes`` macro is used in the searches
 ``Broken Hosts Alert - Volume Alerting`` and 
 ``Broken Hosts Alert - Volume Alerting with Seasonality``. It contains a comma separated list of
 indexes.
+
+bh_expectedTime_lookup
+----------------------
+
+The ``bh_expectedTime_lookup`` macro is used in searches and dashboard to perform in order matching of entries
+in the ``expectedTime`` lookup to the results found in the ``bh_summary index``
+
+bh_expectedTime_lookup_contact
+------------------------------
+
+The ``bh_expectedTime_lookup_contact`` macro is used in the search ``Broken Hosts Alert - by contact`` 
+to perform in order matching of entries in the ``expectedTime`` lookup to the results found in the ``bh_summary index``

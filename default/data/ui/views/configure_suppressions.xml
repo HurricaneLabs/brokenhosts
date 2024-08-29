@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<view template="broken_hosts:/templates/configure_suppressions.html" type="html">
+	<label>Configure Suppressions</label>
+</view>
