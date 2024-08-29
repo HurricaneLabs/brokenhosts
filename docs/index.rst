@@ -31,8 +31,8 @@ Quickstart
 
 .. __: https://splunkbase.splunk.com/app/3247/
 
-**If you're an existing Broken Hosts user, please be sure to review our :ref:`upgrading`
-documentation.**
+**If you're an existing Broken Hosts user, please be sure to review our** :ref:`upgrading`
+**documentation.**
 
 1. Install the `Broken Hosts App for Splunk`__ on your ad-hoc search head.
 2. Use the ``Broken Hosts - Tuning/Investigation`` dashboard to determine appropriate time thresholds for all of your critical data.
