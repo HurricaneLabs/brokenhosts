@@ -42,10 +42,8 @@ outdated entries from bh_suppressions.
 ## Quickstart
 
 1. Install the `Broken Hosts App for Splunk` on your ad-hoc search head.
-2. Use the `Broken Hosts` dashboard to determine appropriate baselines for all of your critical
-   data.
-3. Use the `Configure Broken Hosts Lookup` dashboard to configure your baselines and create
-   suppressions.
+2. Use the `Broken Hosts` dashboard to determine appropriate baselines for all of your critical data.
+3. Use the `Configure Tunings` and  dashboard to configure your baselines and create suppressions.
 4. Configure alert actions on the `Broken Hosts Alert Search` saved search in the Broken Hosts
    App for Splunk.
 5. Enable the `Broken Hosts Alert Search` saved search in the Broken Hosts App for Splunk.
