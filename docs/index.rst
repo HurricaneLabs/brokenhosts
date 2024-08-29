@@ -9,7 +9,7 @@ If the arrival of the final log for the index/sourcetype/host combination is lat
 the Broken Hosts App will send an alert. This allows for quick status detection of the hosts and
 fast issue resolution.
 
-The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk. The app’s three
+The Broken Hosts App for Splunk is the app for monitoring missing data in Splunk. The apps three
 main objectives include:
 
 1. Alerting when data is missing from Splunk in order to determine the cause.
@@ -31,17 +31,16 @@ Quickstart
 
 .. __: https://splunkbase.splunk.com/app/3247/
 
-If you're an existing Broken Hosts user, please be sure to review our :ref:`upgrading`
-documentation.
+**If you're an existing Broken Hosts user, please be sure to review our :ref:`upgrading`
+documentation.**
 
 1. Install the `Broken Hosts App for Splunk`__ on your ad-hoc search head.
-2. Use the ``Broken Hosts - Tuning/Investigation`` dashboard to determine appropriate time thresholds for all of your critical
-   data.
+2. Use the ``Broken Hosts - Tuning/Investigation`` dashboard to determine appropriate time thresholds for all of your critical data.
 3. Use the ``Configure Broken Hosts Lookup`` dashboard to configure your alerting time thresholds.
 4. Use the ``Configure Suppressions`` dashboard to configure data sources that should be suppressed from alerting.
-4. Configure alert actions on the ``Broken Hosts Alert Search`` saved search in the Broken Hosts
-   App for Splunk.
-5. Enable the ``Broken Hosts Alert Search`` saved search in the Broken Hosts App for Splunk.
+5. Configure alert actions on the ``Broken Hosts Alert Search`` saved search in the Broken Hosts App for Splunk.
+6. Enable the ``Broken Hosts Alert Search`` saved search in the Broken Hosts App for Splunk.
+
 
 Known Issues
 ------------
