@@ -9,15 +9,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/cli": "^7.15.4",
+    "@babel/cli": "^7.25.6",
     "@babel/core": "^7.23.2",
-    "@babel/plugin-transform-object-rest-spread": "^7.24.1",
-    "@babel/preset-env": "^7.24.4",
-    "@babel/preset-stage-3": "^7.8.3",
-    "babel-cli": "^6.26.0"
+    "@babel/preset-env": "^7.25.4"
   },
   "dependencies": {
-    "@babel/plugin-transform-classes": "^7.15.4",
+    "@babel/plugin-transform-classes": "^7.23.2",
     "babel-preset-react": "^6.24.1"
+  },
+  "overrides": {
+    "@babel/traverse": "^7.23.2"
   }
 }
