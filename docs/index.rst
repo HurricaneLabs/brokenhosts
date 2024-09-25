@@ -59,7 +59,12 @@ Documentation
 Changelog
 ---------
 
-Version 5.0.0 (2024-xx-xx)
+Version 5.0.1 (2024-09-25)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fixes issue with Volume Alerting with Seasonality search and disables it by default
+
+Version 5.0.0 (2024-08-01)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Separated data source suppressions from expectedTime. Please read the readme for further details on how to port your existing expectedTime into the new framework.
