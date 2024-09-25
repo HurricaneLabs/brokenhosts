@@ -51,7 +51,6 @@ Steps to upgrade to version 5.0.0:
 3. Enable the search ``Broken Hosts - Auto Sort v5``
 4. Disable the search ``Broken Hosts - Auto Sort``
 5. Enable the search ``Broken Hosts - Purge and Sort bh_suppressions``
-6. Run the search ``Broken Hosts - Clear Permanent Suppressions from expectedTime``
 
 The above searches will automatically populate the new bh_suppressions lookup with currently used suppression entries in expectedTime,
 clear expectedTime of all permanent suppressions, enable new expectedTime sorting logic, and schedule a search to automatically remove
