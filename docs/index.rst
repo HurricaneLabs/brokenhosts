@@ -59,6 +59,12 @@ Documentation
 Changelog
 ---------
 
+Version 5.0.2 (2025-02-04)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fixes issue where aggregates could not be suppressed
+- Fixes issue where suppressions were not applied to the Data Sources Reported from the Future panel
+
 Version 5.0.1 (2024-09-25)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
