@@ -50,7 +50,6 @@
 | stats max(latest_time) as latest_time by _time index, sourcetype, host
 | search NOT [|inputlookup bh_suppressions | table index, sourcetype, host | format]
 | eval howLateSecs=now() - latest_time
-| eval suppressDate=strftime(suppressUntil,"%D %H:%M:%S")
 | stats min(howLateSecs) as howLateSecs max(latest_time) as latest_time by host sourcetype index
 | where (latest_time &gt; now() + 100) AND (now() - latest_time &lt; `ignore_after`) | sort 0 - howLateSecs
 | eval howLate=if(howLateSecs&lt;0,tostring(abs(howLateSecs),"duration"),tostring(howLateSecs,"duration")) | rex field=howLate mode=sed "s/\+/ days /" | rex field=howLate mode=sed "s/^1 days/1 day /"
@@ -73,6 +72,7 @@
         <search>
           <query>index=summary source="bh_stats_gen" [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
+| search NOT [|inputlookup bh_suppressions | table index, sourcetype, host | format]
 | `bh_expectedTime_lookup`
 | convert auto(suppressUntil)
 | fillnull value=`default_expected_time` lateSecs
