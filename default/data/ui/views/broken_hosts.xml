@@ -100,7 +100,7 @@
         <title>This panel lists all suppressions found in bh_suppressions, regardless of whether they have logged within the selected time range or not. A value of '*' (wildcard) indicates that this suppression will apply to whatever index/sourcetype/host the non-wildcard fields come in to.</title>
         <search>
           <query>|inputlookup bh_suppressions 
-| eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%m/%d/%Y %H:%M:%S"),0), 0)
+| eval suppressUntil_epoch=if(suppressUntil!="0", round(strptime(suppressUntil, "%Y-%m-%d"),0), 0)
 | where suppressUntil_epoch&gt;now() 
 | eval suppressUntil=if(suppressUntil=0,"Permanent Suppression",suppressUntil)
 | eval comments=suppressUntil + " - " + comments
@@ -136,6 +136,7 @@
         <search>
           <query>index=summary source="bh_stats_gen" NOT [|inputlookup bh_suppressions | rename index AS orig_index, sourcetype AS orig_sourcetype, host AS orig_host | table orig_index, orig_sourcetype, orig_host | format] | `bh_alert_additions`  | rex field=eventtype "bh_aggregate-(?&lt;aggregate_fields&gt;.*)" | eval aggregate_fields=if(isnull(aggregate_fields),orig_index.",".orig_sourcetype.",".orig_host,aggregate_fields)
 | stats max(latest_time) as latest_time values(eventtype) as eventtype sum(count) as count by aggregate_fields | rex field=aggregate_fields "(?&lt;index&gt;[^,]+),(?&lt;sourcetype&gt;[^,]+),(?&lt;host&gt;.*)"
+| search NOT [|inputlookup bh_suppressions | table index, sourcetype, host | format]
 | `bh_expectedTime_lookup`
 | convert auto(suppressUntil)
 | fillnull value=`default_expected_time` lateSecs
