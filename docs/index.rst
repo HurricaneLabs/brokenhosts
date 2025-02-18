@@ -59,6 +59,12 @@ Documentation
 Changelog
 ---------
 
+Version 5.0.3 (2025-02-18)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fixes rare issue where data sources could match with the incorrect entry for their alerting threshold value
+- Various dashboard fixes
+
 Version 5.0.2 (2025-02-04)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
