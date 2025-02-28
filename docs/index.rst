@@ -59,6 +59,11 @@ Documentation
 Changelog
 ---------
 
+Version 5.0.4 (2025-02-28)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix 3 searches which incorrectly had "counttype" set despite having no alert actions enabled.
+
 Version 5.0.3 (2025-02-18)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
