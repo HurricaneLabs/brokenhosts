@@ -63,6 +63,7 @@ Version 5.0.4 (2025-02-28)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Fix 3 searches which incorrectly had "counttype" set despite having no alert actions enabled.
+- Fix race condition that occurred when entry was removed in the Configure Tunings or Configure Suppressions dashboard
 
 Version 5.0.3 (2025-02-18)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
